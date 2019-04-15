@@ -11,13 +11,12 @@
 #ifndef LOOKUP_TABLE_HPP_
 #define LOOKUP_TABLE_HPP_
 
-#include "integrals.hpp"
-
 #include <cassert>
 #include <cmath>
 #include <string>
 #include <vector>
 
+#include "integrals.hpp"
 /**
  * @brief 2D Lookup Table for the dimensionless functions
  *

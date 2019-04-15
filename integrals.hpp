@@ -1,5 +1,5 @@
-#ifndef LOOKUP_TABLE_HPP_
-#define LOOKUP_TABLE_HPP_
+#ifndef INTEGRALS_HPP_
+#define INTEGRALS_HPP_
 /**
  * @file integrals.hpp
  * @author Adam Lamson
@@ -22,3 +22,4 @@
 double integral(double lm, double sbound0, double sbound1, double M,
                 double ell0);
 
+#endif /* INTEGRALS_HPP_ */

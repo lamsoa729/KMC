@@ -2,6 +2,7 @@
 #define KMC_STEP_FUNCS_HPP
 
 #include "helpers.hpp"
+#include "kmc.hpp"
 #include "lookup_table.hpp"
 #include "macros.hpp"
 #include <array>
