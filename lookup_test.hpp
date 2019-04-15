@@ -6,6 +6,7 @@
 #include <iostream>
 #include <string>
 
+#include "integrals.hpp"
 #include <boost/math/quadrature/gauss_kronrod.hpp>
 
 constexpr double ABSTOL = 1e-3;

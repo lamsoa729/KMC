@@ -11,14 +11,12 @@
 #ifndef LOOKUP_TABLE_HPP_
 #define LOOKUP_TABLE_HPP_
 
+#include "integrals.hpp"
+
 #include <cassert>
 #include <cmath>
 #include <string>
 #include <vector>
-
-// dimensionless integral
-double integral(double lm, double sbound0, double sbound1, double M,
-                double ell0);
 
 /**
  * @brief 2D Lookup Table for the dimensionless functions

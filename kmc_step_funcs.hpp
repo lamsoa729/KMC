@@ -13,6 +13,8 @@
 #include "Protein/ProteinType.hpp"
 #include "SimToolbox/Sylinder/SylinderNear.hpp"
 
+// These can be changed depending on program and desired behavior
+
 // KMC step for unbound protein
 void KMC_U(const ProteinData &pData, const int Npj,
            const SylinderNearEP *const *ep_j,
