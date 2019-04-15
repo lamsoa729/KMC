@@ -16,21 +16,21 @@
 // LookupTable BuildLookupTable(const double kMT, const double lenMP0,
 // const double y_cutoff);
 
-// KMC step for unbound protein
-void KMC_U(const ProteinData &pData, const int Npj,
-           const SylinderNearEP *const *ep_j,
-           const std::vector<int> &uniqueFlagJ, double dt, double roll,
-           ProteinBindStatus &pBind);
-// KMC step for singly bound to either unbound or doubly bound.
-void KMC_S(const ProteinData &pData, const int Npj,
-           const SylinderNearEP *const *ep_j,
-           const std::vector<int> &uniqueFlagJ, double dt, double KBT,
-           double rollVec[], ProteinBindStatus &pBind);
-// KMC step for doubly
-void KMC_D(const ProteinData &bindData, const int Npj,
-           const SylinderNearEP *const *ep_j,
-           const std::vector<int> &uniqueFlagJ, double dt, double KBT,
-           double roll, ProteinBindStatus &pBind);
+//// KMC step for unbound protein
+// void KMC_U(const ProteinData &pData, const int Npj,
+//           const SylinderNearEP *const *ep_j,
+//           const std::vector<int> &uniqueFlagJ, double dt, double roll,
+//           ProteinBindStatus &pBind);
+//// KMC step for singly bound to either unbound or doubly bound.
+// void KMC_S(const ProteinData &pData, const int Npj,
+//           const SylinderNearEP *const *ep_j,
+//           const std::vector<int> &uniqueFlagJ, double dt, double KBT,
+//           double rollVec[], ProteinBindStatus &pBind);
+//// KMC step for doubly
+// void KMC_D(const ProteinData &bindData, const int Npj,
+//           const SylinderNearEP *const *ep_j,
+//           const std::vector<int> &uniqueFlagJ, double dt, double KBT,
+//           double roll, ProteinBindStatus &pBind);
 
 class KMC {
   private:
