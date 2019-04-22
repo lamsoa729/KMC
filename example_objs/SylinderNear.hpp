@@ -70,22 +70,22 @@ struct SylinderNearEP {
      * interface for FDPS
      * @param fp
      */
-    void copyFromFP(const Sylinder &fp) {
-        gid = fp.gid;
-        globalIndex = fp.globalIndex;
-        rank = fp.rank;
+    // void copyFromFP(const Sylinder &fp) {
+    //    gid = fp.gid;
+    //    globalIndex = fp.globalIndex;
+    //    rank = fp.rank;
 
-        radius = fp.radius;
-        radiusCollision = fp.radiusCollision;
-        length = fp.length;
-        lengthCollision = fp.lengthCollision;
+    //    radius = fp.radius;
+    //    radiusCollision = fp.radiusCollision;
+    //    length = fp.length;
+    //    lengthCollision = fp.lengthCollision;
 
-        std::copy(fp.pos, fp.pos + 3, pos);
-        Evec3 q = ECmapq(fp.orientation) * Evec3(0, 0, 1);
-        direction[0] = q[0];
-        direction[1] = q[1];
-        direction[2] = q[2];
-    }
+    //    std::copy(fp.pos, fp.pos + 3, pos);
+    //    Evec3 q = ECmapq(fp.orientation) * Evec3(0, 0, 1);
+    //    direction[0] = q[0];
+    //    direction[1] = q[1];
+    //    direction[2] = q[2];
+    //}
 
     /**
      * @brief Get pos as a PS::F64vec3 object
