@@ -58,8 +58,9 @@ void KMC_U(const ProteinData &pData, const int Npj,
     assert(rj != -1);
     // Bind head to rod
     auto &rod = *(ep_j[rj]);
-    PS::F64vec3 rVec = rod.getPos();
-    double rPos[3] = {rVec[0], rVec[1], rVec[2]};
+    const double rPos = rod.getPos();
+    // PS::F64vec3 rVec = rod.getPos();
+    // double rPos[3] = {rVec[0], rVec[1], rVec[2]};
 #ifndef NDEBUG
     printf("U->S Binding\n");
 #endif
@@ -136,8 +137,9 @@ void KMC_S(const ProteinData &pData, const int Npj,
         assert(rj != -1);
         const auto &rod = *(ep_j[rj]);
         // Get position of rod
-        PS::F64vec3 rVec = rod.getPos();
-        double rPos[3] = {rVec[0], rVec[1], rVec[2]};
+        // PS::F64vec3 rVec = rod.getPos();
+        const double rPos[3] = rod.getPos();
+        // double rPos[3] = {rVec[0], rVec[1], rVec[2]};
 #ifndef NDEBUG
         printf("S->D Binding\n");
 #endif

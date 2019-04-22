@@ -1,0 +1,42 @@
+proteins:
+  - tag: 0 # Type 0, Dynein with end0 fixed
+    #properties:
+    walkOff: true
+    bindAntiParallel: false
+    fixedEnd0: true
+    freeLength: 0.08 # um
+    kappa: 1.0 # pN/um
+    fstall: 1.0 # pN
+    lambda: 0 # dimensionless
+    diffUnbound: 5.0 # um^2/s
+    vmax: [1.0, 1.0] # um/s, positive towards plus end
+    # KMC parameters
+    eps: 1625 # 13 protofilaments at 8nm per block
+    Ka: [53.05, 10.0] # (uM/L)^{-1}
+    ko_s: [0.003916, 0.001958] # 1/s
+    Ke: [0.246, 0.1] # dimensionless
+    ko_d: [0.003916, 0.001958] # 1/s
+    #numbers:
+    freeNumber: 0
+    fixedLocationPerMT: [-1, 0, 2] # given in [-1,1]. otherwise random
+  - tag: 1 # Type 1, Passive Crosslinker
+    #properties:
+    walkOff: true
+    bindAntiParallel: false
+    fixedEnd0: true
+    freeLength: 0.08 # um
+    kappa: 1.0 # pN/um
+    fstall: 1.0 # pN
+    lambda: 0 # dimensionless
+    diffUnbound: 5.0 # um^2/s
+    vmax: [1.0, 1.0] # um/s, positive towards plus end
+    # KMC parameters
+    eps: 1625 # 13 protofilaments at 8nm per block
+    Ka: [53.05, 10.0] # (uM/L)^{-1}
+    ko_s: [0.003916, 0.001958] # 1/s
+    Ke: [0.246, 0.1] # dimensionless
+    ko_d: [0.003916, 0.001958] # 1/s
+    #numbers:
+    freeNumber: 0
+    fixedLocationPerMT: [0.5] # given in [-1,1]. otherwise randomm
+
