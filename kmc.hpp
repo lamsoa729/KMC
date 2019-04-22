@@ -8,7 +8,7 @@
 #include "Protein/ProteinBindStatus.hpp"
 #include "Protein/ProteinData.hpp"
 #include "Protein/ProteinType.hpp"
-#include "SimToolbox/Sylinder/SylinderNear.hpp"
+#include "SylinderNear.hpp"
 
 #include <array>
 #include <cassert>

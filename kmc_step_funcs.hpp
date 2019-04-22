@@ -12,7 +12,7 @@
 #include "Protein/ProteinBindStatus.hpp"
 #include "Protein/ProteinData.hpp"
 #include "Protein/ProteinType.hpp"
-#include "SimToolbox/Sylinder/SylinderNear.hpp"
+#include "SylinderNear.hpp"
 
 // These can be changed depending on program and desired behavior
 
