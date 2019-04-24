@@ -11,7 +11,7 @@
 #ifndef SylinderNear_HPP_
 #define SylinderNear_HPP_
 
-#include "Sylinder.hpp"
+//#include "Sylinder.hpp"
 
 //#include "Collision/CollisionCollector.hpp"
 //#include "Collision/DCPQuery.hpp"
@@ -94,7 +94,7 @@ struct SylinderNearEP {
      * @return PS::F64vec
      */
     // PS::F64vec getPos() const { return PS::F64vec3(pos[0], pos[1], pos[2]); }
-    double *getPos() const { return pos; }
+    const double *getPos() const { return pos; }
 
     /**
      * @brief get search radius
@@ -105,7 +105,7 @@ struct SylinderNearEP {
      * @return PS::F64
      */
     // PS::F64 getRSearch() const { return length * 2 + 4 * radiusCollision; }
-    double *getRSearch() const { return length * 2 + 4 * radiusCollision; }
+    double getRSearch() const { return length * 2 + 4 * radiusCollision; }
 
     /**
      * @brief Set pos with a PS::F64vec3 object

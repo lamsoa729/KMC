@@ -2,17 +2,21 @@
  *                     Unit testing for KMC code                      *
  **********************************************************************/
 
-//#include "Protein/ProteinBindStatus.hpp"
 //#include "Protein/ProteinData.hpp"
 //#include "Protein/ProteinType.hpp"
 
 //#include "SimToolbox/FDPS/particle_simulator.hpp"
 //#include "SimToolbox/Sylinder/SylinderNear.hpp"
 
-#include "../helpers.hpp"
-#include "../kmc.hpp"
-#include "../lookup_table.hpp"
-#include "../macros.hpp"
+#include "example_objs/Protein/ProteinBindStatus.hpp"
+#include "example_objs/Protein/ProteinData.hpp"
+#include "example_objs/Protein/ProteinType.hpp"
+#include "example_objs/SylinderNear.hpp"
+#include "helpers.hpp"
+#include "kmc.hpp"
+#include "lookup_table.hpp"
+#include "macros.hpp"
+
 // #include "probabilities.hpp"
 
 #include "catch.hpp"
@@ -44,7 +48,7 @@ TEST_CASE("Test CalcProbUS for KMC class", "[calc01prob]") {
     ProteinData pdata;
     pdata.setMockProtein();
     // Sylinder data
-    SylinderNearEP rod = MockSylinder(0);
+    SylinderNearEP rod = MockSylinder<SylinderNearEP>(0);
 
     SECTION("Test binding probability when crosslinker is in center of rod") {
         KMC kmc(pdata.getPosPtr(), 1, pdata.getRcutUS());

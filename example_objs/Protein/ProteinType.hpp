@@ -12,7 +12,7 @@
 #ifndef PROTEINTYPE_HPP_
 #define PROTEINTYPE_HPP_
 
-#include "KMC/lookup_table.hpp"
+#include "lookup_table.hpp"
 
 #include <cstdio>
 

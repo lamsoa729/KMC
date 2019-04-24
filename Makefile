@@ -10,7 +10,7 @@ LINKFLAGS+= $(RELEASE_OPT)
 endif
 
 # set of libraries to correctly link to the target
-INCLUDE_DIRS = $(USERINCLUDE)
+INCLUDE_DIRS = -I$(CURDIR) $(USERINCLUDE)
 LIBRARIES = $(USERLINK)
 
 # System-specific settings

@@ -150,7 +150,7 @@ class KMC {
     virtual ~KMC() {}
 };
 
-template <class TRod>
-TRod MockSylinder(int id);
+// template <class TRod>
+// TRod MockSylinder(int id);
 
 #endif /* KMC_HPP */

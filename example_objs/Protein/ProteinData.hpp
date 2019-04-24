@@ -122,13 +122,13 @@ struct ProteinData {
      * @return double
      */
     double getUnbindingFactorDS(int e, double dt, double KBT) const {
-        if (property.lambda == 0)
-            return property.ko_d[e] * dt;
-        else {
-            double M = property.lambda * .5 * property.kappa *
-                       SQR(getProteinForceLength() - property.freeLength) / KBT;
-            return property.ko_d[e] * dt * exp(M);
-        }
+        // if (property.lambda == 0)
+        return property.ko_d[e] * dt;
+        // else {
+        // double M = property.lambda * .5 * property.kappa *
+        // SQR(getProteinForceLength() - property.freeLength) / KBT;
+        // return property.ko_d[e] * dt * exp(M);
+        //}
     }
 
     /**
@@ -145,7 +145,7 @@ struct ProteinData {
      */
     double getRcutSD() const {
         // consistent tubuleDiameter as the original LUT construction
-        double tubuleDiameter = property.LUTablePtr->getTubuleDiameter();
+        double tubuleDiameter = property.LUTablePtr->getRodDiameter();
         // use the cutoff length as LUT construction
         return property.LUTablePtr->getNonDsbound() * tubuleDiameter;
     }
@@ -163,30 +163,34 @@ struct ProteinData {
      *
      * @return double the calculated length
      */
-    double getProteinForceLength() const {
-        if (bind.idBind[0] == ID_UB || bind.idBind[1] == ID_UB) {
-            return 0;
-        } else {
-            // consistent tubuleDiameter as the original LUT construction
-            double tubuleDiameter = property.LUTablePtr->getTubuleDiameter();
-            Evec3 r = ECmap3(bind.posEndBind[0]) - ECmap3(bind.posEndBind[1]);
-            return (r.norm() - tubuleDiameter);
-        }
-    }
+    /*
+     *double getProteinForceLength() const {
+     *    if (bind.idBind[0] == ID_UB || bind.idBind[1] == ID_UB) {
+     *        return 0;
+     *    } else {
+     *        // consistent tubuleDiameter as the original LUT construction
+     *        double tubuleDiameter = property.LUTablePtr->getRodDiameter();
+     *        Evec3 r = ECmap3(bind.posEndBind[0]) - ECmap3(bind.posEndBind[1]);
+     *        return (r.norm() - tubuleDiameter);
+     *    }
+     *}
+     */
 
     /**
      * @brief Get the ProteinEndEndLength
      *
      * @return double the calculated length
      */
-    double getProteinEndEndLength() const {
-        if (bind.idBind[0] == ID_UB || bind.idBind[1] == ID_UB) {
-            return 0;
-        } else {
-            Evec3 r = ECmap3(bind.posEndBind[0]) - ECmap3(bind.posEndBind[1]);
-            return r.norm();
-        }
-    }
+    /*
+     *double getProteinEndEndLength() const {
+     *    if (bind.idBind[0] == ID_UB || bind.idBind[1] == ID_UB) {
+     *        return 0;
+     *    } else {
+     *        Evec3 r = ECmap3(bind.posEndBind[0]) - ECmap3(bind.posEndBind[1]);
+     *        return r.norm();
+     *    }
+     *}
+     */
 
     /**
      * @brief Get the reference to Protein Property
@@ -223,22 +227,24 @@ struct ProteinData {
      * Binding location is also jumped
      * @param newPos
      */
-    void setPos(const double newPos[3]) {
-        // current rvec
-        Evec3 jump = ECmap3(newPos) - Emap3(bind.pos);
-
-        // set new pos
-        std::copy(newPos, newPos + 3, bind.pos);
-
-        // move bind center if bind
-        for (int e = 0; e < 2; e++) {
-            if (bind.idBind[e] != ID_UB) {
-                Emap3(bind.centerBind[e]) += jump;
-            }
-        }
-        // update posEndBind and posProtein
-        updateGeometryWithBind();
-    }
+    /*
+     *    void setPos(const double newPos[3]) {
+     *        // current rvec
+     *        Evec3 jump = ECmap3(newPos) - Emap3(bind.pos);
+     *
+     *        // set new pos
+     *        std::copy(newPos, newPos + 3, bind.pos);
+     *
+     *        // move bind center if bind
+     *        for (int e = 0; e < 2; e++) {
+     *            if (bind.idBind[e] != ID_UB) {
+     *                Emap3(bind.centerBind[e]) += jump;
+     *            }
+     *        }
+     *        // update posEndBind and posProtein
+     *        updateGeometryWithBind();
+     *    }
+     */
 
     /**********************************
      *
@@ -254,8 +260,10 @@ struct ProteinData {
     void updatePosWalk(double dt, double U01) {
         assert(getWalkOrNot());
         if (bind.idBind[0] != ID_UB && bind.idBind[1] != ID_UB) {
-            double v0 = calcEndWalkVelocity(0);
-            double v1 = calcEndWalkVelocity(1);
+            // double v0 = calcEndWalkVelocity(0);
+            // double v1 = calcEndWalkVelocity(1);
+            double v0 = 0;
+            double v1 = 0;
             bind.distBind[0] += v0 * dt;
             bind.distBind[1] += v1 * dt;
         } else if (bind.idBind[0] != ID_UB && bind.idBind[1] == ID_UB) {
@@ -346,34 +354,36 @@ struct ProteinData {
      *
      * @return double
      */
-    void updateForceTorqueBind() {
-        if (bind.idBind[0] != ID_UB && bind.idBind[1] != ID_UB) {
-            double tubuleDiameter = property.LUTablePtr->getTubuleDiameter();
-            Evec3 r = Emap3(bind.posEndBind[0]) - Emap3(bind.posEndBind[1]);
-            double length = r.norm();
-            double force = (length - property.freeLength - tubuleDiameter) *
-                           property.kappa;
-            Evec3 f0 = -force * r.normalized();
-            Evec3 f1 = -f0;
-            // torque = r x f
-            Evec3 torque0 =
-                bind.distBind[0] * (Emap3(bind.directionBind[0]).cross(f0));
-            Evec3 torque1 =
-                bind.distBind[1] * (Emap3(bind.directionBind[1]).cross(f1));
-            for (int k = 0; k < 3; k++) {
-                forceBind[0][k] = f0[k];
-                forceBind[1][k] = f1[k];
-                torqueBind[0][k] = torque0[k];
-                torqueBind[1][k] = torque1[k];
-            }
-        } else {
-            // spring bind force is zero
-            forceBind[0][0] = forceBind[0][1] = forceBind[0][2] = 0;
-            forceBind[1][0] = forceBind[1][1] = forceBind[1][2] = 0;
-            torqueBind[0][0] = torqueBind[0][1] = torqueBind[0][2] = 0;
-            torqueBind[1][0] = torqueBind[1][1] = torqueBind[1][2] = 0;
-        }
-    }
+    /*
+     *void updateForceTorqueBind() {
+     *    if (bind.idBind[0] != ID_UB && bind.idBind[1] != ID_UB) {
+     *        double tubuleDiameter = property.LUTablePtr->getRodDiameter();
+     *        Evec3 r = Emap3(bind.posEndBind[0]) - Emap3(bind.posEndBind[1]);
+     *        double length = r.norm();
+     *        double force = (length - property.freeLength - tubuleDiameter) *
+     *                       property.kappa;
+     *        Evec3 f0 = -force * r.normalized();
+     *        Evec3 f1 = -f0;
+     *        // torque = r x f
+     *        Evec3 torque0 =
+     *            bind.distBind[0] * (Emap3(bind.directionBind[0]).cross(f0));
+     *        Evec3 torque1 =
+     *            bind.distBind[1] * (Emap3(bind.directionBind[1]).cross(f1));
+     *        for (int k = 0; k < 3; k++) {
+     *            forceBind[0][k] = f0[k];
+     *            forceBind[1][k] = f1[k];
+     *            torqueBind[0][k] = torque0[k];
+     *            torqueBind[1][k] = torque1[k];
+     *        }
+     *    } else {
+     *        // spring bind force is zero
+     *        forceBind[0][0] = forceBind[0][1] = forceBind[0][2] = 0;
+     *        forceBind[1][0] = forceBind[1][1] = forceBind[1][2] = 0;
+     *        torqueBind[0][0] = torqueBind[0][1] = torqueBind[0][2] = 0;
+     *        torqueBind[1][0] = torqueBind[1][1] = torqueBind[1][2] = 0;
+     *    }
+     *}
+     */
 
     /**********************************
      *
@@ -389,15 +399,17 @@ struct ProteinData {
      * @param end 0 or 1
      * @return double computed walking velocity
      */
-    double calcEndWalkVelocity(int end) const {
-        assert(bind.idBind[end] != ID_UB);
-
-        double fproj =
-            ECmap3(forceBind[end]).dot(ECmap3(bind.directionBind[end])) /
-            abs(property.fstall);
-        double vfrac = std::max(0.0, std::min(1.0, 1.0 + fproj));
-        return property.vmax[end] * vfrac;
-    }
+    /*
+     *    double calcEndWalkVelocity(int end) const {
+     *        assert(bind.idBind[end] != ID_UB);
+     *
+     *        double fproj =
+     *            ECmap3(forceBind[end]).dot(ECmap3(bind.directionBind[end])) /
+     *            abs(property.fstall);
+     *        double vfrac = std::max(0.0, std::min(1.0, 1.0 + fproj));
+     *        return property.vmax[end] * vfrac;
+     *    }
+     */
 
     /**********************************
      *
@@ -413,7 +425,7 @@ struct ProteinData {
     // PS::F64vec3 getPos() const {
     //    return PS::F64vec(bind.pos[0], bind.pos[1], bind.pos[2]);
     //}
-    double *getPos() const { return pos; }
+    const double *getPos() const { return bind.pos; }
 
     /**
      * @brief get neighbor search radius interface requried for FDPS
@@ -618,21 +630,21 @@ struct ProteinData {
     //                                pointDataFields, cellDataFields,
     //                                pieceNames);
     //    }
-    //};
+};
 
-    static_assert(std::is_trivially_copyable<ProteinData>::value, "");
-    static_assert(std::is_default_constructible<ProteinData>::value, "");
+static_assert(std::is_trivially_copyable<ProteinData>::value, "");
+static_assert(std::is_default_constructible<ProteinData>::value, "");
 
-    /**
-     * @brief FDPS writeAscii file header
-     */
-    // class ProteinAsciiHeader {
-    //  public:
-    //    int nparticle;
-    //    double time;
-    //    void writeAscii(FILE *fp) const {
-    //        fprintf(fp, "%d \n %lf\n", nparticle, time);
-    //    }
-    //};
+/**
+ * @brief FDPS writeAscii file header
+ */
+// class ProteinAsciiHeader {
+//  public:
+//    int nparticle;
+//    double time;
+//    void writeAscii(FILE *fp) const {
+//        fprintf(fp, "%d \n %lf\n", nparticle, time);
+//    }
+//};
 
 #endif
