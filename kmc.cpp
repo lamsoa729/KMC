@@ -19,14 +19,15 @@
  * \return void, Updates muArr_[j_rod], distMinArr_[j_rod], and
  * distPerpArr_[j_rod] in KMC object.
  */
-void KMC::UpdateRodDistArr(const int j_rod, const SylinderNearEP &rod) {
-    const double rLen = rod.length;  // Vector of rod
+template <class TRod>
+void KMC::UpdateRodDistArr(const int j_rod, const TRod &rod) {
+    const double rLen = rod.length; // Vector of rod
     const double *rUVec = rod.direction;
     const double *rCenter = rod.pos;
-    double rVec[3],  // Rod length vector
-        rMinus[3],   // Rod minus end position vector
-        rPlus[3],    // Rod plus end position vector
-        sepVec[3];   // Vector of rod center to protein
+    double rVec[3], // Rod length vector
+        rMinus[3],  // Rod minus end position vector
+        rPlus[3],   // Rod plus end position vector
+        sepVec[3];  // Vector of rod center to protein
     for (int i = 0; i < 3; ++i) {
         rVec[i] = rLen * rUVec[i];
         rMinus[i] = rCenter[i] - (.5 * rVec[i]);
@@ -36,7 +37,6 @@ void KMC::UpdateRodDistArr(const int j_rod, const SylinderNearEP &rod) {
     // the perpendicular distance & position from protein ends to rod
     double pointMin[3];
     distMinArr_[j_rod] = dist_point_seg(pos_, rMinus, rPlus, pointMin);
-    // PS::F64vec3 muVec = pointMin - rCenter;
     // Closest point of end_pos along rod axis from rod center.
     double mu0 = dot3(sepVec, rUVec);
     muArr_[j_rod] = mu0;
@@ -48,20 +48,21 @@ void KMC::UpdateRodDistArr(const int j_rod, const SylinderNearEP &rod) {
 
 /*! \brief Calculate the probability of a head to bind to surrounding rods.
  *
- * \param ep_j Array of rod pointers
+ * \param rods Array of rod pointers
  * \param &uniqueFlagJ Reference to filter list making sure you do not over
  * count rods
  * \param bindFactor Binding factor of head to rods \return
  * void, Changes prob_tot_ variable of KMC this object
  */
-void KMC::CalcTotProbsUS(const SylinderNearEP *const *ep_j,
+template <class TRod>
+void KMC::CalcTotProbsUS(const TRod *const *rods,
                          const std::vector<int> &uniqueFlagJ,
                          const double bindFactor) {
     prob_tot_ = 0;
-    for (int j_rod = 0; j_rod < ep_j_probs_.size(); ++j_rod) {
+    for (int j_rod = 0; j_rod < rods_probs_.size(); ++j_rod) {
         if (uniqueFlagJ[j_rod] > 0) {
-            ep_j_probs_[j_rod] = CalcProbUS(j_rod, *(ep_j[j_rod]), bindFactor);
-            prob_tot_ += ep_j_probs_[j_rod];
+            rods_probs_[j_rod] = CalcProbUS(j_rod, *(rods[j_rod]), bindFactor);
+            prob_tot_ += rods_probs_[j_rod];
         }
     }
 }
@@ -73,7 +74,8 @@ void KMC::CalcTotProbsUS(const SylinderNearEP *const *ep_j,
  * \param bindFactor Binding factor of head to rod
  * \return Probability of head binding to rod rod
  */
-double KMC::CalcProbUS(const int j_rod, const SylinderNearEP &rod,
+template <class TRod>
+double KMC::CalcProbUS(const int j_rod, const TRod &rod,
                        const double bindFactor) {
     // Find and add shortest distance to DistPerp array and the associated
     // locations along rod.
@@ -122,7 +124,7 @@ void KMC::CalcProbSU(const double unbindFactor) { prob_tot_ = unbindFactor; }
  *  One head must be bound and its position must be stored in this pos_
  * variable.
  *
- * \param ep_j Array of surrounding rod pointers
+ * \param rods Array of surrounding rod pointers
  * \param &uniqueFlagJ Reference to filter list making sure you do not over
  * count rods
  * \param k_spring Spring constant between connected heads
@@ -130,25 +132,26 @@ void KMC::CalcProbSU(const double unbindFactor) { prob_tot_ = unbindFactor; }
  * \param bindFactor Binding factor of head to rods
  * \return void, Changes tot_prob_ variable of this object
  */
-void KMC::CalcTotProbsSD(const SylinderNearEP *const *ep_j,
+template <class TRod>
+void KMC::CalcTotProbsSD(const TRod *const *rods,
                          const std::vector<int> &uniqueFlagJ, const int boundID,
                          const double lambda, const double kappa,
                          const double beta, const double restLen,
                          const double bindFactor) {
     prob_tot_ = 0;
-    for (int j_rod = 0; j_rod < ep_j_probs_.size(); ++j_rod) {
-        if (uniqueFlagJ[j_rod] > 0 && ep_j[j_rod]->gid != boundID) {
+    for (int j_rod = 0; j_rod < rods_probs_.size(); ++j_rod) {
+        if (uniqueFlagJ[j_rod] > 0 && rods[j_rod]->gid != boundID) {
             if (LUTablePtr_) {
-                // ep_j_probs_[j_rod] = LUCalcProbSD(j_rod, *(ep_j[j_rod]),
+                // rods_probs_[j_rod] = LUCalcProbSD(j_rod, *(rods[j_rod]),
                 // kappa, eqLen, bindFactor);
-                ep_j_probs_[j_rod] =
-                    LUCalcProbSD(j_rod, *(ep_j[j_rod]), bindFactor);
+                rods_probs_[j_rod] =
+                    LUCalcProbSD(j_rod, *(rods[j_rod]), bindFactor);
             } else {
-                ep_j_probs_[j_rod] =
-                    CalcProbSD(j_rod, *(ep_j[j_rod]), lambda, kappa, beta,
+                rods_probs_[j_rod] =
+                    CalcProbSD(j_rod, *(rods[j_rod]), lambda, kappa, beta,
                                restLen, bindFactor);
             }
-            prob_tot_ += ep_j_probs_[j_rod];
+            prob_tot_ += rods_probs_[j_rod];
         }
     }
     return;
@@ -166,10 +169,10 @@ void KMC::CalcTotProbsSD(const SylinderNearEP *const *ep_j,
  * \param bindFactor Binding factor of head to rod
  * \return Probability of head binding to rod rod
  */
-double KMC::CalcProbSD(const int j_rod, const SylinderNearEP &rod,
-                       const double lambda, const double kappa,
-                       const double beta, const double restLen,
-                       const double bindFactor) {
+template <class TRod>
+double KMC::CalcProbSD(const int j_rod, const TRod &rod, const double lambda,
+                       const double kappa, const double beta,
+                       const double restLen, const double bindFactor) {
     // // Find and add shortest distance to DistPerp array and the associated
     // // locations along rod.
     UpdateRodDistArr(j_rod, rod);
@@ -184,7 +187,7 @@ double KMC::CalcProbSD(const int j_rod, const SylinderNearEP &rod,
     else {
         // Non-dimensionalize all exponential factors
         const double distPerp =
-            distPerpArr_[j_rod] / D;  // Perpendicular distance to rod axis
+            distPerpArr_[j_rod] / D; // Perpendicular distance to rod axis
         const double mu0 = muArr_[j_rod] / D;
         const double M = (1 - lambda) * .5 * kappa * beta * D * D;
         const double ell = restLen / D;
@@ -211,7 +214,8 @@ double KMC::CalcProbSD(const int j_rod, const SylinderNearEP &rod,
  * \param bindFactor Binding factor of head to rod
  * \return Probability of head binding to rod rod
  */
-double KMC::LUCalcProbSD(const int j_rod, const SylinderNearEP &rod,
+template <class TRod>
+double KMC::LUCalcProbSD(const int j_rod, const TRod &rod,
                          const double bindFactor) {
     if (LUTablePtr_ == nullptr) {
         std::cerr << " *** Error: Lookup table not initialized ***"
@@ -229,12 +233,11 @@ double KMC::LUCalcProbSD(const int j_rod, const SylinderNearEP &rod,
         result = 0;
     else {
         double mu0 = muArr_[j_rod] / D;
-        double distPerp =
-            distPerpArr_[j_rod] / D;  // Perpendicular distance to
-                                      // rod, changes if croslinker
-                                      // is past the rod end point.
-        double lim0 = -mu0 - (0.5 * rod.length / D);  // Lower limit of integral
-        double lim1 = -mu0 + (0.5 * rod.length / D);  // Upper limit of integral
+        double distPerp = distPerpArr_[j_rod] / D; // Perpendicular distance to
+                                                   // rod, changes if croslinker
+                                                   // is past the rod end point.
+        double lim0 = -mu0 - (0.5 * rod.length / D); // Lower limit of integral
+        double lim1 = -mu0 + (0.5 * rod.length / D); // Upper limit of integral
         lims_[j_rod].first = lim0;
         lims_[j_rod].second = lim1;
         // Get value of integral from end to first bound site.
@@ -266,19 +269,19 @@ void KMC::CalcProbDS(const double unbindFactor) {
 
 /*! \brief Find which MT head will bind to from stored probabilities
  *
- * \param ep_j Array of rod object pointers
+ * \param rods Array of rod object pointers
  * \param &bindPos Location along rod relative to rod center that head
  * binds
  * \param roll Uniformally generated random number from 0 to 1 \return
  * Return ID of bound MT
  */
-int KMC::whichRodBindUS(const SylinderNearEP *const *ep_j, double &bindPos,
-                        double roll) {
+template <class TRod>
+int KMC::whichRodBindUS(const TRod *const *rods, double &bindPos, double roll) {
     // assert probabilities are not zero
     double pos_roll = 0.0;
 
     int i = 0;
-    for (auto prob : ep_j_probs_) {
+    for (auto prob : rods_probs_) {
         if ((pos_roll + prob) > roll) {
             // Use an old random number to get a new uniform random number.
             pos_roll = (roll - pos_roll) / prob;
@@ -288,27 +291,28 @@ int KMC::whichRodBindUS(const SylinderNearEP *const *ep_j, double &bindPos,
             i++;
         }
     }
-    if (i == ep_j_probs_.size()) {
+    if (i == rods_probs_.size()) {
         // Roll given was too large, CHECK KMC step functions
         return -1;
     }
-    const double half_length = .5 * ep_j[i]->length;  // half length of rod
-    const double mu = muArr_[i];  // Closest position of particle along rod
-                                  // from rod center
-    const double distMin = distMinArr_[i];    // Distance from rod
-    const double distPerp = distPerpArr_[i];  // Distance from rod
+    const double half_length = .5 * rods[i]->length; // half length of rod
+    const double mu = muArr_[i]; // Closest position of particle along rod
+                                 // from rod center
+    const double distMin = distMinArr_[i];   // Distance from rod
+    const double distPerp = distPerpArr_[i]; // Distance from rod
     double bind_range = sqrt(SQR(r_cutoff_) - SQR(distPerp));
-    if (std::isnan(bind_range)) bind_range = 0.0;
+    if (std::isnan(bind_range))
+        bind_range = 0.0;
 
     // double diff = sqrt(SQR(distMin) - SQR(distPerp));
     double range_m,
-        range_p;  // Minus and plus binding limits with respect to rod center
-    if ((ABS(mu) - (half_length)) > SMALL) {  // Protein is beyond rod
-        if (mu < 0) {                         // Protein is beyond the minus end
+        range_p; // Minus and plus binding limits with respect to rod center
+    if ((ABS(mu) - (half_length)) > SMALL) { // Protein is beyond rod
+        if (mu < 0) {                        // Protein is beyond the minus end
             range_m = -half_length;
             range_p = ((mu + bind_range) > half_length) ? half_length
                                                         : (mu + bind_range);
-        } else {  // Protein is beyond the plus end
+        } else { // Protein is beyond the plus end
             range_m = ((mu - bind_range) > half_length) ? half_length
                                                         : (mu - bind_range);
             range_p = half_length;
@@ -354,18 +358,18 @@ void KMC::whereUnbindSU(double R, double rollVec[3], double pos[3]) {
  */
 int KMC::whichRodBindSD(double &bindPos, double roll) {
     double pos_roll = 0.0;
-    int i = 0;  // Index of rods
-    for (auto prob : ep_j_probs_) {
-        if ((pos_roll + prob) > roll) {  // Found rod to bind to
+    int i = 0; // Index of rods
+    for (auto prob : rods_probs_) {
+        if ((pos_roll + prob) > roll) { // Found rod to bind to
             // Use an old random number to get a new uniform random number.
             pos_roll = (roll - pos_roll) / prob;
             break;
-        } else {  // Keep searching for binding rod
+        } else { // Keep searching for binding rod
             pos_roll += prob;
             i++;
         }
     }
-    if (i == ep_j_probs_.size()) {
+    if (i == rods_probs_.size()) {
         return -1;
     }
     bindPos = RandomBindPosSD(i, pos_roll);
@@ -384,7 +388,7 @@ double KMC::RandomBindPosSD(int j_rod, double roll) {
                   << std::endl;
         exit(1);
     }
-    const double D = LUTablePtr_->getTubuleDiameter();
+    const double D = LUTablePtr_->getRodDiameter();
     double lim0 = lims_[j_rod].first;
     double lim1 = lims_[j_rod].second;
     // TODO: Clear up this
@@ -397,9 +401,9 @@ double KMC::RandomBindPosSD(int j_rod, double roll) {
         LUTablePtr_->Lookup(distPerp, fabs(lim1)) * ((lim1 < 0) ? -1.0 : 1.0);
     // Scale random number to be within pLims
     roll = roll * (pLim1 - pLim0) + pLim0;
-    double sbound = 0;  // Reset x position parameter
+    double sbound = 0; // Reset x position parameter
     double preFact = roll < 0 ? -1. : 1.;
-    roll *= preFact;  // entry in lookup table must be positive
+    roll *= preFact; // entry in lookup table must be positive
     return preFact * (D * LUTablePtr_->ReverseLookup(distPerp, roll)) +
            muArr_[j_rod];
 }

@@ -51,7 +51,7 @@ class LookupTable {
      *
      * @return double
      */
-    double getTubuleDiameter() const { return D; }
+    double getRodDiameter() const { return D; }
 
     /**
      * @brief Get the dimensionless sbound for tabulation
