@@ -7,11 +7,11 @@
 
 #include <boost/math/quadrature/gauss_kronrod.hpp>
 
-void LookupTable::Init(double M_, double freeLength, double tubuleD) {
+void LookupTable::Init(double M_, double freeLength, double rodD) {
     // setup length scale and dimensionless lengths
-    D = tubuleD;
-    ell0 = freeLength / tubuleD;
-    M = M_ * tubuleD * tubuleD;
+    D = rodD;
+    ell0 = freeLength / rodD;
+    M = M_ * rodD * rodD;
 
     // truncate the integration when integrand < SMALL
     // Interation table in dimensionless lengths

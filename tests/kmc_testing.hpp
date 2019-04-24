@@ -2,12 +2,12 @@
  *                     Unit testing for KMC code                      *
  **********************************************************************/
 
-#include "Protein/ProteinBindStatus.hpp"
-#include "Protein/ProteinData.hpp"
-#include "Protein/ProteinType.hpp"
+//#include "Protein/ProteinBindStatus.hpp"
+//#include "Protein/ProteinData.hpp"
+//#include "Protein/ProteinType.hpp"
 
-#include "SimToolbox/FDPS/particle_simulator.hpp"
-#include "SimToolbox/Sylinder/SylinderNear.hpp"
+//#include "SimToolbox/FDPS/particle_simulator.hpp"
+//#include "SimToolbox/Sylinder/SylinderNear.hpp"
 
 #include "helpers.hpp"
 #include "kmc.hpp"

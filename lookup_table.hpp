@@ -27,7 +27,7 @@
  */
 class LookupTable {
   public:
-    double D; ///< dimensional tubule Diameter, length scale
+    double D; ///< dimensional rod Diameter, length scale
 
     double ell0; ///< \ell_0/D, dimensionless
     double M;    ///< (1-\lambda)\kappa\beta/2 * D^2, dimensionless
@@ -47,7 +47,7 @@ class LookupTable {
     ~LookupTable() = default;
 
     /**
-     * @brief Get the TubuleDiameter length scale
+     * @brief Get the rodDiameter length scale
      *
      * @return double
      */
@@ -65,9 +65,9 @@ class LookupTable {
      *
      * @param M the factor of exponential (1-\lambda)\kappa\beta/2
      * @param freeLength the protein free length
-     * @param tubuleD the MicroTubule diameter
+     * @param rodD the Microrod diameter
      */
-    void Init(double M_, double freeLength, double tubuleD);
+    void Init(double M_, double freeLength, double rodD);
 
     /*********************
      *  output LookupTable
