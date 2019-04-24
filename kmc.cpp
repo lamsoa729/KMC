@@ -20,7 +20,7 @@
  * distPerpArr_[j_rod] in KMC object.
  */
 template <class TRod>
-void KMC::UpdateRodDistArr(const int j_rod, const TRod &rod) {
+void KMC<TRod>::UpdateRodDistArr(const int j_rod, const TRod &rod) {
     const double rLen = rod.length; // Vector of rod
     const double *rUVec = rod.direction;
     const double *rCenter = rod.pos;
@@ -55,9 +55,9 @@ void KMC::UpdateRodDistArr(const int j_rod, const TRod &rod) {
  * void, Changes prob_tot_ variable of KMC this object
  */
 template <class TRod>
-void KMC::CalcTotProbsUS(const TRod *const *rods,
-                         const std::vector<int> &uniqueFlagJ,
-                         const double bindFactor) {
+void KMC<TRod>::CalcTotProbsUS(const TRod *const *rods,
+                               const std::vector<int> &uniqueFlagJ,
+                               const double bindFactor) {
     prob_tot_ = 0;
     for (int j_rod = 0; j_rod < rods_probs_.size(); ++j_rod) {
         if (uniqueFlagJ[j_rod] > 0) {
@@ -75,8 +75,8 @@ void KMC::CalcTotProbsUS(const TRod *const *rods,
  * \return Probability of head binding to rod rod
  */
 template <class TRod>
-double KMC::CalcProbUS(const int j_rod, const TRod &rod,
-                       const double bindFactor) {
+double KMC<TRod>::CalcProbUS(const int j_rod, const TRod &rod,
+                             const double bindFactor) {
     // Find and add shortest distance to DistPerp array and the associated
     // locations along rod.
     UpdateRodDistArr(j_rod, rod);
@@ -116,7 +116,10 @@ double KMC::CalcProbUS(const int j_rod, const TRod &rod,
  * \param unbindFactor
  * \return void, Changes the prob_tot_ variable of this object.
  */
-void KMC::CalcProbSU(const double unbindFactor) { prob_tot_ = unbindFactor; }
+template <class TRod>
+void KMC<TRod>::CalcProbSU(const double unbindFactor) {
+    prob_tot_ = unbindFactor;
+}
 
 /*! \brief Calculate the total probability of an unbound head to bind to
  * surrounding rods when other head is attached to another rod.
@@ -133,11 +136,11 @@ void KMC::CalcProbSU(const double unbindFactor) { prob_tot_ = unbindFactor; }
  * \return void, Changes tot_prob_ variable of this object
  */
 template <class TRod>
-void KMC::CalcTotProbsSD(const TRod *const *rods,
-                         const std::vector<int> &uniqueFlagJ, const int boundID,
-                         const double lambda, const double kappa,
-                         const double beta, const double restLen,
-                         const double bindFactor) {
+void KMC<TRod>::CalcTotProbsSD(const TRod *const *rods,
+                               const std::vector<int> &uniqueFlagJ,
+                               const int boundID, const double lambda,
+                               const double kappa, const double beta,
+                               const double restLen, const double bindFactor) {
     prob_tot_ = 0;
     for (int j_rod = 0; j_rod < rods_probs_.size(); ++j_rod) {
         if (uniqueFlagJ[j_rod] > 0 && rods[j_rod]->gid != boundID) {
@@ -170,9 +173,10 @@ void KMC::CalcTotProbsSD(const TRod *const *rods,
  * \return Probability of head binding to rod rod
  */
 template <class TRod>
-double KMC::CalcProbSD(const int j_rod, const TRod &rod, const double lambda,
-                       const double kappa, const double beta,
-                       const double restLen, const double bindFactor) {
+double KMC<TRod>::CalcProbSD(const int j_rod, const TRod &rod,
+                             const double lambda, const double kappa,
+                             const double beta, const double restLen,
+                             const double bindFactor) {
     // // Find and add shortest distance to DistPerp array and the associated
     // // locations along rod.
     UpdateRodDistArr(j_rod, rod);
@@ -215,8 +219,8 @@ double KMC::CalcProbSD(const int j_rod, const TRod &rod, const double lambda,
  * \return Probability of head binding to rod rod
  */
 template <class TRod>
-double KMC::LUCalcProbSD(const int j_rod, const TRod &rod,
-                         const double bindFactor) {
+double KMC<TRod>::LUCalcProbSD(const int j_rod, const TRod &rod,
+                               const double bindFactor) {
     if (LUTablePtr_ == nullptr) {
         std::cerr << " *** Error: Lookup table not initialized ***"
                   << std::endl;
@@ -262,7 +266,8 @@ double KMC::LUCalcProbSD(const int j_rod, const TRod &rod,
  * \param unbindFactor Unbinding factor for head that is unbinding
  * \return void, Changes the prob_tot_ membr
  */
-void KMC::CalcProbDS(const double unbindFactor) {
+template <class TRod>
+void KMC<TRod>::CalcProbDS(const double unbindFactor) {
     prob_tot_ = unbindFactor;
     return;
 }
@@ -276,7 +281,8 @@ void KMC::CalcProbDS(const double unbindFactor) {
  * Return ID of bound MT
  */
 template <class TRod>
-int KMC::whichRodBindUS(const TRod *const *rods, double &bindPos, double roll) {
+int KMC<TRod>::whichRodBindUS(const TRod *const *rods, double &bindPos,
+                              double roll) {
     // assert probabilities are not zero
     double pos_roll = 0.0;
 
@@ -339,7 +345,8 @@ int KMC::whichRodBindUS(const TRod *const *rods, double &bindPos, double roll) {
  * \param rollVec Uniformally generated random number 3 vector all from 0
  * to 1. \return Return new position vector of head once detatched.
  */
-void KMC::whereUnbindSU(double R, double rollVec[3], double pos[3]) {
+template <class TRod>
+void KMC<TRod>::whereUnbindSU(double R, double rollVec[3], double pos[3]) {
     double r = R * std::cbrt(rollVec[0]);
     double costheta = 2. * rollVec[1] - 1.;
     double theta = acos(costheta);
@@ -356,7 +363,8 @@ void KMC::whereUnbindSU(double R, double rollVec[3], double pos[3]) {
  * \param roll Uniform random number between 0 and 1.
  * \return Index number of rod that head was bound too.
  */
-int KMC::whichRodBindSD(double &bindPos, double roll) {
+template <class TRod>
+int KMC<TRod>::whichRodBindSD(double &bindPos, double roll) {
     double pos_roll = 0.0;
     int i = 0; // Index of rods
     for (auto prob : rods_probs_) {
@@ -382,7 +390,8 @@ int KMC::whichRodBindSD(double &bindPos, double roll) {
  * \param roll A uniformaly generated random number between 0-1
  * \return Return parameter description
  */
-double KMC::RandomBindPosSD(int j_rod, double roll) {
+template <class TRod>
+double KMC<TRod>::RandomBindPosSD(int j_rod, double roll) {
     if (LUTablePtr_ == nullptr) {
         std::cerr << " *** Error: Lookup table pointer not initialized ***"
                   << std::endl;
@@ -419,7 +428,8 @@ double KMC::RandomBindPosSD(int j_rod, double roll) {
  * \param pos[] Parameter description
  * \return Return parameter description
  */
-void KMC::whereUnbindDS(const double boundPos[], double pos[]) {
+template <class TRod>
+void KMC<TRod>::whereUnbindDS(const double boundPos[], double pos[]) {
     for (int i = 0; i < 3; ++i) {
         pos[i] = boundPos[i];
     }

@@ -5,10 +5,10 @@
 #include "lookup_table.hpp"
 #include "macros.hpp"
 
-#include "Protein/ProteinBindStatus.hpp"
-#include "Protein/ProteinData.hpp"
-#include "Protein/ProteinType.hpp"
-#include "SylinderNear.hpp"
+//#include "Protein/ProteinBindStatus.hpp"
+//#include "Protein/ProteinData.hpp"
+//#include "Protein/ProteinType.hpp"
+//#include "SylinderNear.hpp"
 
 #include <array>
 #include <cassert>

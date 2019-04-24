@@ -1,12 +1,12 @@
+#include "../integrals.hpp"
+#include "../lookup_table.hpp"
 #include "catch.hpp"
-#include "lookup_table.hpp"
 
 #include <cmath>
 #include <cstdio>
 #include <iostream>
 #include <string>
 
-#include "integrals.hpp"
 #include <boost/math/quadrature/gauss_kronrod.hpp>
 
 constexpr double ABSTOL = 1e-3;

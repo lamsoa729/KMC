@@ -9,10 +9,10 @@
 //#include "SimToolbox/FDPS/particle_simulator.hpp"
 //#include "SimToolbox/Sylinder/SylinderNear.hpp"
 
-#include "helpers.hpp"
-#include "kmc.hpp"
-#include "lookup_table.hpp"
-#include "macros.hpp"
+#include "../helpers.hpp"
+#include "../kmc.hpp"
+#include "../lookup_table.hpp"
+#include "../macros.hpp"
 // #include "probabilities.hpp"
 
 #include "catch.hpp"
@@ -20,8 +20,9 @@
 #include <array>
 #include <cassert>
 
-SylinderNearEP MockSylinder(int id) {
-    SylinderNearEP rod;
+template <class TRod>
+TRod MockSylinder(int id) {
+    TRod rod;
     rod.gid = id;
     rod.rank = 0;
     rod.globalIndex = id;
