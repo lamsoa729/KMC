@@ -2,23 +2,12 @@
  *                     Unit testing for KMC<ExampleRod> code *
  **********************************************************************/
 
-//#include "Protein/ExampleXlink.hpp"
-//#include "Protein/ProteinType.hpp"
-
-//#include "SimToolbox/FDPS/particle_simulator.hpp"
-//#include "SimToolbox/Sylinder/SylinderNear.hpp"
-
 #include "example_objs/ExampleRod.hpp"
 #include "example_objs/ExampleXlink.hpp"
-//#include "example_objs/Protein/ProteinBindStatus.hpp"
-//#include "example_objs/Protein/ExampleXlink.hpp"
-//#include "example_objs/Protein/ProteinType.hpp"
 #include "helpers.hpp"
 #include "kmc.hpp"
 #include "lookup_table.hpp"
 #include "macros.hpp"
-
-// #include "probabilities.hpp"
 
 #include "catch.hpp"
 
@@ -186,7 +175,7 @@ TEST_CASE("Test CalcProbSD for KMC<ExampleRod> class", "[calc_prob_sd]") {
     // Protein data
     ExampleXlink pdata;
     pdata.setMockXlink();
-    // ProteinType *pType = &pdata.property;
+    // //ProteinType *pType = &pdata.property;
     // Sylinder data
     ExampleRod rod0, rod1;
     rod0 = MockRod<ExampleRod>(0);
@@ -339,420 +328,331 @@ TEST_CASE("Test CalcProbSD for KMC<ExampleRod> class", "[calc_prob_sd]") {
     }
 }
 
-// TEST_CASE("Test CalcProbDS for KMC<ExampleRod> class",
-// "[calc21prob]") {
-//    double dt = .0001;
-//    double KBT = 1.;
-//    // Protein data
-//    ExampleXlink pdata;
-//    pdata.setMockXlink();
-//    ProteinType *pType = &pdata.property;
-//    // Sylinder data
-//    ExampleRod rod0, rod1;
-//    rod0 = MockRod<ExampleRod>(0);
-//    rod0.length = 20;
-//    rod1 = MockRod<ExampleRod>(1);
-//    rod1.length = 20;
-//    rod1.pos[0] = 0;
-//    rod1.pos[1] = 1.0;
-//    rod1.pos[2] = 0;
+TEST_CASE("Test CalcProbDS for KMC<ExampleRod> class", "[calc21prob]") {
+    double dt = .0001;
+    double KBT = 1.;
+    // Protein data
+    ExampleXlink pdata;
+    pdata.setMockXlink();
+    // ProteinType *pType = &pdata.property;
+    // Sylinder data
+    ExampleRod rod0, rod1;
+    rod0 = MockRod<ExampleRod>(0);
+    rod0.length = 20;
+    rod1 = MockRod<ExampleRod>(1);
+    rod1.length = 20;
+    rod1.pos[0] = 0;
+    rod1.pos[1] = 1.0;
+    rod1.pos[2] = 0;
 
-//    // Set up lookup table
-//    LookupTable LUT;
-//    LUT.Init((1. - pdata.lambda) * .5 * pdata.kappa / KBT,
-//    pdata.freeLength,
-//             2. * rod0.radius);
-//    pdata.LUTablePtr = &LUT;
+    // Set up lookup table
+    LookupTable LUT;
+    LUT.Init((1. - pdata.lambda) * .5 * pdata.kappa / KBT, pdata.freeLength,
+             2. * rod0.radius);
+    pdata.LUTablePtr = &LUT;
 
-//    SECTION("Test unbinding of end 0 from rod0.") {
-//        double end_loc = 0;
-//        pdata.setBind(0, rod0.gid, rod0.direction, rod0.pos, end_loc,
-//                           rod0.length, rod0.rank);
-//        pdata.setBind(1, rod1.gid, rod1.direction, rod1.pos, end_loc,
-//                           rod0.length, rod0.rank);
-//        KMC<ExampleRod> kmc(pdata.posEndBind[0], 2,
-//        pdata.getRcutSD());
-//        kmc.CalcProbDS(pdata.getUnbindingFactorDS(0, dt, KBT));
-//        CHECK(ABS(kmc.getTotProb() - .0001) < SMALL);
-//    }
-//    SECTION("Test unbinding of end 1 from rod1.") {
-//        double end_loc = 0;
-//        pdata.setBind(0, rod0.gid, rod0.direction, rod0.pos, end_loc,
-//                           rod0.length, rod0.rank);
-//        pdata.setBind(1, rod1.gid, rod1.direction, rod1.pos, end_loc,
-//                           rod0.length, rod0.rank);
-//        KMC<ExampleRod> kmc(pdata.posEndBind[1], 2,
-//        pdata.getRcutSD());
-//        kmc.CalcProbDS(pdata.getUnbindingFactorDS(1, dt, KBT));
-//        CHECK(ABS(kmc.getTotProb() - .0001) < SMALL);
-//    }
-//}
+    SECTION("Test unbinding of end 0 from rod0.") {
+        double end_loc = 0;
+        pdata.setBind(0, rod0.gid, rod0.direction, rod0.pos, end_loc,
+                      rod0.length, rod0.rank);
+        pdata.setBind(1, rod1.gid, rod1.direction, rod1.pos, end_loc,
+                      rod0.length, rod0.rank);
+        KMC<ExampleRod> kmc(pdata.posEndBind[0], 2, pdata.getRcutSD());
+        kmc.CalcProbDS(pdata.getUnbindingFactorDS(0, dt, KBT));
+        CHECK(ABS(kmc.getTotProb() - .0001) < SMALL);
+    }
+    SECTION("Test unbinding of end 1 from rod1.") {
+        double end_loc = 0;
+        pdata.setBind(0, rod0.gid, rod0.direction, rod0.pos, end_loc,
+                      rod0.length, rod0.rank);
+        pdata.setBind(1, rod1.gid, rod1.direction, rod1.pos, end_loc,
+                      rod0.length, rod0.rank);
+        KMC<ExampleRod> kmc(pdata.posEndBind[1], 2, pdata.getRcutSD());
+        kmc.CalcProbDS(pdata.getUnbindingFactorDS(1, dt, KBT));
+        CHECK(ABS(kmc.getTotProb() - .0001) < SMALL);
+    }
+}
 
-// TEST_CASE("Test binding probabilities of one head when near multiple
-// rods.",
-//          "[calc01tot_probs]") {
-//    double dt = .0001;
-//    double KBT = 1.;
-//    ExampleRod *ep_j[4];
-//    for (int i = 0; i < 4; ++i) {
-//        ep_j[i] = new ExampleRod;
-//        *ep_j[i] = MockRod<ExampleRod>(i);
-//    }
-//    ExampleXlink pdata;
-//    pdata.setMockXlink();
-//    ProteinType *pType = &pdata.property;
-//    LookupTable LUT;
-//    LUT.Init((1. - pdata.lambda) * .5 * pdata.kappa / KBT,
-//    pdata.freeLength,
-//             2. * ep_j[0]->radius);
-//    pdata.LUTablePtr = &LUT;
-//    std::vector<int> Uniquefilter{1, 1, 1, 1};
-//    SECTION("Two semi-overlapping parallel rods with protein in
-//    between.")
-//    {
-//        ep_j[0]->pos[0] = 0.0;
-//        ep_j[0]->pos[1] = .5;
-//        ep_j[0]->pos[2] = 0.0;
-//        double pos[3] = {0, 0.25, 0};
-//        pdata.setUnBindPos(pos);
-//        KMC<ExampleRod> kmc(pdata.getPosPtr(), 2, pdata.getRcutUS());
-//        kmc.CalcTotProbsUS(ep_j, Uniquefilter,
-//        pdata.getBindingFactorUS(0, dt)); REQUIRE(ABS(kmc.getTotProb()
-//        - 0.0003307973372530752) < SMALL);
-//    }
-//    SECTION("Test to make sure filter is working.") {
-//        // Set filters for rods 2 and 3 to 0
-//        Uniquefilter[2] = Uniquefilter[3] = 0;
-//        ep_j[0]->pos[0] = 0.0;
-//        ep_j[0]->pos[1] = 0.5;
-//        ep_j[0]->pos[2] = 0.0;
-//        double pos[3] = {0, 0.25, 0};
-//        pdata.setUnBindPos(pos);
-//        KMC<ExampleRod> kmc(pdata.getPosPtr(), 4, pdata.getRcutUS());
-//        kmc.CalcTotProbsUS(ep_j, Uniquefilter,
-//        pdata.getBindingFactorUS(0, dt)); REQUIRE(ABS(kmc.getTotProb()
-//        - 0.0003307973372530752) < SMALL);
-//    }
-//    SECTION("4 parallel rods with protein in the center.") {
-//        ep_j[1]->pos[0] = 0.0;
-//        ep_j[1]->pos[1] = .5;
-//        ep_j[1]->pos[2] = 0.0;
+TEST_CASE("Test binding probabilities of one head when near multiple rods.",
+          "[calc01tot_probs]") {
+    double dt = .0001;
+    double KBT = 1.;
+    ExampleRod *ep_j[4];
+    for (int i = 0; i < 4; ++i) {
+        ep_j[i] = new ExampleRod;
+        *ep_j[i] = MockRod<ExampleRod>(i);
+    }
+    ExampleXlink pdata;
+    pdata.setMockXlink();
+    // ProteinType *pType = &pdata.property;
+    LookupTable LUT;
+    LUT.Init((1. - pdata.lambda) * .5 * pdata.kappa / KBT, pdata.freeLength,
+             2. * ep_j[0]->radius);
+    pdata.LUTablePtr = &LUT;
+    std::vector<int> Uniquefilter{1, 1, 1, 1};
+    SECTION("Two semi-overlapping parallel rods with protein in between.") {
+        ep_j[0]->pos[0] = 0.0;
+        ep_j[0]->pos[1] = .5;
+        ep_j[0]->pos[2] = 0.0;
+        double pos[3] = {0, 0.25, 0};
+        pdata.setUnBindPos(pos);
+        KMC<ExampleRod> kmc(pdata.getPosPtr(), 2, pdata.getRcutUS());
+        kmc.CalcTotProbsUS(ep_j, Uniquefilter, pdata.getBindingFactorUS(0, dt));
+        REQUIRE(ABS(kmc.getTotProb() - 0.0003307973372530752) < SMALL);
+    }
+    SECTION("Test to make sure filter is working.") {
+        // Set filters for rods 2 and 3 to 0
+        Uniquefilter[2] = Uniquefilter[3] = 0;
+        ep_j[0]->pos[0] = 0.0;
+        ep_j[0]->pos[1] = 0.5;
+        ep_j[0]->pos[2] = 0.0;
+        double pos[3] = {0, 0.25, 0};
+        pdata.setUnBindPos(pos);
+        KMC<ExampleRod> kmc(pdata.getPosPtr(), 4, pdata.getRcutUS());
+        kmc.CalcTotProbsUS(ep_j, Uniquefilter, pdata.getBindingFactorUS(0, dt));
+        REQUIRE(ABS(kmc.getTotProb() - 0.0003307973372530752) < SMALL);
+    }
+    SECTION("4 parallel rods with protein in the center.") {
+        ep_j[1]->pos[0] = 0.0;
+        ep_j[1]->pos[1] = .5;
+        ep_j[1]->pos[2] = 0.0;
 
-//        ep_j[2]->pos[0] = 0.0;
-//        ep_j[2]->pos[1] = 0.25;
-//        ep_j[2]->pos[2] = 0.25;
+        ep_j[2]->pos[0] = 0.0;
+        ep_j[2]->pos[1] = 0.25;
+        ep_j[2]->pos[2] = 0.25;
 
-//        ep_j[3]->pos[0] = 0.0;
-//        ep_j[3]->pos[1] = 0.25;
-//        ep_j[3]->pos[2] = -0.25;
+        ep_j[3]->pos[0] = 0.0;
+        ep_j[3]->pos[1] = 0.25;
+        ep_j[3]->pos[2] = -0.25;
 
-//        double pos[3] = {0, 0.25, 0};
-//        pdata.setUnBindPos(pos);
-//        KMC<ExampleRod> kmc(pdata.getPosPtr(), 4, pdata.getRcutUS());
-//        kmc.CalcTotProbsUS(ep_j, Uniquefilter,
-//        pdata.getBindingFactorUS(0, dt)); CHECK(ABS(kmc.getTotProb() -
-//        (0.0006615946745061504)) < SMALL);
-//    }
-//    // Clean up testing
-//    for (int i = 0; i < 4; ++i) {
-//        delete ep_j[i];
-//    }
-//}
+        double pos[3] = {0, 0.25, 0};
+        pdata.setUnBindPos(pos);
+        KMC<ExampleRod> kmc(pdata.getPosPtr(), 4, pdata.getRcutUS());
+        kmc.CalcTotProbsUS(ep_j, Uniquefilter, pdata.getBindingFactorUS(0, dt));
+        CHECK(ABS(kmc.getTotProb() - (0.0006615946745061504)) < SMALL);
+    }
+    // Clean up testing
+    for (int i = 0; i < 4; ++i) {
+        delete ep_j[i];
+    }
+}
 
-// TEST_CASE("Test binding probabilities of one head when near multiple
-// rods and
-// "
-//          "other head is bound.",
-//          "[calc12tot_probs]") {
-//    double dt = .0001;
-//    double KBT = 1.;
-//    ExampleRod *ep_j[4];
-//    for (int i = 0; i < 4; ++i) {
-//        ep_j[i] = new ExampleRod;
-//        *ep_j[i] = MockRod<ExampleRod>(i);
-//    }
-//    ExampleXlink pdata;
-//    pdata.setMockXlink();
-//    ProteinType *pType = &pdata.property;
-//    LookupTable LUT;
-//    LUT.Init((1. - pdata.lambda) * .5 * pdata.kappa / KBT,
-//    pdata.freeLength,
-//             2. * ep_j[0]->radius);
-//    pdata.LUTablePtr = &LUT;
+TEST_CASE("Test binding probabilities of one head when near multiple rods and "
+          "other head is bound.",
+          "[calc12tot_probs]") {
+    double dt = .0001;
+    double KBT = 1.;
+    ExampleRod *ep_j[4];
+    for (int i = 0; i < 4; ++i) {
+        ep_j[i] = new ExampleRod;
+        *ep_j[i] = MockRod<ExampleRod>(i);
+    }
+    ExampleXlink pdata;
+    pdata.setMockXlink();
+    // ProteinType *pType = &pdata.property;
+    LookupTable LUT;
+    LUT.Init((1. - pdata.lambda) * .5 * pdata.kappa / KBT, pdata.freeLength,
+             2. * ep_j[0]->radius);
+    pdata.LUTablePtr = &LUT;
 
-//    std::vector<int> Uniquefilter{1, 1, 1, 1};
+    std::vector<int> Uniquefilter{1, 1, 1, 1};
 
-//    SECTION("No rods nearby") {
-//        pdata.setBind(0,                  // Index of head binding
-//                           ep_j[0]->gid,       // Index of rod
-//                           ep_j[0]->direction, // direction vector of
-//                           rod ep_j[0]->pos,       // position vector
-//                           of rod 0,                  // Head distance
-//                           from rod center ep_j[0]->length,
-//                           ep_j[0]->rank);
-//        KMC<ExampleRod> kmc(pdata.posEndBind[0], 1,
-//        pdata.getRcutSD());
+    SECTION("No rods nearby") {
+        pdata.setBind(0, ep_j[0]->gid, ep_j[0]->direction, ep_j[0]->pos, 0,
+                      ep_j[0]->length, ep_j[0]->rank);
+        KMC<ExampleRod> kmc(pdata.posEndBind[0], 1, pdata.getRcutSD());
 
-//        kmc.CalcTotProbsSD(ep_j, Uniquefilter, ep_j[0]->gid,
-//        pdata.lambda,
-//                           pdata.kappa, 1. / KBT, pdata.freeLength,
-//                           pdata.getBindingFactorSD(1, dt));
-//        CHECK(ABS(kmc.getTotProb()) < SMALL);
-//    }
-//    SECTION("One rod nearby and above bound crosslinker") {
-//        ep_j[1]->pos[0] = 0;
-//        ep_j[1]->pos[1] = 1.0;
-//        ep_j[1]->pos[2] = 0;
-//        pdata.setBind(0,                  // Index of head binding
-//                           ep_j[0]->gid,       // Index of rod
-//                           ep_j[0]->direction, // direction vector of
-//                           rod ep_j[0]->pos,       // position vector
-//                           of rod 0,                  // Head distance
-//                           from rod center ep_j[0]->length,
-//                           ep_j[0]->rank);
-//        KMC<ExampleRod> kmc(pdata.posEndBind[0], 2,
-//        pdata.getRcutSD());
+        kmc.CalcTotProbsSD(ep_j, Uniquefilter, ep_j[0]->gid, pdata.lambda,
+                           pdata.kappa, 1. / KBT, pdata.freeLength,
+                           pdata.getBindingFactorSD(1, dt));
+        CHECK(ABS(kmc.getTotProb()) < SMALL);
+    }
+    SECTION("One rod nearby and above bound crosslinker") {
+        ep_j[1]->pos[0] = 0;
+        ep_j[1]->pos[1] = 1.0;
+        ep_j[1]->pos[2] = 0;
+        pdata.setBind(0, ep_j[0]->gid, ep_j[0]->direction, ep_j[0]->pos, 0,
+                      ep_j[0]->length, ep_j[0]->rank);
+        KMC<ExampleRod> kmc(pdata.posEndBind[0], 2, pdata.getRcutSD());
 
-//        kmc.CalcTotProbsSD(ep_j, Uniquefilter, ep_j[0]->gid,
-//        pdata.lambda,
-//                           pdata.kappa, 1. / KBT, pdata.freeLength,
-//                           pdata.getBindingFactorSD(1, dt));
-//        CHECK(ABS(kmc.getTotProb() - 0.0005481166497130916) < SMALL);
-//    }
-//    SECTION("Two rods nearby, above and below bound crosslinker") {
-//        ep_j[1]->pos[0] = 0;
-//        ep_j[1]->pos[1] = 1.0;
-//        ep_j[1]->pos[2] = 0;
+        kmc.CalcTotProbsSD(ep_j, Uniquefilter, ep_j[0]->gid, pdata.lambda,
+                           pdata.kappa, 1. / KBT, pdata.freeLength,
+                           pdata.getBindingFactorSD(1, dt));
+        CHECK(ABS(kmc.getTotProb() - 0.0005481166497130916) < SMALL);
+    }
+    SECTION("Two rods nearby, above and below bound crosslinker") {
+        ep_j[1]->pos[0] = 0;
+        ep_j[1]->pos[1] = 1.0;
+        ep_j[1]->pos[2] = 0;
 
-//        ep_j[2]->pos[0] = 0;
-//        ep_j[2]->pos[1] = -1.0;
-//        ep_j[2]->pos[2] = 0;
+        ep_j[2]->pos[0] = 0;
+        ep_j[2]->pos[1] = -1.0;
+        ep_j[2]->pos[2] = 0;
 
-//        pdata.setBind(0,                  // Index of head binding
-//                           ep_j[0]->gid,       // Index of rod
-//                           ep_j[0]->direction, // direction vector of
-//                           rod ep_j[0]->pos,       // position vector
-//                           of rod 0,                  // Head distance
-//                           from rod center ep_j[0]->length,
-//                           ep_j[0]->rank);
-//        KMC<ExampleRod> kmc(pdata.posEndBind[0], 3,
-//        pdata.getRcutSD());
+        pdata.setBind(0, ep_j[0]->gid, ep_j[0]->direction, ep_j[0]->pos, 0,
+                      ep_j[0]->length, ep_j[0]->rank);
+        KMC<ExampleRod> kmc(pdata.posEndBind[0], 3, pdata.getRcutSD());
 
-//        kmc.CalcTotProbsSD(ep_j, Uniquefilter, ep_j[0]->gid,
-//        pdata.lambda,
-//                           pdata.kappa, 1. / KBT, pdata.freeLength,
-//                           pdata.getBindingFactorSD(1, dt));
-//        CHECK(ABS(kmc.getTotProb() - 0.001096233299426183) < SMALL);
-//    }
-//    SECTION("Two rods nearby, above and perpendicular but same
-//    distance from "
-//            "bound crosslinker.") {
-//        ep_j[1]->pos[0] = 0;
-//        ep_j[1]->pos[1] = 1.0;
-//        ep_j[1]->pos[2] = 0;
+        kmc.CalcTotProbsSD(ep_j, Uniquefilter, ep_j[0]->gid, pdata.lambda,
+                           pdata.kappa, 1. / KBT, pdata.freeLength,
+                           pdata.getBindingFactorSD(1, dt));
+        CHECK(ABS(kmc.getTotProb() - 0.001096233299426183) < SMALL);
+    }
+    SECTION("Two rods nearby, above and perpendicular but same distance from "
+            "bound crosslinker.") {
+        ep_j[1]->pos[0] = 0;
+        ep_j[1]->pos[1] = 1.0;
+        ep_j[1]->pos[2] = 0;
 
-//        ep_j[2]->pos[0] = 1.0;
-//        ep_j[2]->pos[1] = 1.0;
-//        ep_j[2]->pos[2] = 0;
-//        ep_j[2]->direction[0] = 0;
-//        ep_j[2]->direction[1] = 1;
-//        ep_j[2]->direction[2] = 0;
+        ep_j[2]->pos[0] = 1.0;
+        ep_j[2]->pos[1] = 1.0;
+        ep_j[2]->pos[2] = 0;
+        ep_j[2]->direction[0] = 0;
+        ep_j[2]->direction[1] = 1;
+        ep_j[2]->direction[2] = 0;
 
-//        pdata.setBind(0,                  // Index of head binding
-//                           ep_j[0]->gid,       // Index of rod
-//                           ep_j[0]->direction, // direction vector of
-//                           rod ep_j[0]->pos,       // position vector
-//                           of rod 0,                  // Head distance
-//                           from rod center ep_j[0]->length,
-//                           ep_j[0]->rank);
-//        KMC<ExampleRod> kmc(pdata.posEndBind[0], 3,
-//        pdata.getRcutSD());
+        pdata.setBind(0, ep_j[0]->gid, ep_j[0]->direction, ep_j[0]->pos, 0,
+                      ep_j[0]->length, ep_j[0]->rank);
+        KMC<ExampleRod> kmc(pdata.posEndBind[0], 3, pdata.getRcutSD());
 
-//        kmc.CalcTotProbsSD(ep_j, Uniquefilter, ep_j[0]->gid,
-//        pdata.lambda,
-//                           pdata.kappa, 1. / KBT, pdata.freeLength,
-//                           pdata.getBindingFactorSD(1, dt));
-//        CHECK(ABS(kmc.getTotProb() - 0.001096233299426183) < SMALL);
-//    }
-//    SECTION("Two rods nearby, above and forward touching cutoff.") {
-//        pdata.setBind(0,                  // Index of head binding
-//                           ep_j[0]->gid,       // Index of rod
-//                           ep_j[0]->direction, // direction vector of
-//                           rod ep_j[0]->pos,       // position vector
-//                           of rod 0,                  // Head distance
-//                           from rod center ep_j[0]->length,
-//                           ep_j[0]->rank);
-//        ep_j[1]->pos[0] = 0;
-//        ep_j[1]->pos[1] = pdata.posEndBind[0][1] + pdata.getRcutSD();
-//        ep_j[1]->pos[2] = 0;
+        kmc.CalcTotProbsSD(ep_j, Uniquefilter, ep_j[0]->gid, pdata.lambda,
+                           pdata.kappa, 1. / KBT, pdata.freeLength,
+                           pdata.getBindingFactorSD(1, dt));
+        CHECK(ABS(kmc.getTotProb() - 0.001096233299426183) < SMALL);
+    }
+    SECTION("Two rods nearby, above and forward touching cutoff.") {
+        pdata.setBind(0, ep_j[0]->gid, ep_j[0]->direction, ep_j[0]->pos, 0,
+                      ep_j[0]->length, ep_j[0]->rank);
+        ep_j[1]->pos[0] = 0;
+        ep_j[1]->pos[1] = pdata.posEndBind[0][1] + pdata.getRcutSD();
+        ep_j[1]->pos[2] = 0;
 
-//        ep_j[2]->pos[0] = ep_j[0]->length + pdata.getRcutSD();
-//        ep_j[2]->pos[1] = 0;
-//        ep_j[2]->pos[2] = 0;
-//        // ep_j[2]->setpos(pos);
-//        KMC<ExampleRod> kmc(pdata.posEndBind[0], 3,
-//        pdata.getRcutSD());
+        ep_j[2]->pos[0] = ep_j[0]->length + pdata.getRcutSD();
+        ep_j[2]->pos[1] = 0;
+        ep_j[2]->pos[2] = 0;
+        // ep_j[2]->setpos(pos);
+        KMC<ExampleRod> kmc(pdata.posEndBind[0], 3, pdata.getRcutSD());
 
-//        kmc.CalcTotProbsSD(ep_j, Uniquefilter, ep_j[0]->gid,
-//        pdata.lambda,
-//                           pdata.kappa, 1. / KBT, pdata.freeLength,
-//                           pdata.getBindingFactorSD(1, dt));
-//        CHECK(ABS(kmc.getTotProb()) <
-//              dt * .001); // 3 decimal accuracy more than dt
-//    }
-//    SECTION("Two rods nearby, above and below outside cutoff") {
-//        pdata.setBind(0,                  // Index of head binding
-//                           ep_j[0]->gid,       // Index of rod
-//                           ep_j[0]->direction, // direction vector of
-//                           rod ep_j[0]->pos,       // position vector
-//                           of rod 0,                  // Head distance
-//                           from rod center ep_j[0]->length,
-//                           ep_j[0]->rank);
+        kmc.CalcTotProbsSD(ep_j, Uniquefilter, ep_j[0]->gid, pdata.lambda,
+                           pdata.kappa, 1. / KBT, pdata.freeLength,
+                           pdata.getBindingFactorSD(1, dt));
+        CHECK(ABS(kmc.getTotProb()) <
+              dt * .001); // 3 decimal accuracy more than dt
+    }
+    SECTION("Two rods nearby, above and below outside cutoff") {
+        pdata.setBind(0, ep_j[0]->gid, ep_j[0]->direction, ep_j[0]->pos, 0,
+                      ep_j[0]->length, ep_j[0]->rank);
 
-//        ep_j[1]->pos[0] = 0;
-//        ep_j[1]->pos[1] = pdata.posEndBind[0][1] + pdata.getRcutSD()
-//        + 1.0; ep_j[1]->pos[2] = 0;
+        ep_j[1]->pos[0] = 0;
+        ep_j[1]->pos[1] = pdata.posEndBind[0][1] + pdata.getRcutSD() + 1.0;
+        ep_j[1]->pos[2] = 0;
 
-//        ep_j[2]->pos[0] = 0;
-//        ep_j[2]->pos[1] = pdata.posEndBind[0][1] - pdata.getRcutSD()
-//        - 1.0; ep_j[2]->pos[2] = 0;
+        ep_j[2]->pos[0] = 0;
+        ep_j[2]->pos[1] = pdata.posEndBind[0][1] - pdata.getRcutSD() - 1.0;
+        ep_j[2]->pos[2] = 0;
 
-//        KMC<ExampleRod> kmc(pdata.posEndBind[0], 3,
-//        pdata.getRcutSD());
+        KMC<ExampleRod> kmc(pdata.posEndBind[0], 3, pdata.getRcutSD());
 
-//        kmc.CalcTotProbsSD(ep_j, Uniquefilter, ep_j[0]->gid,
-//        pdata.lambda,
-//                           pdata.kappa, 1. / KBT, pdata.freeLength,
-//                           pdata.getBindingFactorSD(1, dt));
+        kmc.CalcTotProbsSD(ep_j, Uniquefilter, ep_j[0]->gid, pdata.lambda,
+                           pdata.kappa, 1. / KBT, pdata.freeLength,
+                           pdata.getBindingFactorSD(1, dt));
 
-//        CHECK(ABS(kmc.getTotProb()) < SMALL);
-//    }
-//    SECTION("Three rods nearby, above and below bound crosslinker. Two
-//    "
-//            "overlapping.") {
-//        ep_j[1]->pos[0] = 0;
-//        ep_j[1]->pos[1] = 1.0;
-//        ep_j[1]->pos[2] = 0;
+        CHECK(ABS(kmc.getTotProb()) < SMALL);
+    }
+    SECTION("Three rods nearby, above and below bound crosslinker. Two "
+            "overlapping.") {
+        ep_j[1]->pos[0] = 0;
+        ep_j[1]->pos[1] = 1.0;
+        ep_j[1]->pos[2] = 0;
 
-//        ep_j[2]->pos[0] = 0;
-//        ep_j[2]->pos[1] = -1.0;
-//        ep_j[2]->pos[2] = 0;
+        ep_j[2]->pos[0] = 0;
+        ep_j[2]->pos[1] = -1.0;
+        ep_j[2]->pos[2] = 0;
 
-//        ep_j[3]->pos[0] = 0;
-//        ep_j[3]->pos[1] = -1.0;
-//        ep_j[3]->pos[2] = 0;
-//        pdata.setBind(0,                  // Index of head binding
-//                           ep_j[0]->gid,       // Index of rod
-//                           ep_j[0]->direction, // direction vector of
-//                           rod ep_j[0]->pos,       // position vector
-//                           of rod 0,                  // Head distance
-//                           from rod center ep_j[0]->length,
-//                           ep_j[0]->rank);
-//        KMC<ExampleRod> kmc(pdata.posEndBind[0], 4,
-//        pdata.getRcutSD());
+        ep_j[3]->pos[0] = 0;
+        ep_j[3]->pos[1] = -1.0;
+        ep_j[3]->pos[2] = 0;
+        pdata.setBind(0, ep_j[0]->gid, ep_j[0]->direction, ep_j[0]->pos, 0,
+                      ep_j[0]->length, ep_j[0]->rank);
+        KMC<ExampleRod> kmc(pdata.posEndBind[0], 4, pdata.getRcutSD());
 
-//        kmc.CalcTotProbsSD(ep_j, Uniquefilter, ep_j[0]->gid,
-//        pdata.lambda,
-//                           pdata.kappa, 1. / KBT, pdata.freeLength,
-//                           pdata.getBindingFactorSD(1, dt));
-//        CHECK(ABS(kmc.getTotProb() - 0.001644349949139275) < SMALL);
-//    }
-//    SECTION("Three rods nearby, above and below bound crosslinker. Two
-//    "
-//            "overlapping but one filtered.") {
-//        ep_j[1]->pos[0] = 0;
-//        ep_j[1]->pos[1] = 1.0;
-//        ep_j[1]->pos[2] = 0;
+        kmc.CalcTotProbsSD(ep_j, Uniquefilter, ep_j[0]->gid, pdata.lambda,
+                           pdata.kappa, 1. / KBT, pdata.freeLength,
+                           pdata.getBindingFactorSD(1, dt));
+        CHECK(ABS(kmc.getTotProb() - 0.001644349949139275) < SMALL);
+    }
+    SECTION("Three rods nearby, above and below bound crosslinker. Two "
+            "overlapping but one filtered.") {
+        ep_j[1]->pos[0] = 0;
+        ep_j[1]->pos[1] = 1.0;
+        ep_j[1]->pos[2] = 0;
 
-//        ep_j[2]->pos[0] = 0;
-//        ep_j[2]->pos[1] = -1.0;
-//        ep_j[2]->pos[2] = 0;
+        ep_j[2]->pos[0] = 0;
+        ep_j[2]->pos[1] = -1.0;
+        ep_j[2]->pos[2] = 0;
 
-//        ep_j[3]->pos[0] = 0;
-//        ep_j[3]->pos[1] = -1.0;
-//        ep_j[3]->pos[2] = 0;
-//        Uniquefilter[3] = 0;
-//        pdata.setBind(0,                  // Index of head binding
-//                           ep_j[0]->gid,       // Index of rod
-//                           ep_j[0]->direction, // direction vector of
-//                           rod ep_j[0]->pos,       // position vector
-//                           of rod 0,                  // Head distance
-//                           from rod center ep_j[0]->length,
-//                           ep_j[0]->rank);
-//        KMC<ExampleRod> kmc(pdata.posEndBind[0], 4,
-//        pdata.getRcutSD());
+        ep_j[3]->pos[0] = 0;
+        ep_j[3]->pos[1] = -1.0;
+        ep_j[3]->pos[2] = 0;
+        Uniquefilter[3] = 0;
+        pdata.setBind(0, ep_j[0]->gid, ep_j[0]->direction, ep_j[0]->pos, 0,
+                      ep_j[0]->length, ep_j[0]->rank);
+        KMC<ExampleRod> kmc(pdata.posEndBind[0], 4, pdata.getRcutSD());
 
-//        kmc.CalcTotProbsSD(ep_j, Uniquefilter, ep_j[0]->gid,
-//        pdata.lambda,
-//                           pdata.kappa, 1. / KBT, pdata.freeLength,
-//                           pdata.getBindingFactorSD(1, dt));
-//        CHECK(ABS(kmc.getTotProb() - 0.001096233299426183) < SMALL);
-//    }
-//    SECTION("Three rods nearby above, below, and on, all inside rcut
-//    .") {
-//        ep_j[1]->length = ep_j[2]->length = ep_j[3]->length = 2.0;
+        kmc.CalcTotProbsSD(ep_j, Uniquefilter, ep_j[0]->gid, pdata.lambda,
+                           pdata.kappa, 1. / KBT, pdata.freeLength,
+                           pdata.getBindingFactorSD(1, dt));
+        CHECK(ABS(kmc.getTotProb() - 0.001096233299426183) < SMALL);
+    }
+    SECTION("Three rods nearby above, below, and on, all inside rcut.") {
+        ep_j[1]->length = ep_j[2]->length = ep_j[3]->length = 2.0;
 
-//        ep_j[1]->pos[0] = 0;
-//        ep_j[1]->pos[1] = 1.0;
-//        ep_j[1]->pos[2] = 0;
+        ep_j[1]->pos[0] = 0;
+        ep_j[1]->pos[1] = 1.0;
+        ep_j[1]->pos[2] = 0;
 
-//        ep_j[2]->pos[0] = 0;
-//        ep_j[2]->pos[1] = -1.0;
-//        ep_j[2]->pos[2] = 0;
-//        pdata.setBind(0,                  // Index of head binding
-//                           ep_j[0]->gid,       // Index of rod
-//                           ep_j[0]->direction, // direction vector of
-//                           rod ep_j[0]->pos,       // position vector
-//                           of rod 0,                  // Head distance
-//                           from rod center ep_j[0]->length,
-//                           ep_j[0]->rank);
-//        KMC<ExampleRod> kmc(pdata.posEndBind[0], 4,
-//        pdata.getRcutSD());
+        ep_j[2]->pos[0] = 0;
+        ep_j[2]->pos[1] = -1.0;
+        ep_j[2]->pos[2] = 0;
+        pdata.setBind(0, ep_j[0]->gid, ep_j[0]->direction, ep_j[0]->pos, 0,
+                      ep_j[0]->length, ep_j[0]->rank);
+        KMC<ExampleRod> kmc(pdata.posEndBind[0], 4, pdata.getRcutSD());
 
-//        kmc.CalcTotProbsSD(ep_j, Uniquefilter, ep_j[0]->gid,
-//        pdata.lambda,
-//                           pdata.kappa, 1. / KBT, pdata.freeLength,
-//                           pdata.getBindingFactorSD(1, dt));
-//        CHECK(ABS(kmc.getTotProb() - 0.0003456279751132963) < SMALL);
-//    }
-//    SECTION("Three rods partially inside rcut with different
-//    orientations.") {
-//        pdata.setBind(0,                  // Index of head binding
-//                           ep_j[0]->gid,       // Index of rod
-//                           ep_j[0]->direction, // direction vector of
-//                           rod ep_j[0]->pos,       // position vector
-//                           of rod 0,                  // Head distance
-//                           from rod center ep_j[0]->length,
-//                           ep_j[0]->rank);
-//        ep_j[1]->pos[0] = 0.5 * ep_j[1]->length;
-//        ep_j[1]->pos[1] = 0.0;
-//        ep_j[1]->pos[2] = 0.0;
+        kmc.CalcTotProbsSD(ep_j, Uniquefilter, ep_j[0]->gid, pdata.lambda,
+                           pdata.kappa, 1. / KBT, pdata.freeLength,
+                           pdata.getBindingFactorSD(1, dt));
+        CHECK(ABS(kmc.getTotProb() - 0.0003456279751132963) < SMALL);
+    }
+    SECTION("Three rods partially inside rcut with different orientations.") {
+        pdata.setBind(0, ep_j[0]->gid, ep_j[0]->direction, ep_j[0]->pos, 0,
+                      ep_j[0]->length, ep_j[0]->rank);
+        ep_j[1]->pos[0] = 0.5 * ep_j[1]->length;
+        ep_j[1]->pos[1] = 0.0;
+        ep_j[1]->pos[2] = 0.0;
 
-//        ep_j[2]->pos[0] = -0.5 * ep_j[2]->length;
-//        ep_j[2]->pos[1] = -1.0;
-//        ep_j[2]->pos[2] = 0.0;
-//        // pos[0] = 0;
-//        ep_j[3]->direction[0] = 0.0;
-//        ep_j[3]->direction[1] = 1.0;
-//        ep_j[3]->direction[2] = 0.0;
-//        // pos[1] = 0.5 * ep_j[3]->length + 1.0;
-//        // ep_j[3]->setpos(pos);
-//        ep_j[3]->pos[0] = 0;
-//        ep_j[3]->pos[1] = 0.5 * ep_j[3]->length + 1.0;
-//        ep_j[3]->pos[2] = 0.0;
-//        KMC<ExampleRod> kmc(pdata.posEndBind[0], 4,
-//        pdata.getRcutSD());
+        ep_j[2]->pos[0] = -0.5 * ep_j[2]->length;
+        ep_j[2]->pos[1] = -1.0;
+        ep_j[2]->pos[2] = 0.0;
+        // pos[0] = 0;
+        ep_j[3]->direction[0] = 0.0;
+        ep_j[3]->direction[1] = 1.0;
+        ep_j[3]->direction[2] = 0.0;
+        // pos[1] = 0.5 * ep_j[3]->length + 1.0;
+        // ep_j[3]->setpos(pos);
+        ep_j[3]->pos[0] = 0;
+        ep_j[3]->pos[1] = 0.5 * ep_j[3]->length + 1.0;
+        ep_j[3]->pos[2] = 0.0;
+        KMC<ExampleRod> kmc(pdata.posEndBind[0], 4, pdata.getRcutSD());
 
-//        kmc.CalcTotProbsSD(ep_j, Uniquefilter, ep_j[0]->gid,
-//        pdata.lambda,
-//                           pdata.kappa, 1. / KBT, pdata.freeLength,
-//                           pdata.getBindingFactorSD(1, dt));
-//        CHECK(ABS(kmc.getTotProb() - 0.0007299123928392682) < SMALL);
-//    }
-//    for (int i = 0; i < 4; ++i) {
-//        delete ep_j[i];
-//    }
-//}
+        kmc.CalcTotProbsSD(ep_j, Uniquefilter, ep_j[0]->gid, pdata.lambda,
+                           pdata.kappa, 1. / KBT, pdata.freeLength,
+                           pdata.getBindingFactorSD(1, dt));
+        CHECK(ABS(kmc.getTotProb() - 0.0007299123928392682) < SMALL);
+    }
+    for (int i = 0; i < 4; ++i) {
+        delete ep_j[i];
+    }
+}
 
 /**********************************************************************
  *                        Test case scenarios                         *
@@ -783,7 +683,7 @@ TEST_CASE("Test CalcProbSD for KMC<ExampleRod> class", "[calc_prob_sd]") {
 
 //    ExampleXlink pdata;
 //    pdata.setMockXlink();
-//    ProteinType *pType = &pdata.property;
+//    //ProteinType *pType = &pdata.property;
 //    LookupTable LUT;
 //    LUT.Init((1. - pdata.lambda) * .5 * pdata.kappa / KBT,
 //    pdata.freeLength,
@@ -941,7 +841,7 @@ TEST_CASE("Test CalcProbSD for KMC<ExampleRod> class", "[calc_prob_sd]") {
 //    ep_j[3]->direction[0] = 1;
 //    ExampleXlink pdata;
 //    pdata.setMockXlink();
-//    ProteinType *pType = &pdata.property;
+//    //ProteinType *pType = &pdata.property;
 //    LookupTable LUT;
 //    LUT.Init((1. - pdata.lambda) * .5 * pdata.kappa / KBT,
 //    pdata.freeLength,
@@ -1157,7 +1057,7 @@ TEST_CASE("Test CalcProbSD for KMC<ExampleRod> class", "[calc_prob_sd]") {
 //    // Set protein data
 //    ExampleXlink pdata;
 //    pdata.setMockXlink();
-//    ProteinType *pType = &pdata.property;
+//    //ProteinType *pType = &pdata.property;
 //    LookupTable LUT;
 //    LUT.Init((1. - pdata.lambda) * .5 * pdata.kappa / KBT,
 //    pdata.freeLength,
@@ -1355,7 +1255,7 @@ TEST_CASE("Test CalcProbSD for KMC<ExampleRod> class", "[calc_prob_sd]") {
 ////    // Protein information
 ////    ExampleXlink pdata;
 ////    pdata.setMockXlink();
-////    ProteinType *pType = &pdata.property;
+////    //ProteinType *pType = &pdata.property;
 ////    std::vector<int> Uniquefilter{1, 1, 1};
 ////    LookupTable LUTable =
 ////        BuildLookupTable(pdata.lambda, pdata.kappa, 1./KBT,
