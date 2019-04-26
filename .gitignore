@@ -1,3 +1,5 @@
 *.o
 *.d
+*.X*
+.DS_Store
 MakefileInc.mk
