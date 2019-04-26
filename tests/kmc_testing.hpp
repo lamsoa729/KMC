@@ -658,635 +658,516 @@ TEST_CASE("Test binding probabilities of one head when near multiple rods and "
  *                        Test case scenarios                         *
  **********************************************************************/
 
-// TEST_CASE("3 crossing perpendicular rods with protein in center",
-//          "[three_perp_rods]") {
-//    // Arrange
-//    double dt = .0001;
-//    double KBT = 1.;
-//    ExampleRod *ep_j[3];
-//    for (int i = 0; i < 3; ++i) {
-//        ep_j[i] = new ExampleRod;
-//        *(ep_j[i]) = MockRod<ExampleRod>(i);
-//        ep_j[i]->length = 20;
-//    }
-//    ep_j[0]->direction[0] = 1;
-//    ep_j[0]->direction[1] = 0;
-//    ep_j[0]->direction[2] = 0;
+TEST_CASE("3 crossing perpendicular rods with protein in center",
+          "[three_perp_rods]") {
+    // Arrange
+    double dt = .0001;
+    double KBT = 1.;
+    ExampleRod *ep_j[3];
+    for (int i = 0; i < 3; ++i) {
+        ep_j[i] = new ExampleRod;
+        *(ep_j[i]) = MockRod<ExampleRod>(i);
+        ep_j[i]->length = 20;
+    }
+    ep_j[0]->direction[0] = 1;
+    ep_j[0]->direction[1] = 0;
+    ep_j[0]->direction[2] = 0;
 
-//    ep_j[1]->direction[0] = 0;
-//    ep_j[1]->direction[1] = 1;
-//    ep_j[1]->direction[2] = 0;
+    ep_j[1]->direction[0] = 0;
+    ep_j[1]->direction[1] = 1;
+    ep_j[1]->direction[2] = 0;
 
-//    ep_j[2]->direction[0] = 0;
-//    ep_j[2]->direction[1] = 0;
-//    ep_j[2]->direction[2] = 1;
+    ep_j[2]->direction[0] = 0;
+    ep_j[2]->direction[1] = 0;
+    ep_j[2]->direction[2] = 1;
 
-//    ExampleXlink pdata;
-//    pdata.setMockXlink();
-//    //ProteinType *pType = &pdata.property;
-//    LookupTable LUT;
-//    LUT.Init((1. - pdata.lambda) * .5 * pdata.kappa / KBT,
-//    pdata.freeLength,
-//             2. * ep_j[0]->radius);
-//    pdata.LUTablePtr = &LUT;
-//    std::vector<int> Uniquefilter{1, 1, 1};
-//    // Act
-//    SECTION("Unbound") {
-//        KMC<ExampleRod> kmc(pdata.getPosPtr(), 3, pdata.getRcutUS());
-//        kmc.CalcTotProbsUS(ep_j, Uniquefilter,
-//        pdata.getBindingFactorUS(0, dt)); for (int i = 0; i < 3; ++i)
-//        {
-//            // Check individual probabilities
-//            CHECK(ABS(kmc.getProbs(i) - 0.0001909859317102744) <
-//            SMALL);
-//            // Check minimum distance
-//            CHECK(ABS(kmc.getDistMin(i) - 0.0) < SMALL);
-//            // Check mu distances along rods
-//            CHECK(ABS(kmc.getMu(i) - 0.0) < SMALL);
-//        }
-//        // Check total probability
-//        REQUIRE(ABS(kmc.getTotProb() - 0.0005729577951308232) <
-//        SMALL);
-//        // Check binding to rod 0
-//        double roll = .00001;
-//        double bindpos;
-//        int rod_i = kmc.whichRodBindUS(ep_j, bindpos, roll);
-//        CHECK(rod_i == 0);
-//        CHECK(ABS(bindpos + 0.4476401224401701) < SMALL);
-//        // Check binding to rod 1
-//        roll = .0003;
-//        rod_i = kmc.whichRodBindUS(ep_j, bindpos, roll);
-//        CHECK(rod_i == 1);
-//        CHECK(ABS(bindpos - 0.07079632679489645) < SMALL);
-//        // Check out of range binding returns -1
-//        roll = .9;
-//        rod_i = kmc.whichRodBindUS(ep_j, bindpos, roll);
-//        CHECK(rod_i == -1);
-//    }
-//    SECTION("1 head bound to first rod") {
-//        int end_bound = 0;
-//        double end_loc = 0;
-//        // Bind to center of first rod
-//        pdata.setBind(end_bound, ep_j[0]->gid, ep_j[0]->direction,
-//                           ep_j[0]->pos, 0, ep_j[0]->length,
-//                           ep_j[0]->rank);
-//        SECTION("1->0 unbinding") {
-//            double rollVec[] = {.1, .125, .125};
-//            KMC<ExampleRod> kmc(pdata.posEndBind[end_bound], 3,
-//            pdata.getRcutUS());
-//            // Check individual probabilities
-//            kmc.CalcProbSU(pdata.getUnbindingFactorDS(end_bound, dt,
-//            KBT)); CHECK(ABS(kmc.getTotProb() - .0001) < SMALL);
-//            // Ignore rescaling since this is a test
-//            // rollVec[0] = (kmc.getTotProb() - rollVec[0]) /
-//            kmc.getTotProb();
-//            // Check unbound location
-//            double pos[3] = {};
-//            kmc.whereUnbindSU(pdata.getRcutUS(), rollVec, pos);
-//            double check_pos[] = {0.1085452196603419,
-//            0.1085452196603419,
-//                                  -0.1740595812604792};
-//            CHECK(ABS(pos[0] - check_pos[0]) < SMALL);
-//            CHECK(ABS(pos[1] - check_pos[1]) < SMALL);
-//            CHECK(ABS(pos[2] - check_pos[2]) < SMALL);
-//            // Test 0 edge cases
-//            rollVec[1] = rollVec[2] = 0;
-//            kmc.whereUnbindSU(pdata.getRcutUS(), rollVec, pos);
-//            double check_pos2[] = {0., 0., -0.232079441680639};
-//            CHECK(ABS(pos[0] - check_pos2[0]) < SMALL);
-//            CHECK(ABS(pos[1] - check_pos2[1]) < SMALL);
-//            CHECK(ABS(pos[2] - check_pos2[2]) < SMALL);
-//        }
-//        SECTION("1->2 binding") {
-//            KMC<ExampleRod> kmc(pdata.posEndBind[end_bound], 3,
-//            pdata.getRcutSD()); kmc.CalcTotProbsSD(ep_j, Uniquefilter,
-//            pdata.idBind[end_bound],
-//                               pdata.lambda, pdata.kappa, 1. / KBT,
-//                               pdata.freeLength,
-//                               pdata.getBindingFactorSD(end_bound,
-//                               dt));
-//            // Check individual probabilities
-//            CHECK(ABS(kmc.getProbs(0)) == 0.0); // No binding, already
-//            attached CHECK(ABS(kmc.getProbs(1) -
-//            0.0004899204301239162) < SMALL); CHECK(ABS(kmc.getProbs(2)
-//            - 0.0004899204301239162) < SMALL);
-//            // Check total probability
-//            CHECK(ABS(kmc.getTotProb() - 0.0009798408602478324) <
-//            SMALL);
-//            // Check minimum distances
-//            CHECK(ABS(kmc.getDistMin(1) - 0.0) < SMALL);
-//            CHECK(ABS(kmc.getDistMin(2) - 0.0) < SMALL);
-//            // Check mu distances along rods
-//            CHECK(ABS(kmc.getMu(1) - 0.0) < SMALL);
-//            CHECK(ABS(kmc.getMu(2) - 0.0) < SMALL);
-//            // Choose a (random) vector
-//            double rollVec[] = {.0001, .125, .125};
-//            // TODO: Need to implement lookup table or taylor
-//            expansion for this
-//            // <31-12-18, ARL> Check placement of head Check ID of rod
-//        }
-//    }
-//    SECTION("2 heads bound to first and second rod") {
-//        // Bind to center of first rod
-//        pdata.setBind(0, ep_j[0]->gid, ep_j[0]->direction,
-//        ep_j[0]->pos, 0,
-//                           ep_j[0]->length, ep_j[0]->rank);
-//        double rollVec[] = {.0001, .125, .125};
-//        pdata.setBind(1, ep_j[1]->gid, ep_j[1]->direction,
-//        ep_j[1]->pos, 0,
-//                           ep_j[1]->length, ep_j[1]->rank);
-//        // Check individual probabilities
-//        KMC<ExampleRod> kmc(pdata.posEndBind[1], 3,
-//        pdata.getRcutSD());
-//        kmc.CalcProbDS(pdata.getUnbindingFactorDS(1, dt, KBT));
-//        CHECK(ABS(kmc.getTotProb() - .0001) < SMALL);
-//        double pos[3] = {};
-//        kmc.whereUnbindDS(pdata.posEndBind[0], pos);
-//        double err[3] = {};
-//        for (int i = 0; i < 3; ++i) {
-//            err[i] = pos[i] - pdata.posEndBind[0][i];
-//        }
-//        CHECK(ABS(err[0]) < SMALL);
-//        CHECK(ABS(err[1]) < SMALL);
-//        CHECK(ABS(err[2]) < SMALL);
-//    }
-//    for (int i = 0; i < 3; ++i) {
-//        delete ep_j[i];
-//    }
-//}
+    ExampleXlink pdata;
+    pdata.setMockXlink();
+    // ProteinType *pType = &pdata.property;
+    LookupTable LUT;
+    LUT.Init((1. - pdata.lambda) * .5 * pdata.kappa / KBT, pdata.freeLength,
+             2. * ep_j[0]->radius);
+    pdata.LUTablePtr = &LUT;
+    std::vector<int> Uniquefilter{1, 1, 1};
+    // Act
+    SECTION("Unbound") {
+        KMC<ExampleRod> kmc(pdata.getPosPtr(), 3, pdata.getRcutUS());
+        kmc.CalcTotProbsUS(ep_j, Uniquefilter, pdata.getBindingFactorUS(0, dt));
+        for (int i = 0; i < 3; ++i) {
+            // Check individual probabilities
+            CHECK(ABS(kmc.getProbs(i) - 0.0001909859317102744) < SMALL);
+            // Check minimum distance
+            CHECK(ABS(kmc.getDistMin(i) - 0.0) < SMALL);
+            // Check mu distances along rods
+            CHECK(ABS(kmc.getMu(i) - 0.0) < SMALL);
+        }
+        // Check total probability
+        REQUIRE(ABS(kmc.getTotProb() - 0.0005729577951308232) < SMALL);
+        // Check binding to rod 0
+        double roll = .00001;
+        double bindpos;
+        int rod_i = kmc.whichRodBindUS(ep_j, bindpos, roll);
+        CHECK(rod_i == 0);
+        CHECK(ABS(bindpos + 0.4476401224401701) < SMALL);
+        // Check binding to rod 1
+        roll = .0003;
+        rod_i = kmc.whichRodBindUS(ep_j, bindpos, roll);
+        CHECK(rod_i == 1);
+        CHECK(ABS(bindpos - 0.07079632679489645) < SMALL);
+        // Check out of range binding returns -1
+        roll = .9;
+        rod_i = kmc.whichRodBindUS(ep_j, bindpos, roll);
+        CHECK(rod_i == -1);
+    }
+    SECTION("1 head bound to first rod") {
+        int end_bound = 0;
+        double end_loc = 0;
+        // Bind to center of first rod
+        pdata.setBind(end_bound, ep_j[0]->gid, ep_j[0]->direction, ep_j[0]->pos,
+                      0, ep_j[0]->length, ep_j[0]->rank);
+        SECTION("1->0 unbinding") {
+            double rollVec[] = {.1, .125, .125};
+            KMC<ExampleRod> kmc(pdata.posEndBind[end_bound], 3,
+                                pdata.getRcutUS());
+            // Check individual probabilities
+            kmc.CalcProbSU(pdata.getUnbindingFactorDS(end_bound, dt, KBT));
+            CHECK(ABS(kmc.getTotProb() - .0001) < SMALL);
+            // Ignore rescaling since this is a test
+            // rollVec[0] = (kmc.getTotProb() - rollVec[0]) /
+            kmc.getTotProb();
+            // Check unbound location
+            double pos[3] = {};
+            kmc.whereUnbindSU(pdata.getRcutUS(), rollVec, pos);
+            double check_pos[] = {0.1085452196603419, 0.1085452196603419,
+                                  -0.1740595812604792};
+            CHECK(ABS(pos[0] - check_pos[0]) < SMALL);
+            CHECK(ABS(pos[1] - check_pos[1]) < SMALL);
+            CHECK(ABS(pos[2] - check_pos[2]) < SMALL);
+            // Test 0 edge cases
+            rollVec[1] = rollVec[2] = 0;
+            kmc.whereUnbindSU(pdata.getRcutUS(), rollVec, pos);
+            double check_pos2[] = {0., 0., -0.232079441680639};
+            CHECK(ABS(pos[0] - check_pos2[0]) < SMALL);
+            CHECK(ABS(pos[1] - check_pos2[1]) < SMALL);
+            CHECK(ABS(pos[2] - check_pos2[2]) < SMALL);
+        }
+        SECTION("1->2 binding") {
+            KMC<ExampleRod> kmc(pdata.posEndBind[end_bound], 3,
+                                pdata.getRcutSD());
+            kmc.CalcTotProbsSD(ep_j, Uniquefilter, pdata.idBind[end_bound],
+                               pdata.lambda, pdata.kappa, 1. / KBT,
+                               pdata.freeLength,
+                               pdata.getBindingFactorSD(end_bound, dt));
+            // Check individual probabilities
+            CHECK(ABS(kmc.getProbs(0)) == 0.0); // No binding, already attached
+            CHECK(ABS(kmc.getProbs(1) - 0.0004899204301239162) < SMALL);
+            CHECK(ABS(kmc.getProbs(2) - 0.0004899204301239162) < SMALL);
+            // Check total probability
+            CHECK(ABS(kmc.getTotProb() - 0.0009798408602478324) < SMALL);
+            // Check minimum distances
+            CHECK(ABS(kmc.getDistMin(1) - 0.0) < SMALL);
+            CHECK(ABS(kmc.getDistMin(2) - 0.0) < SMALL);
+            // Check mu distances along rods
+            CHECK(ABS(kmc.getMu(1) - 0.0) < SMALL);
+            CHECK(ABS(kmc.getMu(2) - 0.0) < SMALL);
+            // Choose a (random) vector
+            double rollVec[] = {.0001, .125, .125};
+            // TODO: Implement LUT or taylor expansion <31-12-18, ARL>
+            // Check placement of head Check ID of rod
+        }
+    }
+    SECTION("2 heads bound to first and second rod") {
+        // Bind to center of first rod
+        pdata.setBind(0, ep_j[0]->gid, ep_j[0]->direction, ep_j[0]->pos, 0,
+                      ep_j[0]->length, ep_j[0]->rank);
+        double rollVec[] = {.0001, .125, .125};
+        pdata.setBind(1, ep_j[1]->gid, ep_j[1]->direction, ep_j[1]->pos, 0,
+                      ep_j[1]->length, ep_j[1]->rank);
+        // Check individual probabilities
+        KMC<ExampleRod> kmc(pdata.posEndBind[1], 3, pdata.getRcutSD());
+        kmc.CalcProbDS(pdata.getUnbindingFactorDS(1, dt, KBT));
+        CHECK(ABS(kmc.getTotProb() - .0001) < SMALL);
+        double pos[3] = {};
+        kmc.whereUnbindDS(pdata.posEndBind[0], pos);
+        double err[3] = {};
+        for (int i = 0; i < 3; ++i) {
+            err[i] = pos[i] - pdata.posEndBind[0][i];
+        }
+        CHECK(ABS(err[0]) < SMALL);
+        CHECK(ABS(err[1]) < SMALL);
+        CHECK(ABS(err[2]) < SMALL);
+    }
+    for (int i = 0; i < 3; ++i) {
+        delete ep_j[i];
+    }
+}
 
-// TEST_CASE("4 parallel rods separated by a rod diameter on the sides
-// with
-// "
-//          "protein in center",
-//          "[four_parallel_rods]") {
-//    // Arrange
-//    double dt = .0001;
-//    double KBT = 1.;
-//    ExampleRod *ep_j[4];
-//    for (int i = 0; i < 4; ++i) {
-//        ep_j[i] = new ExampleRod;
-//        *ep_j[i] = MockRod<ExampleRod>(i);
-//        ep_j[i]->length = 20;
-//    }
-//    // Set position of rods
-//    ep_j[0]->pos[1] = .25;
-//    ep_j[1]->pos[1] = -.25;
-//    ep_j[2]->pos[2] = .25;
-//    ep_j[3]->pos[2] = -.25;
-//    // Set directions of rods
-//    ep_j[0]->direction[0] = 1;
-//    ep_j[1]->direction[0] = -1; // One anti-parallel
-//    ep_j[2]->direction[0] = 1;
-//    ep_j[3]->direction[0] = 1;
-//    ExampleXlink pdata;
-//    pdata.setMockXlink();
-//    //ProteinType *pType = &pdata.property;
-//    LookupTable LUT;
-//    LUT.Init((1. - pdata.lambda) * .5 * pdata.kappa / KBT,
-//    pdata.freeLength,
-//             2. * ep_j[0]->radius);
-//    pdata.LUTablePtr = &LUT;
-//    std::vector<int> Uniquefilter{1, 1, 1, 1};
-//    // Act
-//    SECTION("Unbound") {
-//        KMC<ExampleRod> kmc(pdata.getPosPtr(), 4, pdata.getRcutUS());
-//        kmc.CalcTotProbsUS(ep_j, Uniquefilter,
-//        pdata.getBindingFactorUS(0, dt)); for (int i = 0; i < 4; ++i)
-//        {
-//            // Check individual probabilities
-//            CHECK(ABS(kmc.getProbs(i) - 0.0001653986686265376) <
-//            SMALL);
-//            // Check minimum distance
-//            CHECK(ABS(kmc.getDistMin(i) - 0.25) < SMALL);
-//            // Check mu distances along rods
-//            CHECK(ABS(kmc.getMu(i) - 0.0) < SMALL);
-//        }
-//        // Check total probability
-//        CHECK(ABS(kmc.getTotProb() - (4 * 0.0001653986686265376)) <
-//        SMALL);
-//        // Check binding to rod 0
-//        double roll = .00005;
-//        double bindpos;
-//        int rod_i = kmc.whichRodBindUS(ep_j, bindpos, roll);
-//        CHECK(rod_i == 0);
-//        CHECK(ABS(bindpos + 0.1712133140930698) < SMALL);
-//        // Check binding to rod 1
-//        roll = .0002;
-//        rod_i = kmc.whichRodBindUS(ep_j, bindpos, roll);
-//        CHECK(rod_i == 1);
-//        CHECK(ABS(bindpos + 0.2518405544800601) < SMALL);
-//        // Check binding to rod 2
-//        roll = .00035;
-//        rod_i = kmc.whichRodBindUS(ep_j, bindpos, roll);
-//        CHECK(rod_i == 2);
-//        // Check out of range binding returns -1
-//        CHECK(ABS(bindpos + 0.3324677948670505) < SMALL);
-//        roll = .01;
-//        rod_i = kmc.whichRodBindUS(ep_j, bindpos, roll);
-//        CHECK(rod_i == -1);
-//    }
-//    SECTION("1 head bound to first rod") {
-//        int end_bound = 0;
-//        double end_loc = 0;
-//        // Bind to center of first rod
-//        pdata.setBind(end_bound, ep_j[0]->gid, ep_j[0]->direction,
-//                           ep_j[0]->pos, 0, ep_j[0]->length,
-//                           ep_j[0]->rank);
-//        SECTION("1->0 unbinding") {
-//            double rollVec[] = {.1, .125, .125};
-//            KMC<ExampleRod> kmc(pdata.posEndBind[end_bound], 4,
-//            pdata.getRcutUS());
-//            // Check individual probabilities
-//            kmc.CalcProbSU(pdata.getUnbindingFactorDS(end_bound, dt,
-//            KBT)); CHECK(ABS(kmc.getTotProb() - .0001) < SMALL);
-//            // Check unbinding
-//            // rollVec[0] = (kmc.getTotProb() - rollVec[0]) /
-//            kmc.getTotProb();
-//            // Check unbound location
-//            double pos[3] = {};
-//            double *endPos = pdata.posEndBind[end_bound];
-//            kmc.whereUnbindSU(pdata.getRcutUS(), rollVec, pos);
-//            double check_pos[] = {0.1085452196603419,
-//            0.3585452196603419,
-//                                  -0.1740595812604792};
-//            double err[3] = {};
-//            for (int i = 0; i < 3; ++i) {
-//                err[i] = pos[i] - check_pos[i];
-//            }
-//            CHECK(ABS(err[0]) < SMALL);
-//            CHECK(ABS(err[1]) < SMALL);
-//            CHECK(ABS(err[2]) < SMALL);
-//            // Test 0 edge cases
-//            rollVec[1] = rollVec[2] = 0;
-//            kmc.whereUnbindSU(pdata.getRcutUS(), rollVec, pos);
-//            double check_pos1[] = {0., 0.25, -0.232079441680639};
-//            for (int i = 0; i < 3; ++i) {
-//                err[i] = pos[i] - check_pos1[i];
-//            }
-//            CHECK(ABS(err[0]) < SMALL);
-//            CHECK(ABS(err[1]) < SMALL);
-//            CHECK(ABS(err[2]) < SMALL);
-//        }
-//        SECTION("1->2 binding") {
-//            KMC<ExampleRod> kmc(pdata.posEndBind[end_bound], 4,
-//            pdata.getRcutSD()); kmc.CalcTotProbsSD(ep_j, Uniquefilter,
-//            pdata.idBind[end_bound],
-//                               pdata.lambda, pdata.kappa, 1. / KBT,
-//                               pdata.freeLength,
-//                               pdata.getBindingFactorSD(end_bound,
-//                               dt));
-//            // Check minimum distances
-//            CHECK(ABS(kmc.getDistMin(1) - .5) < SMALL);
-//            CHECK(ABS(kmc.getDistMin(2) - 0.3535533905932738) <
-//            SMALL); CHECK(ABS(kmc.getDistMin(3) - 0.3535533905932738)
-//            < SMALL);
-//            // Check mu distances along rods
-//            CHECK(ABS(kmc.getMu(1) - 0.0) < SMALL);
-//            CHECK(ABS(kmc.getMu(2) - 0.0) < SMALL);
-//            CHECK(ABS(kmc.getMu(3) - 0.0) < SMALL);
-//            // Check individual probabilities
-//            CHECK(ABS(kmc.getProbs(0)) == 0.0);
-//            CHECK(ABS(kmc.getProbs(1) - 0.000511748258908916) <
-//            SMALL); CHECK(ABS(kmc.getProbs(2) - 0.0005021912513360592)
-//            < SMALL); CHECK(ABS(kmc.getProbs(3) -
-//            0.0005021912513360592) < SMALL);
-//            // Check total probability
-//            CHECK(ABS(kmc.getTotProb() - 0.001516130761581034) <
-//            SMALL);
-//            // Choose a (random) vector
-//            double rollVec[] = {.0001, .125, .125};
-//            // TODO: Need to implement lookup table or taylor
-//            expansion for this
-//            // <31-12-18, ARL>
-//            // Check placement of head
-//            // Check ID of rod
-//        }
-//    }
-//    SECTION("2 heads bound to first and second rod") {
-//        // Bind to center of first rod
-//        pdata.setBind(0, ep_j[0]->gid, ep_j[0]->direction,
-//        ep_j[0]->pos, 0,
-//                           ep_j[0]->length, ep_j[0]->rank);
-//        double rollVec[] = {.0001, .125, .125};
-//        pdata.setBind(1, ep_j[1]->gid, ep_j[1]->direction,
-//        ep_j[1]->pos, 0,
-//                           ep_j[1]->length, ep_j[1]->rank);
-//        // Check individual probabilities
-//        KMC<ExampleRod> kmc(pdata.posEndBind[1], 4,
-//        pdata.getRcutSD());
-//        kmc.CalcProbDS(pdata.getUnbindingFactorDS(1, dt, KBT));
-//        CHECK(ABS(kmc.getTotProb() - .0001) < SMALL);
-//        double pos[3] = {};
-//        kmc.whereUnbindDS(pdata.posEndBind[0], pos);
-//        double err[3] = {};
-//        for (int i = 0; i < 3; ++i) {
-//            err[i] = pos[i] - pdata.posEndBind[0][i];
-//        }
-//        CHECK(ABS(err[0]) < SMALL);
-//        CHECK(ABS(err[1]) < SMALL);
-//        CHECK(ABS(err[2]) < SMALL);
-//    }
-//    for (int i = 0; i < 4; ++i) {
-//        delete ep_j[i];
-//    }
-//}
+TEST_CASE("4 parallel rods separated by a rod diameter on the sides with "
+          "protein in center",
+          "[four_parallel_rods]") {
+    // Arrange
+    double dt = .0001;
+    double KBT = 1.;
+    ExampleRod *ep_j[4];
+    for (int i = 0; i < 4; ++i) {
+        ep_j[i] = new ExampleRod;
+        *ep_j[i] = MockRod<ExampleRod>(i);
+        ep_j[i]->length = 20;
+    }
+    // Set position of rods
+    ep_j[0]->pos[1] = .25;
+    ep_j[1]->pos[1] = -.25;
+    ep_j[2]->pos[2] = .25;
+    ep_j[3]->pos[2] = -.25;
+    // Set directions of rods
+    ep_j[0]->direction[0] = 1;
+    ep_j[1]->direction[0] = -1; // One anti-parallel
+    ep_j[2]->direction[0] = 1;
+    ep_j[3]->direction[0] = 1;
+    ExampleXlink pdata;
+    pdata.setMockXlink();
+    // ProteinType *pType = &pdata.property;
+    LookupTable LUT;
+    LUT.Init((1. - pdata.lambda) * .5 * pdata.kappa / KBT, pdata.freeLength,
+             2. * ep_j[0]->radius);
+    pdata.LUTablePtr = &LUT;
+    std::vector<int> Uniquefilter{1, 1, 1, 1};
+    // Act
+    SECTION("Unbound") {
+        KMC<ExampleRod> kmc(pdata.getPosPtr(), 4, pdata.getRcutUS());
+        kmc.CalcTotProbsUS(ep_j, Uniquefilter, pdata.getBindingFactorUS(0, dt));
+        for (int i = 0; i < 4; ++i) {
+            // Check individual probabilities
+            CHECK(ABS(kmc.getProbs(i) - 0.0001653986686265376) < SMALL);
+            // Check minimum distance
+            CHECK(ABS(kmc.getDistMin(i) - 0.25) < SMALL);
+            // Check mu distances along rods
+            CHECK(ABS(kmc.getMu(i) - 0.0) < SMALL);
+        }
+        // Check total probability
+        CHECK(ABS(kmc.getTotProb() - (4 * 0.0001653986686265376)) < SMALL);
+        // Check binding to rod 0
+        double roll = .00005;
+        double bindpos;
+        int rod_i = kmc.whichRodBindUS(ep_j, bindpos, roll);
+        CHECK(rod_i == 0);
+        CHECK(ABS(bindpos + 0.1712133140930698) < SMALL);
+        // Check binding to rod 1
+        roll = .0002;
+        rod_i = kmc.whichRodBindUS(ep_j, bindpos, roll);
+        CHECK(rod_i == 1);
+        CHECK(ABS(bindpos + 0.2518405544800601) < SMALL);
+        // Check binding to rod 2
+        roll = .00035;
+        rod_i = kmc.whichRodBindUS(ep_j, bindpos, roll);
+        CHECK(rod_i == 2);
+        // Check out of range binding returns -1
+        CHECK(ABS(bindpos + 0.3324677948670505) < SMALL);
+        roll = .01;
+        rod_i = kmc.whichRodBindUS(ep_j, bindpos, roll);
+        CHECK(rod_i == -1);
+    }
+    SECTION("1 head bound to first rod") {
+        int end_bound = 0;
+        double end_loc = 0;
+        // Bind to center of first rod
+        pdata.setBind(end_bound, ep_j[0]->gid, ep_j[0]->direction, ep_j[0]->pos,
+                      0, ep_j[0]->length, ep_j[0]->rank);
+        SECTION("1->0 unbinding") {
+            double rollVec[] = {.1, .125, .125};
+            KMC<ExampleRod> kmc(pdata.posEndBind[end_bound], 4,
+                                pdata.getRcutUS());
+            // Check individual probabilities
+            kmc.CalcProbSU(pdata.getUnbindingFactorDS(end_bound, dt, KBT));
+            CHECK(ABS(kmc.getTotProb() - .0001) < SMALL);
+            // Check unbinding
+            // rollVec[0] = (kmc.getTotProb() - rollVec[0]) /
+            kmc.getTotProb();
+            // Check unbound location
+            double pos[3] = {};
+            double *endPos = pdata.posEndBind[end_bound];
+            kmc.whereUnbindSU(pdata.getRcutUS(), rollVec, pos);
+            double check_pos[] = {0.1085452196603419, 0.3585452196603419,
+                                  -0.1740595812604792};
+            double err[3] = {};
+            for (int i = 0; i < 3; ++i) {
+                err[i] = pos[i] - check_pos[i];
+            }
+            CHECK(ABS(err[0]) < SMALL);
+            CHECK(ABS(err[1]) < SMALL);
+            CHECK(ABS(err[2]) < SMALL);
+            // Test 0 edge cases
+            rollVec[1] = rollVec[2] = 0;
+            kmc.whereUnbindSU(pdata.getRcutUS(), rollVec, pos);
+            double check_pos1[] = {0., 0.25, -0.232079441680639};
+            for (int i = 0; i < 3; ++i) {
+                err[i] = pos[i] - check_pos1[i];
+            }
+            CHECK(ABS(err[0]) < SMALL);
+            CHECK(ABS(err[1]) < SMALL);
+            CHECK(ABS(err[2]) < SMALL);
+        }
+        SECTION("1->2 binding") {
+            KMC<ExampleRod> kmc(pdata.posEndBind[end_bound], 4,
+                                pdata.getRcutSD());
+            kmc.CalcTotProbsSD(ep_j, Uniquefilter, pdata.idBind[end_bound],
+                               pdata.lambda, pdata.kappa, 1. / KBT,
+                               pdata.freeLength,
+                               pdata.getBindingFactorSD(end_bound, dt));
+            // Check minimum distances
+            CHECK(ABS(kmc.getDistMin(1) - .5) < SMALL);
+            CHECK(ABS(kmc.getDistMin(2) - 0.3535533905932738) < SMALL);
+            CHECK(ABS(kmc.getDistMin(3) - 0.3535533905932738) < SMALL);
+            // Check mu distances along rods
+            CHECK(ABS(kmc.getMu(1) - 0.0) < SMALL);
+            CHECK(ABS(kmc.getMu(2) - 0.0) < SMALL);
+            CHECK(ABS(kmc.getMu(3) - 0.0) < SMALL);
+            // Check individual probabilities
+            CHECK(ABS(kmc.getProbs(0)) == 0.0);
+            CHECK(ABS(kmc.getProbs(1) - 0.000511748258908916) < SMALL);
+            CHECK(ABS(kmc.getProbs(2) - 0.0005021912513360592) < SMALL);
+            CHECK(ABS(kmc.getProbs(3) - 0.0005021912513360592) < SMALL);
+            // Check total probability
+            CHECK(ABS(kmc.getTotProb() - 0.001516130761581034) < SMALL);
+            // Choose a (random) vector
+            double rollVec[] = {.0001, .125, .125};
+        }
+    }
+    SECTION("2 heads bound to first and second rod") {
+        // Bind to center of first rod
+        pdata.setBind(0, ep_j[0]->gid, ep_j[0]->direction, ep_j[0]->pos, 0,
+                      ep_j[0]->length, ep_j[0]->rank);
+        double rollVec[] = {.0001, .125, .125};
+        pdata.setBind(1, ep_j[1]->gid, ep_j[1]->direction, ep_j[1]->pos, 0,
+                      ep_j[1]->length, ep_j[1]->rank);
+        // Check individual probabilities
+        KMC<ExampleRod> kmc(pdata.posEndBind[1], 4, pdata.getRcutSD());
+        kmc.CalcProbDS(pdata.getUnbindingFactorDS(1, dt, KBT));
+        CHECK(ABS(kmc.getTotProb() - .0001) < SMALL);
+        double pos[3] = {};
+        kmc.whereUnbindDS(pdata.posEndBind[0], pos);
+        double err[3] = {};
+        for (int i = 0; i < 3; ++i) {
+            err[i] = pos[i] - pdata.posEndBind[0][i];
+        }
+        CHECK(ABS(err[0]) < SMALL);
+        CHECK(ABS(err[1]) < SMALL);
+        CHECK(ABS(err[2]) < SMALL);
+    }
+    for (int i = 0; i < 4; ++i) {
+        delete ep_j[i];
+    }
+}
 
-// TEST_CASE("6 perpendicular rods surrounding a sphere of a rod
-// diameter with "
-//          "protein in center",
-//          "[six_pointing_perp_rods]") {
-//    // Arrange
-//    double dt = .0001;
-//    double KBT = 1.;
-//    ExampleRod *ep_j[6];
-//    for (int i = 0; i < 6; ++i) {
-//        ep_j[i] = new ExampleRod;
-//        *ep_j[i] = MockRod<ExampleRod>(i);
-//        ep_j[i]->length = 20;
-//    }
-//    // Set position of rods
-//    ep_j[0]->pos[0] = 10.25;
-//    ep_j[0]->pos[1] = 0.0;
-//    ep_j[0]->pos[2] = 0.0;
+TEST_CASE("6 perpendicular rods surrounding a sphere of a rod diameter with "
+          "protein in center",
+          "[six_pointing_perp_rods]") {
+    // Arrange
+    double dt = .0001;
+    double KBT = 1.;
+    ExampleRod *ep_j[6];
+    for (int i = 0; i < 6; ++i) {
+        ep_j[i] = new ExampleRod;
+        *ep_j[i] = MockRod<ExampleRod>(i);
+        ep_j[i]->length = 20;
+    }
+    // Set position of rods
+    ep_j[0]->pos[0] = 10.25;
+    ep_j[0]->pos[1] = 0.0;
+    ep_j[0]->pos[2] = 0.0;
 
-//    ep_j[1]->pos[0] = -10.25;
-//    ep_j[1]->pos[1] = 0.0;
-//    ep_j[1]->pos[2] = 0.0;
+    ep_j[1]->pos[0] = -10.25;
+    ep_j[1]->pos[1] = 0.0;
+    ep_j[1]->pos[2] = 0.0;
 
-//    ep_j[2]->pos[0] = 0.0;
-//    ep_j[2]->pos[1] = 10.25;
-//    ep_j[2]->pos[2] = 0.0;
+    ep_j[2]->pos[0] = 0.0;
+    ep_j[2]->pos[1] = 10.25;
+    ep_j[2]->pos[2] = 0.0;
 
-//    ep_j[3]->pos[0] = 0.0;
-//    ep_j[3]->pos[1] = -10.25;
-//    ep_j[3]->pos[2] = 0.0;
+    ep_j[3]->pos[0] = 0.0;
+    ep_j[3]->pos[1] = -10.25;
+    ep_j[3]->pos[2] = 0.0;
 
-//    ep_j[4]->pos[0] = 0.0;
-//    ep_j[4]->pos[1] = 0.0;
-//    ep_j[4]->pos[2] = 10.25;
+    ep_j[4]->pos[0] = 0.0;
+    ep_j[4]->pos[1] = 0.0;
+    ep_j[4]->pos[2] = 10.25;
 
-//    ep_j[5]->pos[0] = 0.0;
-//    ep_j[5]->pos[1] = 0.0;
-//    ep_j[5]->pos[2] = -10.25;
-//    // Set directions of rods
-//    ep_j[0]->direction[0] = 1.0;
-//    ep_j[0]->direction[1] = 0.0;
-//    ep_j[0]->direction[2] = 0.0;
+    ep_j[5]->pos[0] = 0.0;
+    ep_j[5]->pos[1] = 0.0;
+    ep_j[5]->pos[2] = -10.25;
+    // Set directions of rods
+    ep_j[0]->direction[0] = 1.0;
+    ep_j[0]->direction[1] = 0.0;
+    ep_j[0]->direction[2] = 0.0;
 
-//    ep_j[1]->direction[0] = -1.0;
-//    ep_j[1]->direction[1] = 0.0;
-//    ep_j[1]->direction[2] = 0.0;
+    ep_j[1]->direction[0] = -1.0;
+    ep_j[1]->direction[1] = 0.0;
+    ep_j[1]->direction[2] = 0.0;
 
-//    ep_j[2]->direction[0] = 0.0;
-//    ep_j[2]->direction[1] = 1.0;
-//    ep_j[2]->direction[2] = 0.0;
+    ep_j[2]->direction[0] = 0.0;
+    ep_j[2]->direction[1] = 1.0;
+    ep_j[2]->direction[2] = 0.0;
 
-//    ep_j[3]->direction[0] = 0.0;
-//    ep_j[3]->direction[1] = -1.0;
-//    ep_j[3]->direction[2] = 0.0;
+    ep_j[3]->direction[0] = 0.0;
+    ep_j[3]->direction[1] = -1.0;
+    ep_j[3]->direction[2] = 0.0;
 
-//    ep_j[4]->direction[0] = 0.0;
-//    ep_j[4]->direction[1] = 0.0;
-//    ep_j[4]->direction[2] = 1.0;
+    ep_j[4]->direction[0] = 0.0;
+    ep_j[4]->direction[1] = 0.0;
+    ep_j[4]->direction[2] = 1.0;
 
-//    ep_j[5]->direction[0] = 0.0;
-//    ep_j[5]->direction[1] = 0.0;
-//    ep_j[5]->direction[2] = 1.0;
-//    std::vector<int> Uniquefilter{1, 1, 1, 1, 1, 1};
-//    // Set protein data
-//    ExampleXlink pdata;
-//    pdata.setMockXlink();
-//    //ProteinType *pType = &pdata.property;
-//    LookupTable LUT;
-//    LUT.Init((1. - pdata.lambda) * .5 * pdata.kappa / KBT,
-//    pdata.freeLength,
-//             2. * ep_j[0]->radius);
-//    pdata.LUTablePtr = &LUT;
-//    SECTION("Unbound") {
-//        KMC<ExampleRod> kmc(pdata.getPosPtr(), 6, pdata.getRcutUS());
-//        kmc.CalcTotProbsUS(ep_j, Uniquefilter,
-//        pdata.getBindingFactorUS(0, dt)); for (int i = 0; i < 6; ++i)
-//        {
-//            // Check minimum distance
-//            CHECK(ABS(kmc.getDistMin(i) - 0.25) < SMALL);
-//            CHECK(ABS(kmc.getDistPerp(i) - 0.0) < SMALL);
-//            // Check mu distances along rods
-//            if (i == 5) {
-//                CHECK(ABS(kmc.getMu(i) - 10.25) < SMALL);
-//            } else {
-//                CHECK(ABS(kmc.getMu(i) + 10.25) < SMALL);
-//            }
-//            // Check individual probabilities
-//            CHECK(ABS(kmc.getProbs(i) - 0.0000477464829275686) <
-//            SMALL);
-//        }
-//        // Check total probability
-//        CHECK(ABS(kmc.getTotProb() - (6 * 0.0000477464829275686)) <
-//        SMALL);
-//        // Check binding to rod 0
-//        double roll = .00001;
-//        double bindpos;
-//        int rod_i = kmc.whichRodBindUS(ep_j, bindpos, roll);
-//        CHECK(rod_i == 0);
-//        CHECK(ABS((bindpos) + 9.94764012244017) < SMALL);
-//        // Check binding to rod 1
-//        roll = .00005;
-//        rod_i = kmc.whichRodBindUS(ep_j, bindpos, roll);
-//        CHECK(rod_i == 1);
-//        CHECK(ABS(bindpos + 9.98820061220085) < SMALL);
-//        // Check binding to rod 5
-//        roll = .00028;
-//        rod_i = kmc.whichRodBindUS(ep_j, bindpos, roll);
-//        CHECK(rod_i == 5);
-//        CHECK(ABS(bindpos - 9.966076571675236) < SMALL);
-//        // Check out of range binding returns -1
-//        roll = .01;
-//        rod_i = kmc.whichRodBindUS(ep_j, bindpos, roll);
-//        CHECK(rod_i == -1);
-//    }
-//    SECTION("1 head bound to first rod") {
-//        int end_bound = 0;
-//        // Bind to minus end of the first rod
-//        pdata.setBind(end_bound, ep_j[0]->gid, ep_j[0]->direction,
-//                           ep_j[0]->pos, ep_j[0]->length * -.5,
-//                           ep_j[0]->length, ep_j[0]->rank);
-//        SECTION("1->0 unbinding") {
-//            double rollVec[] = {.1, .125, .125};
-//            KMC<ExampleRod> kmc(pdata.posEndBind[end_bound], 6,
-//            pdata.getRcutUS());
-//            // Check individual probabilities
-//            kmc.CalcProbSU(pdata.getUnbindingFactorDS(end_bound, dt,
-//            KBT)); CHECK(ABS(kmc.getTotProb() - .0001) < SMALL);
-//            // Check unbinding
-//            // rollVec[0] = (kmc.getTotProb() - rollVec[0]) /
-//            kmc.getTotProb();
-//            // Check unbound location
-//            double pos[3] = {};
-//            // const double *endPos = pdata.posEndBind[end_bound];
-//            kmc.whereUnbindSU(pdata.getRcutUS(), rollVec, pos);
-//            double check_pos[] = {0.3585452196603419,
-//            0.1085452196603419,
-//                                  -0.1740595812604792};
-//            double err[3] = {};
-//            for (int i = 0; i < 3; ++i) {
-//                err[i] = pos[i] - check_pos[i];
-//            }
-//            CHECK(ABS(err[0]) < SMALL);
-//            CHECK(ABS(err[1]) < SMALL);
-//            CHECK(ABS(err[2]) < SMALL);
-//            // Test 0 edge cases
-//            rollVec[1] = rollVec[2] = 0;
-//            kmc.whereUnbindSU(pdata.getRcutUS(), rollVec, pos);
-//            double check_pos1[] = {.25, 0., -0.232079441680639};
-//            for (int i = 0; i < 3; ++i) {
-//                err[i] = pos[i] - check_pos1[i];
-//            }
-//            CHECK(ABS(err[0]) < SMALL);
-//            CHECK(ABS(err[1]) < SMALL);
-//            CHECK(ABS(err[2]) < SMALL);
-//        }
-//        SECTION("1->2 binding") {
-//            KMC<ExampleRod> kmc(pdata.posEndBind[end_bound], 6,
-//            pdata.getRcutSD());
-//            // Calculate probabilities
-//            kmc.CalcTotProbsSD(ep_j, Uniquefilter,
-//            pdata.idBind[end_bound],
-//                               pdata.lambda, pdata.kappa, 1. / KBT,
-//                               pdata.freeLength,
-//                               pdata.getBindingFactorSD(end_bound,
-//                               dt));
-//            // Check minimum distances
-//            CHECK(ABS(kmc.getDistMin(1) - .5) < SMALL);
-//            CHECK(ABS(kmc.getDistMin(2) - 0.3535533905932738) <
-//            SMALL); CHECK(ABS(kmc.getDistMin(3) - 0.3535533905932738)
-//            < SMALL); CHECK(ABS(kmc.getDistMin(4) -
-//            0.3535533905932738) < SMALL); CHECK(ABS(kmc.getDistMin(5)
-//            - 0.3535533905932738) < SMALL);
-//            // Check mu distances along rods
-//            CHECK(ABS(kmc.getMu(1) - (ep_j[1]->length * -.5 - .5)) <
-//            SMALL); CHECK(ABS(kmc.getMu(2) - (ep_j[1]->length * -.5 -
-//            .25)) < SMALL); CHECK(ABS(kmc.getMu(3) - (ep_j[1]->length
-//            *
-//            -.5 - .25)) < SMALL); CHECK(ABS(kmc.getMu(4) -
-//            (ep_j[1]->length * -.5 - .25)) < SMALL);
-//            CHECK(ABS(kmc.getMu(5) - (ep_j[1]->length * .5 + .25)) <
-//            SMALL);
-//            // Check perpendicular distance
-//            CHECK(ABS(kmc.getDistPerp(1) - 0.0) < SMALL);
-//            CHECK(ABS(kmc.getDistPerp(2) - .25) < SMALL);
-//            CHECK(ABS(kmc.getDistPerp(3) - .25) < SMALL);
-//            CHECK(ABS(kmc.getDistPerp(4) - .25) < SMALL);
-//            CHECK(ABS(kmc.getDistPerp(5) - .25) < SMALL);
-//            // Check individual probabilities
-//            CHECK(ABS(kmc.getProbs(0)) == 0.0);
-//            CHECK(ABS(kmc.getProbs(1) - 0.000233916745498158) <
-//            SMALL); CHECK(ABS(kmc.getProbs(2) - 0.0002425720894371809)
-//            < SMALL); CHECK(ABS(kmc.getProbs(3) -
-//            0.0002425720894371809) < SMALL); CHECK(ABS(kmc.getProbs(4)
-//            - 0.0002425720894371809) < SMALL);
-//            CHECK(ABS(kmc.getProbs(5) - 0.0002425720894371809) <
-//            SMALL);
-//            //// Check total probability
-//            CHECK(ABS(kmc.getTotProb() - 0.001204205103246882) <
-//            SMALL);
-//            // Choose a (random) vector
-//            double rollVec[] = {.0001, .125, .125};
-//            // TODO: Need to implement lookup table or taylor
-//            expansion for this
-//            // <31-12-18, ARL>
-//            // Check placement of head
-//            // Check ID of rod
-//        }
-//    }
-//    SECTION("2 heads bound to first and second rod") {
-//        // Bind to minus of first rod
-//        pdata.setBind(0, ep_j[0]->gid, ep_j[0]->direction,
-//        ep_j[0]->pos,
-//                           ep_j[0]->length * -.5, ep_j[0]->length,
-//                           ep_j[0]->rank);
-//        double rollVec[] = {.0001, .125, .125};
-//        pdata.setBind(1, ep_j[5]->gid, ep_j[5]->direction,
-//        ep_j[5]->pos,
-//                           ep_j[5]->length * .5, ep_j[5]->length,
-//                           ep_j[5]->rank);
-//        // Check individual probabilities
-//        KMC<ExampleRod> kmc(pdata.posEndBind[1], 6,
-//        pdata.getRcutSD());
-//        kmc.CalcProbDS(pdata.getUnbindingFactorDS(1, dt, KBT));
-//        CHECK(ABS(kmc.getTotProb() - .0001) < SMALL);
-//        double pos[3] = {};
-//        kmc.whereUnbindDS(pdata.posEndBind[0], pos);
-//        double err[3] = {};
-//        for (int i = 0; i < 3; ++i) {
-//            err[i] = pos[i] - pdata.posEndBind[0][i];
-//        }
-//        CHECK(ABS(err[0]) < SMALL);
-//        CHECK(ABS(err[1]) < SMALL);
-//        CHECK(ABS(err[2]) < SMALL);
-//    }
-//    for (int i = 0; i < 6; ++i) {
-//        delete ep_j[i];
-//    }
-//}
+    ep_j[5]->direction[0] = 0.0;
+    ep_j[5]->direction[1] = 0.0;
+    ep_j[5]->direction[2] = 1.0;
+    std::vector<int> Uniquefilter{1, 1, 1, 1, 1, 1};
+    // Set protein data
+    ExampleXlink pdata;
+    pdata.setMockXlink();
+    // ProteinType *pType = &pdata.property;
+    LookupTable LUT;
+    LUT.Init((1. - pdata.lambda) * .5 * pdata.kappa / KBT, pdata.freeLength,
+             2. * ep_j[0]->radius);
+    pdata.LUTablePtr = &LUT;
+    SECTION("Unbound") {
+        KMC<ExampleRod> kmc(pdata.getPosPtr(), 6, pdata.getRcutUS());
+        kmc.CalcTotProbsUS(ep_j, Uniquefilter, pdata.getBindingFactorUS(0, dt));
+        for (int i = 0; i < 6; ++i) {
+            // Check minimum distance
+            CHECK(ABS(kmc.getDistMin(i) - 0.25) < SMALL);
+            CHECK(ABS(kmc.getDistPerp(i) - 0.0) < SMALL);
+            // Check mu distances along rods
+            if (i == 5) {
+                CHECK(ABS(kmc.getMu(i) - 10.25) < SMALL);
+            } else {
+                CHECK(ABS(kmc.getMu(i) + 10.25) < SMALL);
+            }
+            // Check individual probabilities
+            CHECK(ABS(kmc.getProbs(i) - 0.0000477464829275686) < SMALL);
+        }
+        // Check total probability
+        CHECK(ABS(kmc.getTotProb() - (6 * 0.0000477464829275686)) < SMALL);
+        // Check binding to rod 0
+        double roll = .00001;
+        double bindpos;
+        int rod_i = kmc.whichRodBindUS(ep_j, bindpos, roll);
+        CHECK(rod_i == 0);
+        CHECK(ABS((bindpos) + 9.94764012244017) < SMALL);
+        // Check binding to rod 1
+        roll = .00005;
+        rod_i = kmc.whichRodBindUS(ep_j, bindpos, roll);
+        CHECK(rod_i == 1);
+        CHECK(ABS(bindpos + 9.98820061220085) < SMALL);
+        // Check binding to rod 5
+        roll = .00028;
+        rod_i = kmc.whichRodBindUS(ep_j, bindpos, roll);
+        CHECK(rod_i == 5);
+        CHECK(ABS(bindpos - 9.966076571675236) < SMALL);
+        // Check out of range binding returns -1
+        roll = .01;
+        rod_i = kmc.whichRodBindUS(ep_j, bindpos, roll);
+        CHECK(rod_i == -1);
+    }
+    SECTION("1 head bound to first rod") {
+        int end_bound = 0;
+        // Bind to minus end of the first rod
+        pdata.setBind(end_bound, ep_j[0]->gid, ep_j[0]->direction, ep_j[0]->pos,
+                      ep_j[0]->length * -.5, ep_j[0]->length, ep_j[0]->rank);
+        SECTION("1->0 unbinding") {
+            double rollVec[] = {.1, .125, .125};
+            KMC<ExampleRod> kmc(pdata.posEndBind[end_bound], 6,
+                                pdata.getRcutUS());
+            // Check individual probabilities
+            kmc.CalcProbSU(pdata.getUnbindingFactorDS(end_bound, dt, KBT));
+            CHECK(ABS(kmc.getTotProb() - .0001) < SMALL);
+            // Check unbinding
+            // rollVec[0] = (kmc.getTotProb() - rollVec[0]) /
+            kmc.getTotProb();
+            // Check unbound location
+            double pos[3] = {};
+            // const double *endPos = pdata.posEndBind[end_bound];
+            kmc.whereUnbindSU(pdata.getRcutUS(), rollVec, pos);
+            double check_pos[] = {0.3585452196603419, 0.1085452196603419,
+                                  -0.1740595812604792};
+            double err[3] = {};
+            for (int i = 0; i < 3; ++i) {
+                err[i] = pos[i] - check_pos[i];
+            }
+            CHECK(ABS(err[0]) < SMALL);
+            CHECK(ABS(err[1]) < SMALL);
+            CHECK(ABS(err[2]) < SMALL);
+            // Test 0 edge cases
+            rollVec[1] = rollVec[2] = 0;
+            kmc.whereUnbindSU(pdata.getRcutUS(), rollVec, pos);
+            double check_pos1[] = {.25, 0., -0.232079441680639};
+            for (int i = 0; i < 3; ++i) {
+                err[i] = pos[i] - check_pos1[i];
+            }
+            CHECK(ABS(err[0]) < SMALL);
+            CHECK(ABS(err[1]) < SMALL);
+            CHECK(ABS(err[2]) < SMALL);
+        }
+        SECTION("1->2 binding") {
+            KMC<ExampleRod> kmc(pdata.posEndBind[end_bound], 6,
+                                pdata.getRcutSD());
+            // Calculate probabilities
+            kmc.CalcTotProbsSD(ep_j, Uniquefilter, pdata.idBind[end_bound],
+                               pdata.lambda, pdata.kappa, 1. / KBT,
+                               pdata.freeLength,
+                               pdata.getBindingFactorSD(end_bound, dt));
+            // Check minimum distances
+            CHECK(ABS(kmc.getDistMin(1) - .5) < SMALL);
+            CHECK(ABS(kmc.getDistMin(2) - 0.3535533905932738) < SMALL);
+            CHECK(ABS(kmc.getDistMin(3) - 0.3535533905932738) < SMALL);
+            CHECK(ABS(kmc.getDistMin(4) - 0.3535533905932738) < SMALL);
+            CHECK(ABS(kmc.getDistMin(5) - 0.3535533905932738) < SMALL);
+            // Check mu distances along rods
+            CHECK(ABS(kmc.getMu(1) - (ep_j[1]->length * -.5 - .5)) < SMALL);
+            CHECK(ABS(kmc.getMu(2) - (ep_j[1]->length * -.5 - .25)) < SMALL);
+            CHECK(ABS(kmc.getMu(3) - (ep_j[1]->length * -.5 - .25)) < SMALL);
+            CHECK(ABS(kmc.getMu(4) - (ep_j[1]->length * -.5 - .25)) < SMALL);
+            CHECK(ABS(kmc.getMu(5) - (ep_j[1]->length * .5 + .25)) < SMALL);
+            // Check perpendicular distance
+            CHECK(ABS(kmc.getDistPerp(1) - 0.0) < SMALL);
+            CHECK(ABS(kmc.getDistPerp(2) - .25) < SMALL);
+            CHECK(ABS(kmc.getDistPerp(3) - .25) < SMALL);
+            CHECK(ABS(kmc.getDistPerp(4) - .25) < SMALL);
+            CHECK(ABS(kmc.getDistPerp(5) - .25) < SMALL);
+            // Check individual probabilities
+            CHECK(ABS(kmc.getProbs(0)) == 0.0);
+            CHECK(ABS(kmc.getProbs(1) - 0.000233916745498158) < SMALL);
+            CHECK(ABS(kmc.getProbs(2) - 0.0002425720894371809) < SMALL);
+            CHECK(ABS(kmc.getProbs(3) - 0.0002425720894371809) < SMALL);
+            CHECK(ABS(kmc.getProbs(4) - 0.0002425720894371809) < SMALL);
+            CHECK(ABS(kmc.getProbs(5) - 0.0002425720894371809) < SMALL);
+            //// Check total probability
+            CHECK(ABS(kmc.getTotProb() - 0.001204205103246882) < SMALL);
+            // Choose a (random) vector
+            double rollVec[] = {.0001, .125, .125};
+        }
+    }
+    SECTION("2 heads bound to first and second rod") {
+        // Bind to minus of first rod
+        pdata.setBind(0, ep_j[0]->gid, ep_j[0]->direction, ep_j[0]->pos,
+                      ep_j[0]->length * -.5, ep_j[0]->length, ep_j[0]->rank);
+        double rollVec[] = {.0001, .125, .125};
+        pdata.setBind(1, ep_j[5]->gid, ep_j[5]->direction, ep_j[5]->pos,
+                      ep_j[5]->length * .5, ep_j[5]->length, ep_j[5]->rank);
+        // Check individual probabilities
+        KMC<ExampleRod> kmc(pdata.posEndBind[1], 6, pdata.getRcutSD());
+        kmc.CalcProbDS(pdata.getUnbindingFactorDS(1, dt, KBT));
+        CHECK(ABS(kmc.getTotProb() - .0001) < SMALL);
+        double pos[3] = {};
+        kmc.whereUnbindDS(pdata.posEndBind[0], pos);
+        double err[3] = {};
+        for (int i = 0; i < 3; ++i) {
+            err[i] = pos[i] - pdata.posEndBind[0][i];
+        }
+        CHECK(ABS(err[0]) < SMALL);
+        CHECK(ABS(err[1]) < SMALL);
+        CHECK(ABS(err[2]) < SMALL);
+    }
+    for (int i = 0; i < 6; ++i) {
+        delete ep_j[i];
+    }
+}
 
-//// TEST_CASE("Building lookup table", "[lookup_table]") {
-////    // Arrange
-////    // rod information
-////    double dt = .0001;
-////    ExampleRod *ep_j[3];
-////    for (int i = 0; i < 3; ++i) {
-////        ep_j[i] = new ExampleRod;
-////        *ep_j[i] = MockRod<ExampleRod>(i);
-////        ep_j[i]->length = 20;
-////    }
-////    ep_j[0]->direction[0] = 1;
-////    ep_j[0]->direction[1] = 0;
-////    ep_j[0]->direction[2] = 0;
-
-////    ep_j[1]->direction[0] = 0;
-////    ep_j[1]->direction[1] = 1;
-////    ep_j[1]->direction[2] = 0;
-
-////    ep_j[2]->direction[0] = 0;
-////    ep_j[2]->direction[1] = 0;
-////    ep_j[2]->direction[2] = 1;
-
-////    // Protein information
-////    ExampleXlink pdata;
-////    pdata.setMockXlink();
-////    //ProteinType *pType = &pdata.property;
-////    std::vector<int> Uniquefilter{1, 1, 1};
-////    LookupTable LUTable =
-////        BuildLookupTable(pdata.lambda, pdata.kappa, 1./KBT,
-////        pdata.freeLength, pdata.getRcutSD());
-
-////    // Binding
-////    int end_bound = 0;
-////    double end_loc = 0; // Center of rod
-////    // Bind to center of first rod and create kmc object
-////    pdata.setBind(end_bound, ep_j[0]->gid, ep_j[0]->direction,
-////    ep_j[0]->pos, 0,
-////                  ep_j[0]->length, ep_j[0]->rank);
-////    KMC<ExampleRod> kmc(pdata.posEndBind[end_bound], 3,
-/// pdata.getRcutSD(), /    &LUTable); /    // Act /
-/// kmc.CalcTotProbsSD(ep_j, Uniquefilter, /    pdata.idBind[end_bound],
-////                       pdata.lambda, pdata.kappa, 1./KBT,
-/// pdata.freeLength, / pdata.getBindingFactorSD(end_bound, dt)); / //
-/// Assert /    // Check individual probabilities /
-/// CHECK(ABS(kmc.getProbs(0)) == 0.0); /    CHECK(ABS(kmc.getProbs(1) -
-/// 0.00042178770584152815) < SMALL); /    CHECK(ABS(kmc.getProbs(2) -
-/// 0.00042178770584152815) < SMALL); /    // Check total probability /
-/// CHECK(ABS(kmc.getTotProb() - 0.0008435754116830563) < SMALL); / //
-/// Check minimum distances /    CHECK(ABS(kmc.getDistMin(1) - 0.0) <
-/// SMALL);
-////    CHECK(ABS(kmc.getDistMin(2) - 0.0) < SMALL);
-////    // Check mu distances along rods
-////    CHECK(ABS(kmc.getMu(1) - 0.0) < SMALL);
-////    CHECK(ABS(kmc.getMu(2) - 0.0) < SMALL);
-////    // Choose a (random) vector
-////    double rollVec[3] = {.0001, .125, .125};
-////    for (int i = 0; i < 3; ++i) {
-////        delete ep_j[i];
-////    }
-////}
