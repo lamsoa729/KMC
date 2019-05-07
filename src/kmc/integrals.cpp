@@ -1,7 +1,7 @@
 #include "integrals.hpp"
 
 /*! \brief Integrate exponential factor with the form of
- * e^{-M * (\sqrt{ s^2 + lm^2}-ell0 -1)^2}
+ * \f$e^{-M * (\sqrt{ s^2 + lm^2}-ell0 -1)^2}\f$
  * from sbound0 to sbound1  with respect to the variable s.
  *
  * \param lm Physically, this is the perpendicular distance above rod

@@ -1,15 +1,17 @@
 /**********************************************************************
  *                     Unit testing for KMC<ExampleRod> code *
  **********************************************************************/
+#define CATCH_CONFIG_MAIN
+#include <catch.hpp>
 
-#include "example_objs/ExampleRod.hpp"
-#include "example_objs/ExampleXlink.hpp"
-#include "helpers.hpp"
-#include "kmc.hpp"
-#include "lookup_table.hpp"
-#include "macros.hpp"
+#include "../src/kmc/ExampleRod.hpp"
+#include "../src/kmc/ExampleXlink.hpp"
+#include "../src/kmc/helpers.hpp"
+#include "../src/kmc/kmc.hpp"
+#include "../src/kmc/lookup_table.hpp"
+#include "../src/kmc/macros.hpp"
 
-#include "catch.hpp"
+//#include "catch.hpp"
 
 #include <array>
 #include <cassert>

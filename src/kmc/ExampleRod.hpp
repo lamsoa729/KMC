@@ -26,7 +26,7 @@
 #include <type_traits>
 #include <vector>
 
-#include <mpi.h>
+//#include <mpi.h>
 #include <omp.h>
 
 /**

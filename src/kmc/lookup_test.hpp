@@ -1,6 +1,8 @@
-#include "../integrals.hpp"
-#include "../lookup_table.hpp"
-#include "catch.hpp"
+//#define CATCH_CONFIG_MAIN
+//#include <catch.hpp>
+
+#include "integrals.hpp"
+#include "lookup_table.hpp"
 
 #include <cmath>
 #include <cstdio>
