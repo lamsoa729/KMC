@@ -1,8 +1,8 @@
 #ifndef KMC_HPP
 #define KMC_HPP
 
-#include "example_objs/ExampleRod.hpp"
-#include "example_objs/ExampleXlink.hpp"
+//#include "example_objs/ExampleRod.hpp"
+//#include "example_objs/ExampleXlink.hpp"
 #include "helpers.hpp"
 #include "lookup_table.hpp"
 #include "macros.hpp"

@@ -10,7 +10,7 @@ LINKFLAGS+= $(RELEASE_OPT)
 endif
 
 # set of libraries to correctly link to the target
-INCLUDE_DIRS = -I$(CURDIR) $(USERINCLUDE)
+INCLUDE_DIRS = -I$(CURDIR) -I$(CURDIR)/SRC $(USERINCLUDE) 
 LIBRARIES = $(USERLINK)
 
 # System-specific settings
@@ -19,9 +19,9 @@ SIZE =	size
 
 # Files
 SRCS = \
-	kmc.cpp \
-	lookup_table.cpp \
-	integrals.cpp
+	SRC/kmc.cpp \
+	SRC/lookup_table.cpp \
+	SRC/integrals.cpp
 
 # Definitions
 TEST     := TEST.X
