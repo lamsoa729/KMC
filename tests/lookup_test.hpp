@@ -49,20 +49,23 @@ TEST_CASE("Lookup table test SOFT spring ", "[lookup]") {
     distPerp = 0.2;
     // ("distPerp = 0.2 > D+ell0, single peaked")
     for (double sbound = 0; sbound < 20; sbound += 0.5) {
-        CHECK(relError(LUT.Lookup(distPerp / D, sbound),
-                       integral(distPerp / D, 0, sbound, M, ell0)) < errTol);
+        CHECK(relError(LUT.Lookup(distPerp, sbound * D),
+                       D * integral(distPerp / D, 0, sbound, M, ell0)) <
+              errTol);
     }
     // ("distPerp = 0.1 > D+ell0, single peaked")
     distPerp = 0.1;
     for (double sbound = 0; sbound < 20; sbound += 0.5) {
-        CHECK(relError(LUT.Lookup(distPerp / D, sbound),
-                       integral(distPerp / D, 0, sbound, M, ell0)) < errTol);
+        CHECK(relError(LUT.Lookup(distPerp, sbound * D),
+                       D * integral(distPerp / D, 0, sbound, M, ell0)) <
+              errTol);
     }
     // ("distPerp = 0.06 < D+ell0, double peaked")
     distPerp = 0.06;
     for (double sbound = 0; sbound < 20; sbound += 0.5) {
-        CHECK(relError(LUT.Lookup(distPerp / D, sbound),
-                       integral(distPerp / D, 0, sbound, M, ell0)) < errTol);
+        CHECK(relError(LUT.Lookup(distPerp, sbound * D),
+                       D * integral(distPerp / D, 0, sbound, M, ell0)) <
+              errTol);
     }
 }
 
@@ -80,20 +83,20 @@ TEST_CASE("Lookup table test MEDIUM spring ", "[lookup]") {
     distPerp = 0.2;
     // ("distPerp = 0.2 > D+ell0, single peaked")
     for (double sbound = 0; sbound < 20; sbound += 0.5) {
-        CHECK(errorPass(LUT.Lookup(distPerp / D, sbound),
-                        integral(distPerp / D, 0, sbound, M, ell0)));
+        CHECK(errorPass(LUT.Lookup(distPerp, sbound * D),
+                        D * integral(distPerp / D, 0, sbound, M, ell0)));
     }
     // ("distPerp = 0.1 > D+ell0, single peaked")
     distPerp = 0.1;
     for (double sbound = 0; sbound < 20; sbound += 0.5) {
-        CHECK(errorPass(LUT.Lookup(distPerp / D, sbound),
-                        integral(distPerp / D, 0, sbound, M, ell0)));
+        CHECK(errorPass(LUT.Lookup(distPerp, sbound * D),
+                        D * integral(distPerp / D, 0, sbound, M, ell0)));
     }
     // ("distPerp = 0.06 < D+ell0, double peaked")
     distPerp = 0.06;
     for (double sbound = 0; sbound < 20; sbound += 0.5) {
-        CHECK(errorPass(LUT.Lookup(distPerp / D, sbound),
-                        integral(distPerp / D, 0, sbound, M, ell0)));
+        CHECK(errorPass(LUT.Lookup(distPerp, sbound * D),
+                        D * integral(distPerp / D, 0, sbound, M, ell0)));
     }
 }
 
@@ -111,20 +114,20 @@ TEST_CASE("Lookup table test STIFF spring ", "[lookup]") {
     distPerp = 0.2;
     // ("distPerp = 0.2 > D+ell0, single peaked")
     for (double sbound = 0; sbound < 20; sbound += 0.5) {
-        CHECK(errorPass(LUT.Lookup(distPerp / D, sbound),
-                        integral(distPerp / D, 0, sbound, M, ell0)));
+        CHECK(errorPass(LUT.Lookup(distPerp, sbound * D),
+                        D * integral(distPerp / D, 0, sbound, M, ell0)));
     }
     // ("distPerp = 0.1 > D+ell0, single peaked")
     distPerp = 0.1;
     for (double sbound = 0; sbound < 20; sbound += 0.5) {
-        CHECK(errorPass(LUT.Lookup(distPerp / D, sbound),
-                        integral(distPerp / D, 0, sbound, M, ell0)));
+        CHECK(errorPass(LUT.Lookup(distPerp, sbound * D),
+                        D * integral(distPerp / D, 0, sbound, M, ell0)));
     }
     // ("distPerp = 0.06 < D+ell0, double peaked")
     distPerp = 0.06;
     for (double sbound = 0; sbound < 20; sbound += 0.5) {
-        CHECK(errorPass(LUT.Lookup(distPerp / D, sbound),
-                        integral(distPerp / D, 0, sbound, M, ell0)));
+        CHECK(errorPass(LUT.Lookup(distPerp, sbound * D),
+                        D * integral(distPerp / D, 0, sbound, M, ell0)));
     }
 }
 
@@ -139,36 +142,36 @@ TEST_CASE("Lookup table test manual medium spring REL error", "[lookup]") {
 
     distPerp = 0.2;
     // ("distPerp = 0.2 > D+ell0, single peaked")
-    CHECK(relError(LUT.Lookup(distPerp / D, 0.5), 0.0722077) < errTol);
-    CHECK(relError(LUT.Lookup(distPerp / D, 1.0), 0.142839) < errTol);
-    CHECK(relError(LUT.Lookup(distPerp / D, 1.5), 0.210412) < errTol);
-    CHECK(relError(LUT.Lookup(distPerp / D, 2.0), 0.273623) < errTol);
-    CHECK(relError(LUT.Lookup(distPerp / D, 3.0), 0.383039) < errTol);
-    CHECK(relError(LUT.Lookup(distPerp / D, 4.0), 0.466375) < errTol);
-    CHECK(relError(LUT.Lookup(distPerp / D, 5.0), 0.523889) < errTol);
-    CHECK(relError(LUT.Lookup(distPerp / D, 6.0), 0.55967) < errTol);
+    CHECK(relError(LUT.Lookup(distPerp, 0.5 * D) / D, 0.0722077) < errTol);
+    CHECK(relError(LUT.Lookup(distPerp, 1.0 * D) / D, 0.142839) < errTol);
+    CHECK(relError(LUT.Lookup(distPerp, 1.5 * D) / D, 0.210412) < errTol);
+    CHECK(relError(LUT.Lookup(distPerp, 2.0 * D) / D, 0.273623) < errTol);
+    CHECK(relError(LUT.Lookup(distPerp, 3.0 * D) / D, 0.383039) < errTol);
+    CHECK(relError(LUT.Lookup(distPerp, 4.0 * D) / D, 0.466375) < errTol);
+    CHECK(relError(LUT.Lookup(distPerp, 5.0 * D) / D, 0.523889) < errTol);
+    CHECK(relError(LUT.Lookup(distPerp, 6.0 * D) / D, 0.55967) < errTol);
 
     distPerp = 0.08;
-    // "distPerp = 0.08 > D+ell0, single peaked"
-    CHECK(relError(LUT.Lookup(distPerp / D, 0.5), 0.497588) < errTol);
-    CHECK(relError(LUT.Lookup(distPerp / D, 1.0), 0.993608) < errTol);
-    CHECK(relError(LUT.Lookup(distPerp / D, 1.5), 1.48554) < errTol);
-    CHECK(relError(LUT.Lookup(distPerp / D, 2.0), 1.96929) < errTol);
-    CHECK(relError(LUT.Lookup(distPerp / D, 3.0), 2.88784) < errTol);
-    CHECK(relError(LUT.Lookup(distPerp / D, 4.0), 3.6925) < errTol);
-    CHECK(relError(LUT.Lookup(distPerp / D, 5.0), 4.3332) < errTol);
-    CHECK(relError(LUT.Lookup(distPerp / D, 6.0), 4.78986) < errTol);
+    // "distPerp = 0.08 > D+ell0, single peaked"/D,
+    CHECK(relError(LUT.Lookup(distPerp, 0.5 * D) / D, 0.497588) < errTol);
+    CHECK(relError(LUT.Lookup(distPerp, 1.0 * D) / D, 0.993608) < errTol);
+    CHECK(relError(LUT.Lookup(distPerp, 1.5 * D) / D, 1.48554) < errTol);
+    CHECK(relError(LUT.Lookup(distPerp, 2.0 * D) / D, 1.96929) < errTol);
+    CHECK(relError(LUT.Lookup(distPerp, 3.0 * D) / D, 2.88784) < errTol);
+    CHECK(relError(LUT.Lookup(distPerp, 4.0 * D) / D, 3.6925) < errTol);
+    CHECK(relError(LUT.Lookup(distPerp, 5.0 * D) / D, 4.3332) < errTol);
+    CHECK(relError(LUT.Lookup(distPerp, 6.0 * D) / D, 4.78986) < errTol);
 
     distPerp = 0.06;
-    // "distPerp = 0.06 < D+ell0, double peaked"
-    CHECK(relError(LUT.Lookup(distPerp / D, 0.5), 0.488864) < errTol);
-    CHECK(relError(LUT.Lookup(distPerp / D, 1.0), 0.981139) < errTol);
-    CHECK(relError(LUT.Lookup(distPerp / D, 1.5), 1.47815) < errTol);
-    CHECK(relError(LUT.Lookup(distPerp / D, 2.0), 1.97788) < errTol);
-    CHECK(relError(LUT.Lookup(distPerp / D, 3.0), 2.96052) < errTol);
-    CHECK(relError(LUT.Lookup(distPerp / D, 4.0), 3.85857) < errTol);
-    CHECK(relError(LUT.Lookup(distPerp / D, 5.0), 4.59864) < errTol);
-    CHECK(relError(LUT.Lookup(distPerp / D, 6.0), 5.14058) < errTol);
+    // "distPerp = 0.06 < D+ell0, double peaked"/D,
+    CHECK(relError(LUT.Lookup(distPerp, 0.5 * D) / D, 0.488864) < errTol);
+    CHECK(relError(LUT.Lookup(distPerp, 1.0 * D) / D, 0.981139) < errTol);
+    CHECK(relError(LUT.Lookup(distPerp, 1.5 * D) / D, 1.47815) < errTol);
+    CHECK(relError(LUT.Lookup(distPerp, 2.0 * D) / D, 1.97788) < errTol);
+    CHECK(relError(LUT.Lookup(distPerp, 3.0 * D) / D, 2.96052) < errTol);
+    CHECK(relError(LUT.Lookup(distPerp, 4.0 * D) / D, 3.85857) < errTol);
+    CHECK(relError(LUT.Lookup(distPerp, 5.0 * D) / D, 4.59864) < errTol);
+    CHECK(relError(LUT.Lookup(distPerp, 6.0 * D) / D, 5.14058) < errTol);
 }
 
 TEST_CASE("REVERSE Lookup table test manual medium spring REL error",
@@ -184,17 +187,17 @@ TEST_CASE("REVERSE Lookup table test manual medium spring REL error",
 
     distPerp = 0.1;
     // ("distPerp = 0.1 > D+ell0, single peaked")
-    CHECK(relError(LUT.ReverseLookup(distPerp / D, 0), 0.0) < tol);
-    CHECK(relError(LUT.ReverseLookup(distPerp / D, 0.0460519), 0.05) < tol);
-    CHECK(relError(LUT.ReverseLookup(distPerp / D, 0.322128), 0.35) < tol);
-    CHECK(relError(LUT.ReverseLookup(distPerp / D, 0.459824), 0.5) < tol);
-    CHECK(relError(LUT.ReverseLookup(distPerp / D, 0.915356), 1.0) < tol);
-    CHECK(relError(LUT.ReverseLookup(distPerp / D, 1.36196), 1.5) < tol);
-    CHECK(relError(LUT.ReverseLookup(distPerp / D, 1.79446), 2.0) < tol);
-    CHECK(relError(LUT.ReverseLookup(distPerp / D, 2.20718), 2.5) < tol);
-    CHECK(relError(LUT.ReverseLookup(distPerp / D, 3.27015), 4.0) < tol);
-    CHECK(relError(LUT.ReverseLookup(distPerp / D, 3.79115), 5.0) < tol);
-    CHECK(relError(LUT.ReverseLookup(distPerp / D, 4.15242), 6.0) < tol);
+    CHECK(relError(LUT.ReverseLookup(distPerp, D * 0) / D, 0.0) < tol);
+    CHECK(relError(LUT.ReverseLookup(distPerp, D * 0.0460519) / D, 0.05) < tol);
+    CHECK(relError(LUT.ReverseLookup(distPerp, D * 0.322128) / D, 0.35) < tol);
+    CHECK(relError(LUT.ReverseLookup(distPerp, D * 0.459824) / D, 0.5) < tol);
+    CHECK(relError(LUT.ReverseLookup(distPerp, D * 0.915356) / D, 1.0) < tol);
+    CHECK(relError(LUT.ReverseLookup(distPerp, D * 1.36196) / D, 1.5) < tol);
+    CHECK(relError(LUT.ReverseLookup(distPerp, D * 1.79446) / D, 2.0) < tol);
+    CHECK(relError(LUT.ReverseLookup(distPerp, D * 2.20718) / D, 2.5) < tol);
+    CHECK(relError(LUT.ReverseLookup(distPerp, D * 3.27015) / D, 4.0) < tol);
+    CHECK(relError(LUT.ReverseLookup(distPerp, D * 3.79115) / D, 5.0) < tol);
+    CHECK(relError(LUT.ReverseLookup(distPerp, D * 4.15242) / D, 6.0) < tol);
     // CHECK(relError(LUT.ReverseLookup(distPerp / D, 4.37561), 7.0) < tol);
 }
 
@@ -213,21 +216,21 @@ TEST_CASE("REVERSE Lookup table test soft spring ", "[REVERSE lookup]") {
     // ("distPerp = 0.2 > D+ell0, single peaked")
     for (double sbound = 0; sbound < LUT.getNonDsbound() / 3; sbound += 0.2) {
         double val = integral(distPerp / D, 0, sbound, M, ell0);
-        CHECK(errorPass(LUT.ReverseLookup(distPerp / D, val), sbound,
+        CHECK(errorPass(LUT.ReverseLookup(distPerp, val * D), sbound * D,
                         REVERSEFAC));
     }
     // ("distPerp = 0.1 > D+ell0, single peaked")
     distPerp = 0.1;
     for (double sbound = 0; sbound < LUT.getNonDsbound() / 3; sbound += 0.2) {
         double val = integral(distPerp / D, 0, sbound, M, ell0);
-        CHECK(errorPass(LUT.ReverseLookup(distPerp / D, val), sbound,
+        CHECK(errorPass(LUT.ReverseLookup(distPerp, val * D), sbound * D,
                         REVERSEFAC));
     }
     // ("distPerp = 0.06 < D+ell0, double peaked")
     distPerp = 0.06;
     for (double sbound = 0; sbound < LUT.getNonDsbound() / 3; sbound += 0.2) {
         double val = integral(distPerp / D, 0, sbound, M, ell0);
-        CHECK(errorPass(LUT.ReverseLookup(distPerp / D, val), sbound,
+        CHECK(errorPass(LUT.ReverseLookup(distPerp, val * D), sbound * D,
                         REVERSEFAC));
     }
 }
@@ -247,21 +250,21 @@ TEST_CASE("REVERSE Lookup table test medium spring ", "[REVERSE lookup]") {
     // ("distPerp = 0.2 > D+ell0, single peaked")
     for (double sbound = 0; sbound < LUT.getNonDsbound() / 4; sbound += 0.2) {
         double val = integral(distPerp / D, 0, sbound, M, ell0);
-        CHECK(errorPass(LUT.ReverseLookup(distPerp / D, val), sbound,
+        CHECK(errorPass(LUT.ReverseLookup(distPerp, val * D), sbound * D,
                         REVERSEFAC));
     }
     // ("distPerp = 0.1 > D+ell0, single peaked")
     distPerp = 0.1;
     for (double sbound = 0; sbound < LUT.getNonDsbound() / 3; sbound += 0.2) {
         double val = integral(distPerp / D, 0, sbound, M, ell0);
-        CHECK(errorPass(LUT.ReverseLookup(distPerp / D, val), sbound,
+        CHECK(errorPass(LUT.ReverseLookup(distPerp, val * D), sbound * D,
                         REVERSEFAC));
     }
     // ("distPerp = 0.06 < D+ell0, double peaked")
     distPerp = 0.06;
     for (double sbound = 0; sbound < LUT.getNonDsbound() / 3; sbound += 0.2) {
         double val = integral(distPerp / D, 0, sbound, M, ell0);
-        CHECK(errorPass(LUT.ReverseLookup(distPerp / D, val), sbound,
+        CHECK(errorPass(LUT.ReverseLookup(distPerp, val * D), sbound * D,
                         REVERSEFAC));
     }
 }
@@ -289,14 +292,14 @@ TEST_CASE("REVERSE Lookup table test stiff spring ", "[REVERSE lookup]") {
     distPerp = 0.1;
     for (double sbound = 0; sbound < LUT.getNonDsbound() / 4; sbound += 0.1) {
         double val = integral(distPerp / D, 0, sbound, M, ell0);
-        CHECK(errorPass(LUT.ReverseLookup(distPerp / D, val), sbound,
+        CHECK(errorPass(LUT.ReverseLookup(distPerp, val * D), sbound * D,
                         REVERSEFAC));
     }
     // ("distPerp = 0.06 < D+ell0, double peaked")
     distPerp = 0.06;
     for (double sbound = 0; sbound < LUT.getNonDsbound() / 4; sbound += 0.1) {
         double val = integral(distPerp / D, 0, sbound, M, ell0);
-        CHECK(errorPass(LUT.ReverseLookup(distPerp / D, val), sbound,
+        CHECK(errorPass(LUT.ReverseLookup(distPerp, val * D), sbound * D,
                         REVERSEFAC));
     }
 }

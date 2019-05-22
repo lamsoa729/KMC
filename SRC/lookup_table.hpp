@@ -103,7 +103,7 @@ class LookupTable {
      * @param val dimensionless
      * @return sbound dimensionless
      */
-    double ReverseLookup(double distPerp, const double val) const;
+    double ReverseLookup(double distPerp, double val) const;
 
   private:
     void FillMatrix();

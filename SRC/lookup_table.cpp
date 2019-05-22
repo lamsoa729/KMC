@@ -85,6 +85,9 @@ void LookupTable::PrintTable() const {
 }
 
 double LookupTable::Lookup(double distPerp, double sbound) const {
+    // Non-dimensionalize parameters
+    distPerp /= D;
+    sbound /= D;
     double rowFrac = 0, colFrac = 0;
     int rowIndex = getRowIndex(distPerp, rowFrac);
     int colIndex = getColIndex(sbound, colFrac);
@@ -122,12 +125,15 @@ double LookupTable::Lookup(double distPerp, double sbound) const {
                  + table[getTableIndex(rowIndex + 1, colIndex + 1)] * colFrac *
                        rowFrac; //
 
-    return val; // IMPORTANT: table stores dimensionless values
+    return val * D; // IMPORTANT: re-dimensionalize value
 }
 
-double LookupTable::ReverseLookup(double distPerp, const double val) const {
+double LookupTable::ReverseLookup(double distPerp, double val) const {
     if (val == 0) {
         return 0;
+    } else { // Non-dimensionalize inputs
+        distPerp /= D;
+        val /= D;
     }
 
     double sbound;
@@ -176,7 +182,7 @@ double LookupTable::ReverseLookup(double distPerp, const double val) const {
         printf("Warning: val %g too large, setting sbound to max %g\n", val,
                sbound);
 #endif
-        return sbound;
+        return D * sbound; // Re-dimensionalize
     }
 
     // find cross point of distPerp and two points
@@ -203,5 +209,5 @@ double LookupTable::ReverseLookup(double distPerp, const double val) const {
     double sboundp = sboundGrid[colIndexp] +
                      (val - valpA) / (valpB - valpA) * sboundGridSpacing;
     sbound = sboundm * (1 - rowFrac) + sboundp * rowFrac;
-    return sbound;
+    return D * sbound;
 }

@@ -228,18 +228,17 @@ double KMC<TRod>::LUCalcProbSD(const int j_rod, const TRod &rod,
     // locations along rod.
     UpdateRodDistArr(j_rod, rod);
 
-    double D = 2. * rod.radius;
     double result;
     // Bypass probability calculation if protein is too far away
     if (SQR(r_cutoff_) < SQR(distMinArr_[j_rod]))
         result = 0;
     else {
-        double mu0 = muArr_[j_rod] / D;
-        double distPerp = distPerpArr_[j_rod] / D; // Perpendicular distance to
-                                                   // rod, changes if croslinker
-                                                   // is past the rod end point.
-        double lim0 = -mu0 - (0.5 * rod.length / D); // Lower limit of integral
-        double lim1 = -mu0 + (0.5 * rod.length / D); // Upper limit of integral
+        double mu0 = muArr_[j_rod];
+        double distPerp = distPerpArr_[j_rod];   // Perpendicular distance to
+                                                 // rod, changes if croslinker
+                                                 // is past the rod end point.
+        double lim0 = -mu0 - (0.5 * rod.length); // Lower limit of integral
+        double lim1 = -mu0 + (0.5 * rod.length); // Upper limit of integral
         lims_[j_rod].first = lim0;
         lims_[j_rod].second = lim1;
         // Get value of integral from end to first bound site.
@@ -252,8 +251,7 @@ double KMC<TRod>::LUCalcProbSD(const int j_rod, const TRod &rod,
                        ((lim0 < 0) ? -1.0 : 1.0);
         double term1 = LUTablePtr_->Lookup(distPerp, fabs(lim1)) *
                        ((lim1 < 0) ? -1.0 : 1.0);
-        // Integral must have dimensions of length
-        result = (term1 - term0) * D;
+        result = (term1 - term0);
     }
     return bindFactor * result;
 }
@@ -395,23 +393,27 @@ double KMC<TRod>::RandomBindPosSD(int j_rod, double roll) {
                   << std::endl;
         exit(1);
     }
-    const double D = LUTablePtr_->getRodDiameter();
+    // const double D = LUTablePtr_->getRodDiameter();
+    // Limits set at the end of the rods
     double lim0 = lims_[j_rod].first;
     double lim1 = lims_[j_rod].second;
     // TODO: Clear up this
-    // Lookup table parameter
-    const double distPerp = distPerpArr_[j_rod] / D;
-    // Range of CDF based on position limits where protein must bind
+    // Lookup table parameter: perpendicular distance away from rod
+    const double distPerp = distPerpArr_[j_rod];
+    // Range of CDF based on position limits where protein can bind
+    //      Since lookup table only stores positive values, take the absolute
+    //      value of the position limit and then negate probability if the
+    //      position limit was less than 0.
     double pLim0 =
         LUTablePtr_->Lookup(distPerp, fabs(lim0)) * ((lim0 < 0) ? -1.0 : 1.0);
     double pLim1 =
         LUTablePtr_->Lookup(distPerp, fabs(lim1)) * ((lim1 < 0) ? -1.0 : 1.0);
     // Scale random number to be within pLims
     roll = roll * (pLim1 - pLim0) + pLim0;
-    double sbound = 0; // Reset x position parameter
+    // double sbound = 0; // Reset x position parameter
     double preFact = roll < 0 ? -1. : 1.;
     roll *= preFact; // entry in lookup table must be positive
-    return preFact * (D * LUTablePtr_->ReverseLookup(distPerp, roll)) +
+    return preFact * (LUTablePtr_->ReverseLookup(distPerp, roll)) +
            muArr_[j_rod];
 }
 
