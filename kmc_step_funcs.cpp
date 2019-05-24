@@ -121,12 +121,15 @@ void KMC_S(const ProteinData &pData, const int Npj,
     }
     assert(head_activate != -1);
     // Change status of activated head
-    if (head_bound == head_activate) { // Bind unbound head
+    if (head_bound == head_activate) { // Unbind bound head
         rollVec[0] = roll / kmc_unbind.getTotProb();
         double pos[3] = {};
+        for (int i = 0; i < 3; ++i) {
+            pos[i] = pData.bind.pos[i];
+        }
         kmc_unbind.whereUnbindSU(pData.getRcutUS(), rollVec, pos);
         pBind.setUnBindPos(pos);
-    } else if (head_activate == 1 - head_bound) { // Unbind bound head
+    } else if (head_activate == 1 - head_bound) { // Bind unbound head
         roll = roll - kmc_unbind.getTotProb();
         double bindPos; // Position on rod where protein will bind,
                         // passed by reference.
