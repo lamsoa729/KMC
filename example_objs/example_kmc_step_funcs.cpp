@@ -125,6 +125,7 @@ void KMC_S(const ProteinData &pData, const int Npj,
         rollVec[0] = roll / kmc_unbind.getTotProb();
         double pos[3] = {};
         kmc_unbind.whereUnbindSU(pData.getRcutUS(), rollVec, pos);
+        pBind.setUnBind(head_bound);
         pBind.setUnBindPos(pos);
     } else if (head_activate == 1 - head_bound) { // Unbind bound head
         roll = roll - kmc_unbind.getTotProb();
