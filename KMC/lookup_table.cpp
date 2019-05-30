@@ -7,6 +7,21 @@
 
 #include <boost/math/quadrature/gauss_kronrod.hpp>
 
+/*! \brief Initialize lookup table
+ *
+ * Stores precalculated values of the integral
+ * \int_0^y exp{-M_ (sqrt[x^2 + l_min^2] - l_o - D)^2}dx
+ * To do this, grid spacing are calculated based on the value of M_ and
+ * freeLength. The upper bound lUB is calculated so that the maximum change at
+ * the end of the integral is less than 10^{-5}. Everything is
+ * non-dimensionalized by rodD.
+ *
+ * \param M_ Exponential prefactor with the dimensions of L^{-2}.
+ * \param freeLength Rest length of binding crosslink.
+ * \param rodD Diameter of rod crosslink is binding to.
+ *
+ * \return void
+ */
 void LookupTable::Init(double M_, double freeLength, double rodD) {
     // setup length scale and dimensionless lengths
     D = rodD;
@@ -14,7 +29,7 @@ void LookupTable::Init(double M_, double freeLength, double rodD) {
     M = M_ * rodD * rodD;
 
     // truncate the integration when integrand < SMALL
-    // Interation table in dimensionless lengths
+    // interation table in dimensionless lengths
     // lUB = sqrt(lm^2 + s^2), dimensionless scaled by D
     constexpr double SMALL = 1e-5;
     const double lUB = sqrt(-log(SMALL) / M) + 1 + ell0;
@@ -48,6 +63,14 @@ void LookupTable::Init(double M_, double freeLength, double rodD) {
     FillMatrix();
 }
 
+/*! \brief Fills the lookup table with values after grid has been created.
+ *
+ * Table is a flattened 2D array with first index corresponding to different
+ * distances head is away from rod and second index is defines the bounds of
+ * where that crosslinking head can bind.
+ *
+ * \return void
+ */
 void LookupTable::FillMatrix() {
     table.resize(distPerpGridNumber * sboundGridNumber, 0);
 
@@ -70,6 +93,10 @@ void LookupTable::FillMatrix() {
     }
 }
 
+/*! \brief Print out table for testing purposes
+ *
+ * \return void
+ */
 void LookupTable::PrintTable() const {
     const int distPerpGridNumber = distPerpGrid.size();
     const int sboundGridNumber = sboundGrid.size();
@@ -84,6 +111,17 @@ void LookupTable::PrintTable() const {
     }
 }
 
+/*! \brief Lookup the value of the integral given two parameters.
+ *
+ * $\int_0^y exp{-M_ (sqrt[x^2 + l_min^2] - l_o - D)^2}dx$
+ *
+ * \param distPerp l_min in the above integral. The distance away from the
+ * infinite carrier line.
+ * \param sbound y in the above integral. The limit of
+ * integration.
+ *
+ * \return double Dimensional value of integral calculated
+ */
 double LookupTable::Lookup(double distPerp, double sbound) const {
     // Non-dimensionalize parameters
     distPerp /= D;
@@ -116,6 +154,7 @@ double LookupTable::Lookup(double distPerp, double sbound) const {
         colFrac = 1;
     }
 
+    // linear interpolation using surrounding grid values
     double val = table[getTableIndex(rowIndex, colIndex)] * (1 - colFrac) *
                      (1 - rowFrac) //
                  + table[getTableIndex(rowIndex, colIndex + 1)] * colFrac *
@@ -128,6 +167,15 @@ double LookupTable::Lookup(double distPerp, double sbound) const {
     return val * D; // IMPORTANT: re-dimensionalize value
 }
 
+/*! \brief Invert the integral represented by lookup table so given a distance
+ * away and value of integral you retrieve the upper limit of integration
+ *
+ * \param distPerp l_min in the above integral. The distance away from the
+ * infinite carrier line.
+ * \param val Resultant value of integral
+ *
+ * \return double Dimensional upper bound of integral
+ */
 double LookupTable::ReverseLookup(double distPerp, double val) const {
     if (val == 0) {
         return 0;
