@@ -19,7 +19,6 @@ SIZE =	size
 
 # Files
 SRCS = \
-	KMC/kmc.cpp \
 	KMC/lookup_table.cpp \
 	KMC/integrals.cpp
 
