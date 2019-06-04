@@ -2,8 +2,8 @@
  *                     Unit testing for KMC<ExampleRod> code *
  **********************************************************************/
 
-#include "example_objs/ExampleRod.hpp"
-#include "example_objs/ExampleXlink.hpp"
+#include "ExampleRod.hpp"
+#include "KMC/example_objs/ExampleXlink.hpp"
 #include "helpers.hpp"
 #include "kmc.hpp"
 #include "lookup_table.hpp"
@@ -156,7 +156,7 @@ TEST_CASE("Test CalcProbSU for KMC class", "[calc_prob_su]") {
         CHECK(xlink.pos[0] == rod.pos[0]);
         CHECK(xlink.pos[1] == rod.pos[1]);
         CHECK(xlink.pos[2] == rod.pos[2]);
-        CHECK(xlink.idBind[1] == ID_UB);
+        CHECK(xlink.idBind[1] == IDUB);
     }
 
     SECTION("Test unbinding probability") {

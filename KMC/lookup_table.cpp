@@ -56,8 +56,8 @@ void LookupTable::Init(double M_, double freeLength, double rodD) {
     for (int i = 0; i < sboundGridNumber; i++) {
         sboundGrid[i] = i * sboundGridSpacing + sboundLB;
     }
-    distPerpGridSpacingInv = 1 / distPerpGridSpacing;
-    sboundGridSpacingInv = 1 / sboundGridSpacing;
+    distPerpGridSpacingInv = 1. / distPerpGridSpacing;
+    sboundGridSpacingInv = 1. / sboundGridSpacing;
 
     // step 3 tabulate the matrix
     FillMatrix();

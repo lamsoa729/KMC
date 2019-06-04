@@ -23,9 +23,9 @@
 #include <limits>
 #include <type_traits>
 
-constexpr int ID_UB = -1; // the default Unbind state
-constexpr double NAND = std::numeric_limits<double>::quiet_NaN();
-constexpr double EPSD = std::numeric_limits<double>::epsilon();
+constexpr int IDUB = -1; // the default Unbind state
+constexpr double NAN_D = std::numeric_limits<double>::quiet_NaN();
+constexpr double EPS_D = std::numeric_limits<double>::epsilon();
 
 /**
  * @brief time-varying ProteinBindStatus
@@ -37,25 +37,25 @@ constexpr double EPSD = std::numeric_limits<double>::epsilon();
 class ExampleXlink {
   public:
     // TODO: Test this
-    double pos[3] = {NAND, NAND, NAND};
+    double pos[3] = {NAN_D, NAN_D, NAN_D};
     ///< Case1 both unbind -> protein is a point only
     ///< Case2 one bind -> protein is a point only, pos = posEndBind
     ///< Case3 both bind -> pos = mid-point of posEndBind
 
     // time varying properties
-    bool changeBind[2] = {true, true}; ///< flag for if binding status changes
-    int idBind[2] = {ID_UB, ID_UB};    ///< ID of bind MT
-    int rankBind[2] = {ID_UB, ID_UB};  ///< mpi rank of bind MT
-    double lenBind[2] = {NAND, NAND};  ///< length of bind MT
-    double distBind[2] = {NAND, NAND};
+    bool changeBind[2] = {true, true};  ///< flag for if binding status changes
+    int idBind[2] = {IDUB, IDUB};       ///< ID of bind MT
+    int rankBind[2] = {IDUB, IDUB};     ///< mpi rank of bind MT
+    double lenBind[2] = {NAN_D, NAN_D}; ///< length of bind MT
+    double distBind[2] = {NAN_D, NAN_D};
     ///< the distance to bind MT center,
     ///< [-lenBind/2,lenBind/2], +towards plus end
-    double posEndBind[2][3] = {{NAND, NAND, NAND}, {NAND, NAND, NAND}};
+    double posEndBind[2][3] = {{NAN_D, NAN_D, NAN_D}, {NAN_D, NAN_D, NAN_D}};
     ///< position (in lab frame) of two ends when bind
-    ///< when unbind, the position is NAND
-    double centerBind[2][3] = {{NAND, NAND, NAND}, {NAND, NAND, NAND}};
+    ///< when unbind, the position is NAN_D
+    double centerBind[2][3] = {{NAN_D, NAN_D, NAN_D}, {NAN_D, NAN_D, NAN_D}};
     ///< center position of two MTs
-    double directionBind[2][3] = {{NAND, NAND, NAND}, {NAND, NAND, NAND}};
+    double directionBind[2][3] = {{NAN_D, NAN_D, NAN_D}, {NAN_D, NAN_D, NAN_D}};
     ///< direction of two MTs
     int tag = 0;              ///< user-assigned integer tag for different types
     bool walkOff = true;      ///< walf off the end, i.e., no 'end-dewelling'
@@ -112,14 +112,14 @@ class ExampleXlink {
      * @param end 0 or 1
      */
     void setUnBind(int end) {
-        idBind[end] = ID_UB;
-        rankBind[end] = ID_UB;
-        lenBind[end] = NAND;
-        distBind[end] = NAND;
+        idBind[end] = IDUB;
+        rankBind[end] = IDUB;
+        lenBind[end] = NAN_D;
+        distBind[end] = NAN_D;
         for (int i = 0; i < 3; i++) {
-            directionBind[end][i] = NAND;
-            centerBind[end][i] = NAND;
-            posEndBind[end][i] = NAND;
+            directionBind[end][i] = NAN_D;
+            centerBind[end][i] = NAN_D;
+            posEndBind[end][i] = NAN_D;
         }
     }
 
@@ -148,8 +148,8 @@ class ExampleXlink {
                  const double centerLine[3], const double centerDist,
                  const double length, const int rank) {
         assert(end == 0 || end == 1); // Make sure you choose a viable head
-        assert(idBind[end] == ID_UB); // Make sure end is originally unbound
-        assert(gid != ID_UB);
+        assert(idBind[end] == IDUB);  // Make sure end is originally unbound
+        assert(gid != IDUB);
         idBind[end] = gid;
         distBind[end] = centerDist;
         lenBind[end] = length;
@@ -175,7 +175,7 @@ class ExampleXlink {
      * @param end
      */
     void updatePosEndBind(const int end) {
-        if (idBind[end] == ID_UB) {
+        if (idBind[end] == IDUB) {
             setUnBind(end);
         } else {
             for (int i = 0; i < 3; i++) { // posEnd = direction * dist + center
@@ -193,11 +193,11 @@ class ExampleXlink {
      * This must be called when posEndBind is valid
      */
     void updatePosWithEndBind() {
-        if (idBind[0] != ID_UB && idBind[1] == ID_UB) { // Case 2
+        if (idBind[0] != IDUB && idBind[1] == IDUB) { // Case 2
             std::copy(posEndBind[0], posEndBind[0] + 3, pos);
-        } else if (idBind[0] == ID_UB && idBind[1] != ID_UB) { // Case 2
+        } else if (idBind[0] == IDUB && idBind[1] != IDUB) { // Case 2
             std::copy(posEndBind[1], posEndBind[1] + 3, pos);
-        } else if (idBind[0] != ID_UB && idBind[1] != ID_UB) { // Case 1
+        } else if (idBind[0] != IDUB && idBind[1] != IDUB) { // Case 1
             for (int i = 0; i < 3; i++) {
                 pos[i] = 0.5 * (posEndBind[0][i] + posEndBind[1][i]);
             }
@@ -210,7 +210,7 @@ class ExampleXlink {
      * @param end
      */
     void updatePosEndClamp(int end) {
-        if (idBind[end] != ID_UB) {
+        if (idBind[end] != IDUB) {
             const double lenHalf = lenBind[end] * 0.5;
             if (distBind[end] > lenHalf)
                 distBind[end] = lenHalf;
@@ -321,7 +321,7 @@ class ExampleXlink {
      */
     /*
      *double getProteinForceLength() const {
-     *    if (idBind[0] == ID_UB || idBind[1] == ID_UB) {
+     *    if (idBind[0] == IDUB || idBind[1] == IDUB) {
      *        return 0;
      *    } else {
      *        // consistent tubuleDiameter as the original LUT construction
@@ -339,7 +339,7 @@ class ExampleXlink {
      */
     /*
      *double getProteinEndEndLength() const {
-     *    if (idBind[0] == ID_UB || idBind[1] == ID_UB) {
+     *    if (idBind[0] == IDUB || idBind[1] == IDUB) {
      *        return 0;
      *    } else {
      *        Evec3 r = ECmap3(posEndBind[0]) - ECmap3(posEndBind[1]);
