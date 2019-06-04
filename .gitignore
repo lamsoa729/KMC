@@ -3,3 +3,4 @@
 *.X*
 .DS_Store
 MakefileInc.mk
+doc/

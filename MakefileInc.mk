@@ -11,9 +11,9 @@ LINKFLAGS= $(CXXFLAGS)
 RELEASE_OPT = -O3 -DNDEBUG
 DEBUG_OPT = -O0 -g -DDEBUG
 
-SFTPATH = /usr/local
+SFTPATH = $(HOME)/local
 # Boost, header only
-USERINCLUDE += -I/usr/local/Cellar/boost/1.69.0/include
+USERINCLUDE += -I$(SFTPATH)/include/boost/
 # YAML
 USERINCLUDE += -I$(SFTPATH)/include/
 USERLINK += $(SFTPATH)/lib/libyaml-cpp.a
