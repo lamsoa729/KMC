@@ -18,13 +18,13 @@ SHELL = /bin/sh
 SIZE =	size
 
 # Files
-SRCS = \
-	KMC/lookup_table.cpp \
-	KMC/integrals.cpp
+#SRCS = \
+#        KMC/lookup_table.cpp \
+#        KMC/integrals.cpp
 
 # Definitions
 TEST     := TEST.X
-OBJ      := $(SRCS:.cpp=.o)
+#OBJ      := $(SRCS:.cpp=.o)
 TEST_OBJ := tests/test_main.o
 
 all: $(EXE)
@@ -36,16 +36,16 @@ test: $(TEST)
 	./$(TEST)
 
 # Dependency files
-OBJ_DEP = $(OBJ:.o=.d)
+#OBJ_DEP = $(OBJ:.o=.d)
 TESTOBJ_DEP = $(TEST_OBJ:.o=.d)
 
 # pull in dependency info for *existing* .o files
--include $(OBJ_DEP)
+#-include $(OBJ_DEP)
 -include $(TESTOBJ_DEP)
 
 # Link rule
-$(TEST): $(OBJ) $(TEST_OBJ)
-	$(LINK) $(OBJ) $(TEST_OBJ)  -o $(TEST) $(LINKFLAGS) 
+$(TEST): $(TEST_OBJ)
+	$(LINK) $(TEST_OBJ)  -o $(TEST) $(LINKFLAGS) 
 
 %.o: %.cpp
 	$(CXX) -MD -MP $(CXXFLAGS) $(INCLUDE_DIRS) -c $*.cpp -o $*.o
@@ -53,6 +53,4 @@ $(TEST): $(OBJ) $(TEST_OBJ)
 
 # remove compilation products
 clean: 
-	rm -vf $(EXE) $(TEST)  \
-	$(OBJ) $(TEST_OBJ) \
-	$(OBJ_DEP) $(TESTOBJ_DEP)
+	rm -vf $(EXE) $(TEST) $(TEST_OBJ) $(TESTOBJ_DEP)

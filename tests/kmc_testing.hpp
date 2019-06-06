@@ -3,7 +3,7 @@
  **********************************************************************/
 
 #include "ExampleRod.hpp"
-#include "KMC/example_objs/ExampleXlink.hpp"
+#include "example_objs/ExampleXlink.hpp"
 #include "helpers.hpp"
 #include "kmc.hpp"
 #include "lookup_table.hpp"
