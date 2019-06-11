@@ -57,10 +57,6 @@ class KMC {
      *  Constructors  *
      ******************/
 
-    KMC() {}
-
-    KMC(const double *pos) { setPos(pos); }
-
     KMC(const double *pos, const int Npj, const double r_cutoff) {
         setPos(pos);
         r_cutoff_ = r_cutoff;
