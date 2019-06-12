@@ -35,7 +35,14 @@ class KMC {
     /******************
      *  Constructors  *
      ******************/
+    // Constructor for unbinding heads
+    KMC(const double *pos) {
+        setPos(pos);
+        // Set r_cutoff_ negative so improper use of KMC does not occur
+        r_cutoff_ = -1;
+    }
 
+    // Constructor for binding heads without lookup tables
     KMC(const double *pos, const int Npj, const double r_cutoff) {
         setPos(pos);
         r_cutoff_ = r_cutoff;
@@ -47,6 +54,7 @@ class KMC {
         lims_.resize(Npj);
     }
 
+    // Constructor for binding heads with lookup tables
     KMC(const double *pos, const int Npj, const double r_cutoff,
         LookupTable *LUTablePtr) {
         setPos(pos);
@@ -172,6 +180,8 @@ template <typename TRod>
 void KMC<TRod>::CalcTotProbsUS(const TRod *const *rods,
                                const std::vector<int> &uniqueFlagJ,
                                const double bindFactor) {
+    // Make sure that KMC was properly initialized.
+    assert(r_cutoff_ > 0);
     prob_tot_ = 0;
     for (int j_rod = 0; j_rod < rods_probs_.size(); ++j_rod) {
         if (uniqueFlagJ[j_rod] > 0) {
@@ -255,12 +265,13 @@ void KMC<TRod>::CalcTotProbsSD(const TRod *const *rods,
                                const int boundID, const double lambda,
                                const double kappa, const double beta,
                                const double restLen, const double bindFactor) {
+    // Make sure that KMC was properly initialized.
+    assert(r_cutoff_ > 0);
+    // Sum total probability of binding to surrounding rods
     prob_tot_ = 0;
     for (int j_rod = 0; j_rod < rods_probs_.size(); ++j_rod) {
         if (uniqueFlagJ[j_rod] > 0 && rods[j_rod]->gid != boundID) {
             if (LUTablePtr_) {
-                // rods_probs_[j_rod] = LUCalcProbSD(j_rod, *(rods[j_rod]),
-                // kappa, eqLen, bindFactor);
                 rods_probs_[j_rod] =
                     LUCalcProbSD(j_rod, *(rods[j_rod]), bindFactor);
             } else {
