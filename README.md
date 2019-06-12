@@ -1,15 +1,15 @@
 # More to come soon
 
-# Dependencies
+## Dependencies
 Boost
 
-# Requirements for rod structures
+## Requirements for rod structures
 Public member variables
-* length (double)
-* direction (double[3])
-* pos (double[3])
-* radius (double)
-* gid (int)
+*  length (double)
+*  direction (double\[3])
+*  pos (double\[3])
+*  radius (double)
+*  gid (int)
 
-# Lookup tables
+## Lookup tables
 

@@ -49,7 +49,6 @@ inline void copy3(const double *a, double *b) {
  */
 inline double dist_point_seg(const double *point, const double *minus,
                              const double *plus, double *pointPerp) {
-
     // The direction vector is not unit length.  The normalization is deferred
     // until it is needed.
     double direction[3], diff[3];

@@ -93,7 +93,6 @@ TEST_CASE("Test CalcProbUS for KMC<ExampleRod> class", "[calc01prob]") {
     }
     SECTION("Test binding probability when crosslinker is on surface of rod's "
             "tip.") {
-
         double pos[3] = {rod.length * 0.5, 0, 0.5};
         xlink.setUnBindPos(pos);
         KMC<ExampleRod> kmc(xlink.getPosPtr(), 1, xlink.getRcutUS());
