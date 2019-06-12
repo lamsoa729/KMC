@@ -1,6 +1,6 @@
+#include "KMC/integrals.hpp"
+#include "KMC/lookup_table.hpp"
 #include "catch.hpp"
-#include "integrals.hpp"
-#include "lookup_table.hpp"
 
 #include <cmath>
 #include <cstdio>

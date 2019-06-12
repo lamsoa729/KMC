@@ -16,7 +16,7 @@
 #include <string>
 #include <vector>
 
-#include "integrals.hpp"
+#include "KMC/integrals.hpp"
 /**
  * @brief 2D Lookup Table for the dimensionless functions
  *

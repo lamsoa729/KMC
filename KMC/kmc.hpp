@@ -1,34 +1,13 @@
 #ifndef KMC_HPP
 #define KMC_HPP
 
-//#include "example_objs/ExampleRod.hpp"
-//#include "example_objs/ExampleXlink.hpp"
-#include "helpers.hpp"
-#include "lookup_table.hpp"
-#include "macros.hpp"
+#include "KMC/helpers.hpp"
+#include "KMC/lookup_table.hpp"
+#include "KMC/macros.hpp"
 
 #include <array>
 #include <cassert>
 #include <cmath>
-
-// LookupTable BuildLookupTable(const double kMT, const double lenMP0,
-// const double y_cutoff);
-
-//// KMC step for unbound protein
-// void KMC_U(const ProteinData &pData, const int Npj,
-//           const TRod *const *rods,
-//           const std::vector<int> &uniqueFlagJ, double dt, double roll,
-//           ProteinBindStatus &pBind);
-//// KMC step for singly bound to either unbound or doubly bound.
-// void KMC_S(const ProteinData &pData, const int Npj,
-//           const TRod *const *rods,
-//           const std::vector<int> &uniqueFlagJ, double dt, double KBT,
-//           double rollVec[], ProteinBindStatus &pBind);
-//// KMC step for doubly
-// void KMC_D(const ProteinData &bindData, const int Npj,
-//           const TRod *const *rods,
-//           const std::vector<int> &uniqueFlagJ, double dt, double KBT,
-//           double roll, ProteinBindStatus &pBind);
 
 template <typename TRod>
 class KMC {

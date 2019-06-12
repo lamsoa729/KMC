@@ -1,10 +1,10 @@
 #ifndef KMC_STEP_FUNCS_HPP
 #define KMC_STEP_FUNCS_HPP
 
-#include "helpers.hpp"
-#include "kmc.hpp"
-#include "lookup_table.hpp"
-#include "macros.hpp"
+#include "KMC/helpers.hpp"
+#include "KMC/kmc.hpp"
+#include "KMC/lookup_table.hpp"
+#include "KMC/macros.hpp"
 #include <array>
 #include <cassert>
 #include <cmath>

@@ -2,12 +2,12 @@
  *                     Unit testing for KMC<ExampleRod> code *
  **********************************************************************/
 
-#include "ExampleRod.hpp"
+#include "KMC/ExampleRod.hpp"
+#include "KMC/helpers.hpp"
+#include "KMC/kmc.hpp"
+#include "KMC/lookup_table.hpp"
+#include "KMC/macros.hpp"
 #include "example_objs/ExampleXlink.hpp"
-#include "helpers.hpp"
-#include "kmc.hpp"
-#include "lookup_table.hpp"
-#include "macros.hpp"
 
 #include "catch.hpp"
 

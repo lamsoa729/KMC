@@ -12,13 +12,8 @@
 #ifndef EXAMPLEXLINK_HPP_
 #define EXAMPLEXLINK_HPP_
 
-//#include "SimToolbox/FDPS/particle_simulator.hpp"
-//#include "SimToolbox/Util/EigenDef.hpp"
-//#include "SimToolbox/Util/GeoUtil.hpp"
-//#include "SimToolbox/Util/IOHelper.hpp"
-
-#include "lookup_table.hpp"
-#include "macros.hpp"
+#include "KMC/lookup_table.hpp"
+#include "KMC/macros.hpp"
 #include <cassert>
 #include <limits>
 #include <type_traits>

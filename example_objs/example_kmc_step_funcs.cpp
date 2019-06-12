@@ -1,4 +1,4 @@
-#include "kmc_step_funcs.hpp"
+#include "KMC/kmc_step_funcs.hpp"
 
 /**
  * @brief: Perform kinetic monte carlo step of protein object when no heads
