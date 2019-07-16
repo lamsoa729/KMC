@@ -527,31 +527,35 @@ double KMC<TRod>::RandomBindPosSD(int j_rod, double roll) {
                   << std::endl;
         exit(1);
     }
-    // const double D = LUTablePtr_->getRodDiameter();
-    // Limits set at the end of the rods
+    // Limits set at the end of the rod relative to closest point of bound head
+    // to unbound rod (mu)
     double lim0 = lims_[j_rod].first;
     double lim1 = lims_[j_rod].second;
+
     // Lookup table parameter: perpendicular distance away from rod
     const double distPerp = distPerpArr_[j_rod];
+
     // Range of CDF based on position limits where protein can bind
-    //      Since lookup table only stores positive values, take the absolute
-    //      value of the position limit and then negate probability if the
-    //      position limit was less than 0.
     double pLim0 =
         LUTablePtr_->Lookup(distPerp, fabs(lim0)) * ((lim0 < 0) ? -1.0 : 1.0);
     double pLim1 =
         LUTablePtr_->Lookup(distPerp, fabs(lim1)) * ((lim1 < 0) ? -1.0 : 1.0);
+
     // Scale random number to be within probability limits
+    //      Since lookup table only stores positive values, take the absolute
+    //      value of the position limit and then negate probability if the
+    //      position limit was less than 0.
     roll = roll * (pLim1 - pLim0) + pLim0;
-    std::cout << " Roll SD is " << roll << std::endl;
-    std::cout << " pLims are: " << pLim0 << ", " << pLim1 << std::endl;
+    printf("roll = %f, must be between(%f, %f) \n", roll, pLim0, pLim1);
     double preFact = roll < 0 ? -1. : 1.;
     roll *= preFact; // entry in lookup table must be positive
-    double bind_pos =
-        preFact * (LUTablePtr_->ReverseLookup(distPerp, roll)) + muArr_[j_rod];
-    std::cout << " bind_pos is " << bind_pos << std::endl;
+
+    double bind_pos = preFact * (LUTablePtr_->ReverseLookup(distPerp, roll));
+    printf("bind_pos = %f, must be between(%f, %f) \n", bind_pos, lim0, lim1);
+
     assert(lim0 < bind_pos && lim1 > bind_pos);
-    return bind_pos;
+    // Translate bound position to be relative to center of rod
+    return bind_pos + muArr_[j_rod];
 }
 
 /*! \brief Where should head be located after unbinding while other head is
