@@ -90,7 +90,7 @@ class LookupTable {
         // step 1 determine grid
         const double distPerpLB = 0;
         const double distPerpUB = lUB;
-        distPerpGridNumber = 48; // grid in dperp
+        distPerpGridNumber = 96; // grid in dperp
         double distPerpGridSpacing =
             (distPerpUB - distPerpLB) / (distPerpGridNumber - 1);
 
@@ -251,19 +251,28 @@ class LookupTable {
 #endif
             exit(1);
         }
-        double colFrac = 0;
 
         // reverse lookup val on row rowIndex
-        const int index0LB = getTableIndex(rowIndex, 0);
-        const int index0UB = getTableIndex(rowIndex, sboundGridNumber - 1);
+
+        // Needed only for quadratic interpolation
+        // int index0LB;
+        // int index0UB;
+        // if (rowIndex > 0) {
+        //    index0LB = getTableIndex(rowIndex - 1, 0);
+        //    index0UB = getTableIndex(rowIndex - 1, sboundGridNumber - 1);
+        //} else {
+        //    index0LB = getTableIndex(rowIndex, 0);
+        //    index0UB = getTableIndex(rowIndex, sboundGridNumber - 1);
+        //}
+
         const int index1LB = getTableIndex(rowIndex, 0);
         const int index1UB = getTableIndex(rowIndex, sboundGridNumber - 1);
         const int index2LB = getTableIndex(rowIndex + 1, 0);
         const int index2UB = getTableIndex(rowIndex + 1, sboundGridNumber - 1);
 
         // reverse lookup
-        auto lower0 = std::lower_bound(table.begin() + index0LB,
-                                       table.begin() + index0UB, val);
+        // auto lower0 = std::lower_bound(table.begin() + index0LB,
+        // table.begin() + index0UB, val);
         // reverse lookup val on row rowIndex
         auto lower1 = std::lower_bound(table.begin() + index1LB,
                                        table.begin() + index1UB, val);
@@ -272,7 +281,7 @@ class LookupTable {
                                        table.begin() + index2UB, val);
 
         // find cross point of distPerp and two points
-        assert(lower0 - table.begin() >= index0LB);
+        // assert(lower0 - table.begin() >= index0LB);
         assert(lower1 - table.begin() >= index1LB);
         assert(lower2 - table.begin() >= index2LB);
         double sboundGridSpacing = sboundGrid[1] - sboundGrid[0];
@@ -287,9 +296,25 @@ class LookupTable {
          *
          * Off set because different distPerps have different cutoff values
          */
+        // const int colIndex0 = lower0 - 1 - table.begin() - index1LB;
         const int colIndexm = lower1 - 1 - table.begin() - index1LB;
         const int colIndexp = lower2 - 1 - table.begin() - index2LB;
-        double sboundm, sboundp;
+        double sbound0, sboundm, sboundp;
+        //        if (lower0 == table.begin() + index1UB) {
+        //#ifndef NDEBUG
+        //            printf("Warning: val %g too large for row0 lookup with max
+        //            of %g. "
+        //                   "Setting to a max sbound of %g \n",
+        //                   val, *(lower0), sboundGrid[colIndex0]);
+        //#endif
+        //            sbound0 = sboundGrid[colIndex0];
+        //        } else {
+        //            double val0A = *(lower0 - 1);
+        //            double val0B = *(lower0);
+        //            sbound0 = sboundGrid[colIndex0] +
+        //                      (val - val0A) / (val0B - val0A) *
+        //                      sboundGridSpacing;
+        //        }
         // Interpolate first row in the sbound direction
         if (lower1 == table.begin() + index1UB) {
 #ifndef NDEBUG
@@ -309,11 +334,10 @@ class LookupTable {
 #ifndef NDEBUG
             printf("Warning: val %g too large for row2 lookup with max of %g. "
                    "Setting to a max sbound of %g \n",
-                   val, *(lower2), sboundGrid[colIndexp - 1]);
+                   val, *(lower2), sboundGrid[colIndexp]);
 #endif
-            // FIXME This is very non-proven and could distort results at edges
-            //      Probably biases away from long attatchments.
-            sboundp = sboundGrid[colIndexm + 1];
+            sboundp = sboundGrid[colIndexp];
+            // return D * sboundm;
         } else {
             double valpA = *(lower2 - 1);
             double valpB = *(lower2);
@@ -330,7 +354,16 @@ class LookupTable {
         //                 (val - valpA) / (valpB - valpA) * sboundGridSpacing;
 
         // Interpolate two sbound values in the distPerp direction
+        // if (rowIndex == 0) { // Linear interpolation
         sbound = sboundm * (1 - rowFrac) + sboundp * rowFrac;
+        //} else { // Quadratic interpolation
+        //    printf("In quadratic \n");
+        //    sbound = .5 * rowFrac *
+        //                 ((rowFrac - 1.) * sbound0 + (rowFrac + 1.) *
+        //                 sboundp) +
+        //             (1 - rowFrac) * (1 + rowFrac) * sboundm;
+        //}
+
 #ifndef NDEBUG
         double UB_val1 = *(table.begin() + index1UB);
         double UB_val2 = *(table.begin() + index2UB);
@@ -343,11 +376,12 @@ class LookupTable {
     }
 
   private:
-    /*! \brief Fills the lookup table with values after grid has been created.
+    /*! \brief Fills the lookup table with values after grid has been
+     * created.
      *
-     * Table is a flattened 2D array with first index corresponding to different
-     * distances head is away from rod and second index is defines the bounds of
-     * where that crosslinking head can bind.
+     * Table is a flattened 2D array with first index corresponding to
+     * different distances head is away from rod and second index is defines
+     * the bounds of where that crosslinking head can bind.
      *
      * \return void
      */

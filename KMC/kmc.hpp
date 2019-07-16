@@ -556,7 +556,24 @@ double KMC<TRod>::RandomBindPosSD(int j_rod, double roll) {
     printf("bind_pos = %f, expected range = (%f, %f) \n", bind_pos, lim0, lim1);
 #endif
 
-    assert(lim0 < bind_pos && lim1 > bind_pos);
+    // FIXME Reverse lookup table is not perfect. Bind to end of MT if limit is
+    // exceeded.
+    if (lim0 > bind_pos) {
+#ifndef NDEBUG
+        printf("Warning: binding position %g exceeds rod limit of %g. Binding "
+               "to end \n",
+               bind_pos, lim0);
+#endif
+        bind_pos = lim0;
+    } else if (lim1 < bind_pos) {
+#ifndef NDEBUG
+        printf("Warning: binding position %g exceeds rod limit of %g. Binding "
+               "to end \n",
+               bind_pos, lim1);
+#endif
+        bind_pos = lim1;
+    }
+    // assert(lim0 < bind_pos && lim1 > bind_pos);
     // Translate bound position to be relative to center of rod
     return bind_pos + muArr_[j_rod];
 }
