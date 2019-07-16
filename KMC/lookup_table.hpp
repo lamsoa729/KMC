@@ -84,7 +84,7 @@ class LookupTable {
         // truncate the integration when integrand < SMALL
         // interation table in dimensionless lengths
         // lUB = sqrt(lm^2 + s^2), dimensionless scaled by D
-        constexpr double SMALL = 1e-8;
+        constexpr double SMALL = 1e-5;
         const double lUB = sqrt(-log(SMALL) / M) + 1 + ell0;
 
         // step 1 determine grid
@@ -294,11 +294,11 @@ class LookupTable {
         // Interpolate first row in the sbound direction
         if (lower1 == table.begin() + index1UB) {
 #ifndef NDEBUG
-            printf("Warning: val %g too large for row1 lookup, setting to max "
-                   "of %g. \n",
-                   val, *(lower1));
+            printf("Warning: val %g too large for row1 lookup with max of %g. "
+                   "Setting to a max of %g \n",
+                   val, *(lower1), sboundGrid[colIndexm]);
 #endif
-            sboundm = *(lower1);
+            sboundm = sboundGrid[colIndexm];
         } else {
             double valmA = *(lower1 - 1);
             double valmB = *(lower1);
@@ -307,12 +307,12 @@ class LookupTable {
         }
         // Interpolate second row in the sbound direction
         if (lower2 == table.begin() + index2UB) {
-            sboundm = *(lower2);
 #ifndef NDEBUG
-            printf("Warning: val %g too large for row2 lookup, setting to max "
-                   "of %g. \n",
-                   val, *(lower2));
+            printf("Warning: val %g too large for row2 lookup with max of %g. "
+                   "Setting to a max of %g \n",
+                   val, *(lower2), sboundGrid[colIndexp]);
 #endif
+            sboundp = sboundGrid[colIndexp];
             // return D * sbound; // Re-dimensionalize
         } else {
             double valpA = *(lower2 - 1);
