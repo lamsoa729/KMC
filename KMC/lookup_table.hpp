@@ -38,7 +38,7 @@ class LookupTable {
 
     int sboundGridNumber;
     double sboundGridSpacingInv;    ///< dimensionless
-    std::vector<double> sboundGrid; ///< dimensionless horizontal direciton
+    std::vector<double> sboundGrid; ///< dimensionless horizontal direction
 
     std::vector<double> table; ///< the 2D matrix of dimensionless values
 
@@ -84,12 +84,11 @@ class LookupTable {
         // truncate the integration when integrand < SMALL
         // interation table in dimensionless lengths
         // lUB = sqrt(lm^2 + s^2), dimensionless scaled by D
-        constexpr double SMALL = 1e-5;
+        constexpr double SMALL = 1e-8;
         const double lUB = sqrt(-log(SMALL) / M) + 1 + ell0;
 
         // step 1 determine grid
-        const double distPerpLB =
-            0; // allow min distPerp to be half D, some overlap
+        const double distPerpLB = 0;
         const double distPerpUB = lUB;
         distPerpGridNumber = 48; // grid in dperp
         double distPerpGridSpacing =
@@ -166,7 +165,7 @@ class LookupTable {
 
         // clamp to grid bound
         if (rowIndex < 0) {
-            printf("Error: distPerp too small: %g \n", distPerp);
+            printf("Error: distPerp must be positive value: %g \n", distPerp);
             exit(1);
         }
         if (colIndex < 0) {
@@ -182,9 +181,10 @@ class LookupTable {
             rowFrac = 1;
         }
         if (colIndex > sboundGridNumber - 2) {
-#ifndef NDEBUG
-            printf("Warning: sbound %g very large, clamp to grid UB\n", sbound);
-#endif
+            //#ifndef NDEBUG
+            //            printf("Warning: sbound %g very large, clamp to grid
+            //            UB\n", sbound);
+            //#endif
             colIndex = sboundGridNumber - 2;
             colFrac = 1;
         }
@@ -235,8 +235,9 @@ class LookupTable {
         }
         if (rowIndex > distPerpGridNumber - 2) {
 #ifndef NDEBUG
-            printf("Warning: distPerp %g very large, clamp to grid UB\n",
-                   distPerp);
+            printf(
+                "Warning: distPerp %g very large, clamp to grid upper limit\n",
+                distPerp);
 #endif
             rowIndex = distPerpGridNumber - 2;
             rowFrac = 1;
@@ -258,46 +259,77 @@ class LookupTable {
         const int index2LB = getTableIndex(rowIndex + 1, 0);
         const int index2UB = getTableIndex(rowIndex + 1, sboundGridNumber - 1);
 
+        // reverse lookup val on row rowIndex
         auto lower1 = std::lower_bound(table.begin() + index1LB,
                                        table.begin() + index1UB, val);
         // reverse lookup val on row rowIndex+1
         auto lower2 = std::lower_bound(table.begin() + index2LB,
                                        table.begin() + index2UB, val);
 
-        if (lower1 == table.begin() + index1UB ||
-            lower2 == table.begin() + index2UB) {
-            sbound = sboundGrid.back();
-#ifndef NDEBUG
-            printf("Warning: val %g too large, setting sbound to max %g\n", val,
-                   sbound);
-#endif
-            return D * sbound; // Re-dimensionalize
-        }
-
         // find cross point of distPerp and two points
         assert(lower1 - table.begin() >= index1LB);
         assert(lower2 - table.begin() >= index2LB);
+        double sboundGridSpacing = sboundGrid[1] - sboundGrid[0];
+
+#ifndef NDEBUG
+        double UB_val1 = *(table.begin() + index1UB);
+        double UB_val2 = *(table.begin() + index2UB);
+        printf("Value in reverse lookup is: %g \n", val);
+        printf("Max value is %g or %g. \n", UB_val1, UB_val2);
+#endif
 
         /**
          * value on table grids
-         * rowIndex --------+--------+---
+         * rowIndex   --------+--------+---
          *             colIndexm colIndexm+1
          *
          * rowIndex+1 -----------+--------+
-         *             colIndexp colIndexp+1
+         *                  colIndexp colIndexp+1
+         *
+         * Off set because different distPerps have different cutoff values
          */
         const int colIndexm = lower1 - 1 - table.begin() - index1LB;
         const int colIndexp = lower2 - 1 - table.begin() - index2LB;
-        double valmA = *(lower1 - 1);
-        double valmB = *(lower1);
-        double valpA = *(lower2 - 1);
-        double valpB = *(lower2);
-        double sboundGridSpacing = sboundGrid[1] - sboundGrid[0];
-        double sboundm = sboundGrid[colIndexm] +
-                         (val - valmA) / (valmB - valmA) * sboundGridSpacing;
-        double sboundp = sboundGrid[colIndexp] +
-                         (val - valpA) / (valpB - valpA) * sboundGridSpacing;
+        double sboundm, sboundp;
+        // Interpolate first row in the sbound direction
+        if (lower1 == table.begin() + index1UB) {
+#ifndef NDEBUG
+            printf("Warning: val %g too large for row1 lookup, setting to max "
+                   "of %g. \n",
+                   val, *(lower1));
+#endif
+            sboundm = *(lower1);
+        } else {
+            double valmA = *(lower1 - 1);
+            double valmB = *(lower1);
+            sboundm = sboundGrid[colIndexm] +
+                      (val - valmA) / (valmB - valmA) * sboundGridSpacing;
+        }
+        // Interpolate second row in the sbound direction
+        if (lower2 == table.begin() + index2UB) {
+            sboundm = *(lower2);
+#ifndef NDEBUG
+            printf("Warning: val %g too large for row2 lookup, setting to max "
+                   "of %g. \n",
+                   val, *(lower2));
+#endif
+            // return D * sbound; // Re-dimensionalize
+        } else {
+            double valpA = *(lower2 - 1);
+            double valpB = *(lower2);
+            sboundp = sboundGrid[colIndexp] +
+                      (val - valpA) / (valpB - valpA) * sboundGridSpacing;
+        }
+        // double valmA = *(lower1 - 1);
+        // double valmB = *(lower1);
+        // double valpA = *(lower2 - 1);
+        // double valpB = *(lower2);
+        // double sboundm = sboundGrid[colIndexm] +
+        //                 (val - valmA) / (valmB - valmA) * sboundGridSpacing;
+        // double sboundp = sboundGrid[colIndexp] +
+        //                 (val - valpA) / (valpB - valpA) * sboundGridSpacing;
         sbound = sboundm * (1 - rowFrac) + sboundp * rowFrac;
+        fprintf(stdout, "sboundm %g, sboundp %g \n", sboundm, sboundp);
         return D * sbound;
     }
 
