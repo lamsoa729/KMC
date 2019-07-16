@@ -254,11 +254,16 @@ class LookupTable {
         double colFrac = 0;
 
         // reverse lookup val on row rowIndex
+        const int index0LB = getTableIndex(rowIndex, 0);
+        const int index0UB = getTableIndex(rowIndex, sboundGridNumber - 1);
         const int index1LB = getTableIndex(rowIndex, 0);
         const int index1UB = getTableIndex(rowIndex, sboundGridNumber - 1);
         const int index2LB = getTableIndex(rowIndex + 1, 0);
         const int index2UB = getTableIndex(rowIndex + 1, sboundGridNumber - 1);
 
+        // reverse lookup
+        auto lower0 = std::lower_bound(table.begin() + index0LB,
+                                       table.begin() + index0UB, val);
         // reverse lookup val on row rowIndex
         auto lower1 = std::lower_bound(table.begin() + index1LB,
                                        table.begin() + index1UB, val);
@@ -267,16 +272,10 @@ class LookupTable {
                                        table.begin() + index2UB, val);
 
         // find cross point of distPerp and two points
+        assert(lower0 - table.begin() >= index0LB);
         assert(lower1 - table.begin() >= index1LB);
         assert(lower2 - table.begin() >= index2LB);
         double sboundGridSpacing = sboundGrid[1] - sboundGrid[0];
-
-#ifndef NDEBUG
-        double UB_val1 = *(table.begin() + index1UB);
-        double UB_val2 = *(table.begin() + index2UB);
-        printf("Value in reverse lookup is: %g \n", val);
-        printf("Max value is %g or %g. \n", UB_val1, UB_val2);
-#endif
 
         /**
          * value on table grids
@@ -295,7 +294,7 @@ class LookupTable {
         if (lower1 == table.begin() + index1UB) {
 #ifndef NDEBUG
             printf("Warning: val %g too large for row1 lookup with max of %g. "
-                   "Setting to a max of %g \n",
+                   "Setting to a max sbound of %g \n",
                    val, *(lower1), sboundGrid[colIndexm]);
 #endif
             sboundm = sboundGrid[colIndexm];
@@ -309,11 +308,12 @@ class LookupTable {
         if (lower2 == table.begin() + index2UB) {
 #ifndef NDEBUG
             printf("Warning: val %g too large for row2 lookup with max of %g. "
-                   "Setting to a max of %g \n",
-                   val, *(lower2), sboundGrid[colIndexp]);
+                   "Setting to a max sbound of %g \n",
+                   val, *(lower2), sboundGrid[colIndexp - 1]);
 #endif
-            sboundp = sboundGrid[colIndexp];
-            // return D * sbound; // Re-dimensionalize
+            // FIXME This is very non-proven and could distort results at edges
+            //      Probably biases away from long attatchments.
+            sboundp = sboundGrid[colIndexm + 1];
         } else {
             double valpA = *(lower2 - 1);
             double valpB = *(lower2);
@@ -328,8 +328,17 @@ class LookupTable {
         //                 (val - valmA) / (valmB - valmA) * sboundGridSpacing;
         // double sboundp = sboundGrid[colIndexp] +
         //                 (val - valpA) / (valpB - valpA) * sboundGridSpacing;
+
+        // Interpolate two sbound values in the distPerp direction
         sbound = sboundm * (1 - rowFrac) + sboundp * rowFrac;
-        fprintf(stdout, "sboundm %g, sboundp %g \n", sboundm, sboundp);
+#ifndef NDEBUG
+        double UB_val1 = *(table.begin() + index1UB);
+        double UB_val2 = *(table.begin() + index2UB);
+        printf("Reverse lookup input = %g, Upper limits = %g or %g \n", val,
+               UB_val1, UB_val2);
+        printf("Reverse lookup output = %g, expected range = (%g, %g) \n",
+               sbound, sboundm, sboundp);
+#endif
         return D * sbound;
     }
 

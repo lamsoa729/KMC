@@ -546,12 +546,15 @@ double KMC<TRod>::RandomBindPosSD(int j_rod, double roll) {
     //      value of the position limit and then negate probability if the
     //      position limit was less than 0.
     roll = roll * (pLim1 - pLim0) + pLim0;
-    printf("roll = %f, must be between(%f, %f) \n", roll, pLim0, pLim1);
     double preFact = roll < 0 ? -1. : 1.;
     roll *= preFact; // entry in lookup table must be positive
 
     double bind_pos = preFact * (LUTablePtr_->ReverseLookup(distPerp, roll));
-    printf("bind_pos = %f, must be between(%f, %f) \n", bind_pos, lim0, lim1);
+#ifndef NDEBUG
+    printf("roll = %f, expected range = (%f, %f) \n", preFact * roll, pLim0,
+           pLim1);
+    printf("bind_pos = %f, expected range = (%f, %f) \n", bind_pos, lim0, lim1);
+#endif
 
     assert(lim0 < bind_pos && lim1 > bind_pos);
     // Translate bound position to be relative to center of rod
