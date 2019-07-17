@@ -344,19 +344,11 @@ class LookupTable {
             sboundp = sboundGrid[colIndexp] +
                       (val - valpA) / (valpB - valpA) * sboundGridSpacing;
         }
-        // double valmA = *(lower1 - 1);
-        // double valmB = *(lower1);
-        // double valpA = *(lower2 - 1);
-        // double valpB = *(lower2);
-        // double sboundm = sboundGrid[colIndexm] +
-        //                 (val - valmA) / (valmB - valmA) * sboundGridSpacing;
-        // double sboundp = sboundGrid[colIndexp] +
-        //                 (val - valpA) / (valpB - valpA) * sboundGridSpacing;
 
         // Interpolate two sbound values in the distPerp direction
         // if (rowIndex == 0) { // Linear interpolation
         sbound = sboundm * (1 - rowFrac) + sboundp * rowFrac;
-        //} else { // Quadratic interpolation
+        //} else { // Quadratic interpolation. TODO Needs testing
         //    printf("In quadratic \n");
         //    sbound = .5 * rowFrac *
         //                 ((rowFrac - 1.) * sbound0 + (rowFrac + 1.) *
