@@ -336,8 +336,8 @@ class LookupTable {
                    "Setting to a max sbound of %g \n",
                    val, *(lower2), sboundGrid[colIndexp]);
 #endif
-            sboundp = sboundGrid[colIndexp];
-            // return D * sboundm;
+            // sboundp = sboundGrid[colIndexp];
+            return D * sboundm;
         } else {
             double valpA = *(lower2 - 1);
             double valpB = *(lower2);
