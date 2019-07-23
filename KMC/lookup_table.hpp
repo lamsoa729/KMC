@@ -389,6 +389,8 @@ class LookupTable {
         double colFrac;
         int colMin = floor((sMin - sboundGrid[0]) * sboundGridSpacingInv);
         int colMax = floor((sMax - sboundGrid[0]) * sboundGridSpacingInv);
+        assert(colMin >= 0);
+        assert(colMax < sboundGridNumber);
         // Simple binary search using linear interpolation to find value
         while ((colMax - 1) > colMin) {
             double colAvg = floor((colMax + colMin) * .5);
