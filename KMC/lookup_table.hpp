@@ -91,13 +91,13 @@ class LookupTable {
         // step 1 determine grid
         const double distPerpLB = 0;
         const double distPerpUB = lUB;
-        distPerpGridNumber = 96; // grid in dperp
+        distPerpGridNumber = 128; // grid in dperp
         double distPerpGridSpacing =
             (distPerpUB - distPerpLB) / (distPerpGridNumber - 1);
 
         const double sboundLB = 0;
         const double sboundUB = sqrt(lUB * lUB - distPerpLB * distPerpLB);
-        sboundGridNumber = 64; // grid in s bound
+        sboundGridNumber = 128; // grid in s bound
         sboundGridSpacing = (sboundUB - sboundLB) / (sboundGridNumber - 1);
 
         // step 2 init grid
