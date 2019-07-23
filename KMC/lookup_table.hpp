@@ -202,6 +202,36 @@ class LookupTable {
         return val * D; // IMPORTANT: re-dimensionalize value
     }
 
+    double ReverseBinaryLookup(const int rowMin, const double rowFrac,
+                               double sMin, double sMax, double val) {
+        double colFrac;
+        int colMin = floor((sMin - sboundGrid[0]) * sboundGridSpacingInv);
+        int colMax = floor((sMax - sboundGrid[0]) * sboundGridSpacingInv);
+        // Simple binary search using linear interpolation to find value
+        while ((colMax - 1) > colMin) {
+            double colAvg = floor((colMax + colMin) * .5);
+            double colVal =
+                table[getTableIndex(rowIndex, colAvg)] * (1 - rowFrac)  //
+                + table[getTableIndex(rowIndex + 1, colAvg)] * rowFrac; //
+            if (colVal < val)
+                colMin = colAvg;
+            else if (colVal > val)
+                colMax = colAvg;
+        }
+        // Interpolate using function of the line
+        double valMin =
+            table[getTableIndex(rowIndex, colMin)] * (1 - rowFrac)  //
+            + table[getTableIndex(rowIndex + 1, colMin)] * rowFrac; //
+        double valMax =
+            table[getTableIndex(rowIndex, colMax)] * (1 - rowFrac)  //
+            + table[getTableIndex(rowIndex + 1, colMax)] * rowFrac; //
+
+        // Linear interpolation with known values
+        double sbound = (val - valMin) / (valMax - valMin) * sboundGridSpacing +
+                        sboundGrid[colMin];
+        return sbound;
+    }
+
     /******************
      * Invert Lookup
      ******************/
@@ -300,6 +330,8 @@ class LookupTable {
         const int colIndexm = lower1 - 1 - table.begin() - index1LB;
         const int colIndexp = lower2 - 1 - table.begin() - index2LB;
         double sbound0, sboundm, sboundp;
+        int out_of_range_case = 0;
+
         //        if (lower0 == table.begin() + index1UB) {
         //#ifndef NDEBUG
         //            printf("Warning: val %g too large for row0 lookup with max
@@ -322,7 +354,8 @@ class LookupTable {
                    "Setting to a max sbound of %g \n",
                    val, *(lower1), sboundGrid[colIndexm]);
 #endif
-            sboundm = sboundGrid[colIndexm];
+            out_of_range_case = 1;
+            sboundm = sboundGrid[colIndexm]; // Go to end of sbound grid
         } else {
             double valmA = *(lower1 - 1);
             double valmB = *(lower1);
@@ -336,8 +369,10 @@ class LookupTable {
                    "Setting to a max sbound of %g \n",
                    val, *(lower2), sboundGrid[colIndexp]);
 #endif
-            // sboundp = sboundGrid[colIndexp];
-            return D * sboundm;
+            assert(out_of_range_case != 1); // Something has gone horribly wrong
+            out_of_range_case = 2;
+            sboundp = sboundGrid[colIndexp]; // Go to end of sbound grid
+            // return D * sboundm;
         } else {
             double valpA = *(lower2 - 1);
             double valpB = *(lower2);
@@ -347,7 +382,19 @@ class LookupTable {
 
         // Interpolate two sbound values in the distPerp direction
         // if (rowIndex == 0) { // Linear interpolation
-        sbound = sboundm * (1 - rowFrac) + sboundp * rowFrac;
+        switch (out_of_range_case) {
+        case 0:
+            sbound = sboundm * (1 - rowFrac) + sboundp * rowFrac;
+            break;
+        case 1:
+            sbound =
+                ReverseBinaryLookup(rowIndex, rowFrac, sboundp, sboundm, val);
+            break;
+        case 2:
+            sbound =
+                ReverseBinaryLookup(rowIndex, rowFrac, sboundm, sboundp, val);
+            break;
+        }
         //} else { // Quadratic interpolation. TODO Needs testing
         //    printf("In quadratic \n");
         //    sbound = .5 * rowFrac *
