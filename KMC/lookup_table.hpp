@@ -37,6 +37,7 @@ class LookupTable {
     std::vector<double> distPerpGrid; ///< dimensionless vertical direction
 
     int sboundGridNumber;
+    double sboundGridSpacing;       ///< dimensionless
     double sboundGridSpacingInv;    ///< dimensionless
     std::vector<double> sboundGrid; ///< dimensionless horizontal direction
 
@@ -97,8 +98,7 @@ class LookupTable {
         const double sboundLB = 0;
         const double sboundUB = sqrt(lUB * lUB - distPerpLB * distPerpLB);
         sboundGridNumber = 64; // grid in s bound
-        double sboundGridSpacing =
-            (sboundUB - sboundLB) / (sboundGridNumber - 1);
+        sboundGridSpacing = (sboundUB - sboundLB) / (sboundGridNumber - 1);
 
         // step 2 init grid
         distPerpGrid.resize(distPerpGridNumber);
@@ -202,36 +202,6 @@ class LookupTable {
         return val * D; // IMPORTANT: re-dimensionalize value
     }
 
-    double ReverseBinaryLookup(const int rowMin, const double rowFrac,
-                               double sMin, double sMax, double val) {
-        double colFrac;
-        int colMin = floor((sMin - sboundGrid[0]) * sboundGridSpacingInv);
-        int colMax = floor((sMax - sboundGrid[0]) * sboundGridSpacingInv);
-        // Simple binary search using linear interpolation to find value
-        while ((colMax - 1) > colMin) {
-            double colAvg = floor((colMax + colMin) * .5);
-            double colVal =
-                table[getTableIndex(rowIndex, colAvg)] * (1 - rowFrac)  //
-                + table[getTableIndex(rowIndex + 1, colAvg)] * rowFrac; //
-            if (colVal < val)
-                colMin = colAvg;
-            else if (colVal > val)
-                colMax = colAvg;
-        }
-        // Interpolate using function of the line
-        double valMin =
-            table[getTableIndex(rowIndex, colMin)] * (1 - rowFrac)  //
-            + table[getTableIndex(rowIndex + 1, colMin)] * rowFrac; //
-        double valMax =
-            table[getTableIndex(rowIndex, colMax)] * (1 - rowFrac)  //
-            + table[getTableIndex(rowIndex + 1, colMax)] * rowFrac; //
-
-        // Linear interpolation with known values
-        double sbound = (val - valMin) / (valMax - valMin) * sboundGridSpacing +
-                        sboundGrid[colMin];
-        return sbound;
-    }
-
     /******************
      * Invert Lookup
      ******************/
@@ -314,7 +284,6 @@ class LookupTable {
         // assert(lower0 - table.begin() >= index0LB);
         assert(lower1 - table.begin() >= index1LB);
         assert(lower2 - table.begin() >= index2LB);
-        double sboundGridSpacing = sboundGrid[1] - sboundGrid[0];
 
         /**
          * value on table grids
@@ -412,6 +381,35 @@ class LookupTable {
                sbound, sboundm, sboundp);
 #endif
         return D * sbound;
+    }
+
+    double ReverseBinaryLookup(const int rowMin, const double rowFrac,
+                               const double sMin, const double sMax,
+                               const double val) const {
+        double colFrac;
+        int colMin = floor((sMin - sboundGrid[0]) * sboundGridSpacingInv);
+        int colMax = floor((sMax - sboundGrid[0]) * sboundGridSpacingInv);
+        // Simple binary search using linear interpolation to find value
+        while ((colMax - 1) > colMin) {
+            double colAvg = floor((colMax + colMin) * .5);
+            double colVal =
+                table[getTableIndex(rowMin, colAvg)] * (1 - rowFrac)  //
+                + table[getTableIndex(rowMin + 1, colAvg)] * rowFrac; //
+            if (colVal < val)
+                colMin = colAvg;
+            else if (colVal > val)
+                colMax = colAvg;
+        }
+        // Interpolate using function of the line
+        double valMin = table[getTableIndex(rowMin, colMin)] * (1 - rowFrac)  //
+                        + table[getTableIndex(rowMin + 1, colMin)] * rowFrac; //
+        double valMax = table[getTableIndex(rowMin, colMax)] * (1 - rowFrac)  //
+                        + table[getTableIndex(rowMin + 1, colMax)] * rowFrac; //
+
+        // Linear interpolation with known values
+        double sbound = (val - valMin) / (valMax - valMin) * sboundGridSpacing +
+                        sboundGrid[colMin];
+        return sbound;
     }
 
   private:
