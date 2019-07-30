@@ -33,6 +33,7 @@ class LookupTable {
     double M;    ///< (1-\lambda)\kappa\beta/2 * D^2, dimensionless
 
     int distPerpGridNumber;
+    double distPerpGridSpacing;       ///< dimensionless
     double distPerpGridSpacingInv;    ///< dimensionless
     std::vector<double> distPerpGrid; ///< dimensionless vertical direction
 
@@ -85,19 +86,19 @@ class LookupTable {
         // truncate the integration when integrand < SMALL
         // interation table in dimensionless lengths
         // lUB = sqrt(lm^2 + s^2), dimensionless scaled by D
-        constexpr double SMALL = 1e-5;
+        constexpr double SMALL = 1e-4;
         const double lUB = sqrt(-log(SMALL) / M) + 1 + ell0;
 
         // step 1 determine grid
         const double distPerpLB = 0;
         const double distPerpUB = lUB;
-        distPerpGridNumber = 128; // grid in dperp
-        double distPerpGridSpacing =
+        distPerpGridNumber = 256; // grid in dperp
+        distPerpGridSpacing =
             (distPerpUB - distPerpLB) / (distPerpGridNumber - 1);
 
         const double sboundLB = 0;
         const double sboundUB = sqrt(lUB * lUB - distPerpLB * distPerpLB);
-        sboundGridNumber = 128; // grid in s bound
+        sboundGridNumber = 256; // grid in s bound
         sboundGridSpacing = (sboundUB - sboundLB) / (sboundGridNumber - 1);
 
         // step 2 init grid
@@ -329,7 +330,7 @@ class LookupTable {
             double valmA = *(lower1 - 1);
             double valmB = *(lower1);
             sboundm = sboundGrid[colIndexm] +
-                      (val - valmA) / (valmB - valmA) * sboundGridSpacing;
+                      ((val - valmA) / (valmB - valmA)) * sboundGridSpacing;
         }
         // Interpolate second row in the sbound direction
         if (lower2 == table.begin() + index2UB) {
@@ -346,8 +347,10 @@ class LookupTable {
             double valpA = *(lower2 - 1);
             double valpB = *(lower2);
             sboundp = sboundGrid[colIndexp] +
-                      (val - valpA) / (valpB - valpA) * sboundGridSpacing;
+                      ((val - valpA) / (valpB - valpA)) * sboundGridSpacing;
         }
+        // printf("sboundm = %f\n", sboundm);
+        // printf("sboundp = %f\n", sboundp);
 
         // Interpolate two sbound values in the distPerp direction
         // if (rowIndex == 0) { // Linear interpolation
@@ -387,21 +390,31 @@ class LookupTable {
                                const double sMin, const double sMax,
                                const double val) const {
         double colFrac;
-        int colMin = floor((sMin - sboundGrid[0]) * sboundGridSpacingInv);
-        int colMax = floor((sMax - sboundGrid[0]) * sboundGridSpacingInv);
+
+        int colMin = getColIndex(sMin, colFrac);
+        int colMax = getColIndex(sMax, colFrac);
+        // int colMin = floor((sMin - sboundGrid[0]) * sboundGridSpacingInv);
+        // int colMax = floor((sMax - sboundGrid[0]) * sboundGridSpacingInv);
+        // printf("val = %f\n", val);
+        // printf("colMin init = %d\n", colMin);
+        // printf("colMax init= %d\n", colMax);
         assert(colMin >= 0);
         assert(colMax < sboundGridNumber);
         // Simple binary search using linear interpolation to find value
         while ((colMax - 1) > colMin) {
-            double colAvg = floor((colMax + colMin) * .5);
+            double avg = (colMax + colMin) * .5;
+            int colAvg = floor(avg);
             double colVal =
                 table[getTableIndex(rowMin, colAvg)] * (1 - rowFrac)  //
                 + table[getTableIndex(rowMin + 1, colAvg)] * rowFrac; //
-            if (colVal < val)
-                colMin = colAvg;
-            else if (colVal > val)
+            printf("avg = %f, colVal = %f, val = %f\n", avg, colVal, val);
+            if ((val - colVal) < 1e-8)
                 colMax = colAvg;
+            else if (colVal < val)
+                colMin = colAvg;
         }
+        // printf("colMin final = %d\n", colMin);
+        // printf("colMax final = %d\n", colMax);
         // Interpolate using function of the line
         double valMin = table[getTableIndex(rowMin, colMin)] * (1 - rowFrac)  //
                         + table[getTableIndex(rowMin + 1, colMin)] * rowFrac; //
@@ -412,6 +425,12 @@ class LookupTable {
         double sbound = (val - valMin) / (valMax - valMin) * sboundGridSpacing +
                         sboundGrid[colMin];
         return sbound;
+    }
+
+    inline int getTableIndex(int row, int col) const {
+        assert(row < distPerpGridNumber && row >= 0);
+        assert(col < sboundGridNumber && col >= 0);
+        return row * sboundGridNumber + col;
     }
 
   private:
@@ -469,12 +488,6 @@ class LookupTable {
         int index = floor(x);
         colFrac = x - index;
         return index;
-    }
-
-    inline int getTableIndex(int row, int col) const {
-        assert(row < distPerpGridNumber && row >= 0);
-        assert(col < sboundGridNumber && col >= 0);
-        return row * sboundGridNumber + col;
     }
 };
 

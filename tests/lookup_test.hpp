@@ -248,21 +248,21 @@ TEST_CASE("REVERSE Lookup table test medium spring ", "[REVERSE lookup]") {
     double distPerp = 0;
     distPerp = 0.2;
     // ("distPerp = 0.2 > D+ell0, single peaked")
-    for (double sbound = 0; sbound < LUT.getNonDsbound() / 4; sbound += 0.2) {
+    for (double sbound = 0; sbound < LUT.getNonDsbound() / 2; sbound += 0.2) {
         double val = integral(distPerp / D, 0, sbound, M, ell0);
         CHECK(errorPass(LUT.ReverseLookup(distPerp, val * D), sbound * D,
                         REVERSEFAC));
     }
     // ("distPerp = 0.1 > D+ell0, single peaked")
     distPerp = 0.1;
-    for (double sbound = 0; sbound < LUT.getNonDsbound() / 3; sbound += 0.2) {
+    for (double sbound = 0; sbound < LUT.getNonDsbound() / 2; sbound += 0.2) {
         double val = integral(distPerp / D, 0, sbound, M, ell0);
         CHECK(errorPass(LUT.ReverseLookup(distPerp, val * D), sbound * D,
                         REVERSEFAC));
     }
     // ("distPerp = 0.06 < D+ell0, double peaked")
     distPerp = 0.06;
-    for (double sbound = 0; sbound < LUT.getNonDsbound() / 3; sbound += 0.2) {
+    for (double sbound = 0; sbound < LUT.getNonDsbound() / 2; sbound += 0.2) {
         double val = integral(distPerp / D, 0, sbound, M, ell0);
         CHECK(errorPass(LUT.ReverseLookup(distPerp, val * D), sbound * D,
                         REVERSEFAC));
@@ -280,26 +280,84 @@ TEST_CASE("REVERSE Lookup table test stiff spring ", "[REVERSE lookup]") {
     LUT.Init(alpha, freelength, D);
 
     double distPerp = 0;
-    distPerp = 0.2;
     // ("distPerp = 0.2 > D+ell0, single peaked")
-    // WARNING: This reverse lookup fails
-    // for (double sbound = 0; sbound < 3; sbound += 0.1) {
-    //     double val = integral(distPerp / D, 0, sbound, M, ell0);
-    //     CHECK(errorPass(LUT.ReverseLookup(distPerp / D, val), sbound,
-    //                     REVERSEFAC));
-    // }
+    // WARNING: This reverse lookup fails because function is too flat
+    // distPerp = 0.2;
+    // for (double sbound = 0; sbound < LUT.getNonDsbound() / 8; sbound += 0.1)
+    // {
+    //    double val = integral(distPerp / D, 0, sbound, M, ell0);
+    //    double scalc = LUT.ReverseLookup(distPerp, val * D);
+    //    printf("scalc = %f\n", scalc);
+    //    printf("sbound = %f\n", sbound * D);
+    //    CHECK(errorPass(scalc, sbound * D, REVERSEFAC));
+    //}
+
     // ("distPerp = 0.1 > D+ell0, single peaked")
     distPerp = 0.1;
-    for (double sbound = 0; sbound < LUT.getNonDsbound() / 4; sbound += 0.1) {
+    for (double sbound = 0; sbound < LUT.getNonDsbound() / 2; sbound += 0.1) {
         double val = integral(distPerp / D, 0, sbound, M, ell0);
         CHECK(errorPass(LUT.ReverseLookup(distPerp, val * D), sbound * D,
                         REVERSEFAC));
     }
     // ("distPerp = 0.06 < D+ell0, double peaked")
     distPerp = 0.06;
-    for (double sbound = 0; sbound < LUT.getNonDsbound() / 4; sbound += 0.1) {
+    for (double sbound = 0; sbound < LUT.getNonDsbound() / 2; sbound += 0.1) {
         double val = integral(distPerp / D, 0, sbound, M, ell0);
         CHECK(errorPass(LUT.ReverseLookup(distPerp, val * D), sbound * D,
                         REVERSEFAC));
     }
+}
+
+TEST_CASE("REVERSE binary Lookup with stiff spring", "[REVERSE binary]") {
+    LookupTable LUT;
+
+    const double D = 0.024;
+    const double alpha = 10.0 / (2 * 0.00411);
+    const double freelength = 0.05;
+    const double M = alpha * D * D;
+    const double ell0 = freelength / D;
+    LUT.Init(alpha, freelength, D);
+    const double rowIndexMax = LUT.distPerpGridNumber;
+    const double colIndexMax = LUT.sboundGridNumber;
+    const double distPerpSpacing = LUT.distPerpGridSpacing;
+
+    for (int i = 0; i < rowIndexMax - 2; ++i) {
+        double C0 = LUT.table[LUT.getTableIndex(i, colIndexMax - 1)] * D;
+        double C1 = LUT.table[LUT.getTableIndex(i + 1, colIndexMax - 1)] * D;
+        double Cavg = .5 * (C0 + C1);
+        double distPerpAvg = distPerpSpacing * (i + .5) * D;
+        double sbound = LUT.ReverseLookup(distPerpAvg, Cavg);
+        double Cintegral =
+            integral(distPerpAvg / D, 0, sbound / D, M, ell0) * D;
+        CHECK(errorPass(Cintegral, Cavg));
+    }
+    // double distPerp = 0;
+    // ("distPerp = 0.2 > D+ell0, single peaked")
+    // WARNING: This reverse lookup fails because function is too flat
+    // distPerp = 0.2;
+    // for (double sbound = 0; sbound < LUT.getNonDsbound() / 8; sbound += 0.1)
+    // {
+    //    double val = integral(distPerp / D, 0, sbound, M, ell0);
+    //    double scalc = LUT.ReverseLookup(distPerp, val * D);
+    //    printf("scalc = %f\n", scalc);
+    //    printf("sbound = %f\n", sbound * D);
+    //    CHECK(errorPass(scalc, sbound * D, REVERSEFAC));
+    //}
+
+    // ("distPerp = 0.1 > D+ell0, single peaked")
+    // distPerp = 0.1;
+    // for (double sbound = 0; sbound < LUT.getNonDsbound() / 2; sbound += 0.1)
+    // {
+    //    double val = integral(distPerp / D, 0, sbound, M, ell0);
+    //    CHECK(errorPass(LUT.ReverseLookup(distPerp, val * D), sbound * D,
+    //                    REVERSEFAC));
+    //}
+    //// ("distPerp = 0.06 < D+ell0, double peaked")
+    // distPerp = 0.06;
+    // for (double sbound = 0; sbound < LUT.getNonDsbound() / 2; sbound += 0.1)
+    // {
+    //    double val = integral(distPerp / D, 0, sbound, M, ell0);
+    //    CHECK(errorPass(LUT.ReverseLookup(distPerp, val * D), sbound * D,
+    //                    REVERSEFAC));
+    //}
 }
