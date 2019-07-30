@@ -361,10 +361,12 @@ class LookupTable {
         case 1:
             sbound =
                 ReverseBinaryLookup(rowIndex, rowFrac, sboundp, sboundm, val);
+            assert(sbound >= (sboundp) && sbound <= (sboundm));
             break;
         case 2:
             sbound =
                 ReverseBinaryLookup(rowIndex, rowFrac, sboundm, sboundp, val);
+            assert(sbound <= (sboundp) && sbound >= (sboundm));
             break;
         }
         //} else { // Quadratic interpolation. TODO Needs testing
@@ -407,8 +409,8 @@ class LookupTable {
             double colVal =
                 table[getTableIndex(rowMin, colAvg)] * (1 - rowFrac)  //
                 + table[getTableIndex(rowMin + 1, colAvg)] * rowFrac; //
-            printf("avg = %f, colVal = %f, val = %f\n", avg, colVal, val);
-            if ((val - colVal) < 1e-8)
+            printf("colAvg = %d, colVal = %f, val = %f\n", colAvg, colVal, val);
+            if ((val - colVal) < 1e-5)
                 colMax = colAvg;
             else if (colVal < val)
                 colMin = colAvg;
@@ -424,7 +426,12 @@ class LookupTable {
         // Linear interpolation with known values
         double sbound = (val - valMin) / (valMax - valMin) * sboundGridSpacing +
                         sboundGrid[colMin];
-        return sbound;
+        if (sbound > sMax)
+            return sMax;
+        else if (sbound < sMin)
+            return sMin;
+        else
+            return sbound;
     }
 
     inline int getTableIndex(int row, int col) const {
