@@ -321,7 +321,7 @@ class LookupTable {
         if (lower1 == table.begin() + index1UB) {
 #ifndef NDEBUG
             printf("Warning: val %g too large for row1 lookup with max of %g. "
-                   "Setting to a max sbound of %g \n",
+                   "Setting sbound max to %g \n",
                    val, *(lower1), sboundGrid[colIndexm]);
 #endif
             out_of_range_case = 1;
@@ -336,7 +336,7 @@ class LookupTable {
         if (lower2 == table.begin() + index2UB) {
 #ifndef NDEBUG
             printf("Warning: val %g too large for row2 lookup with max of %g. "
-                   "Setting to a max sbound of %g \n",
+                   "Setting sbound max to %g \n",
                    val, *(lower2), sboundGrid[colIndexp]);
 #endif
             assert(out_of_range_case != 1); // Something has gone horribly wrong
@@ -391,13 +391,11 @@ class LookupTable {
     double ReverseBinaryLookup(const int rowMin, const double rowFrac,
                                const double sMin, const double sMax,
                                const double val) const {
-        double colFrac;
+        // Isn't used, just needed for the getColIndex function
+        double colFrac = 0;
 
         int colMin = getColIndex(sMin, colFrac);
         int colMax = getColIndex(sMax, colFrac);
-        // int colMin = floor((sMin - sboundGrid[0]) * sboundGridSpacingInv);
-        // int colMax = floor((sMax - sboundGrid[0]) * sboundGridSpacingInv);
-        // printf("val = %f\n", val);
         // printf("colMin init = %d\n", colMin);
         // printf("colMax init= %d\n", colMax);
         assert(colMin >= 0);
@@ -409,7 +407,11 @@ class LookupTable {
             double colVal =
                 table[getTableIndex(rowMin, colAvg)] * (1 - rowFrac)  //
                 + table[getTableIndex(rowMin + 1, colAvg)] * rowFrac; //
-            printf("colAvg = %d, colVal = %f, val = %f\n", colAvg, colVal, val);
+            // printf("colAvg = %d, colVal = %f, val = %f\n", colAvg, colVal,
+            // val);
+
+            // Accuracy of table is set to 1e-4, use 1e-5 to set colMax value.
+            // Otherwise, you will always reach the end of column
             if ((val - colVal) < 1e-5)
                 colMax = colAvg;
             else if (colVal < val)
@@ -426,6 +428,7 @@ class LookupTable {
         // Linear interpolation with known values
         double sbound = (val - valMin) / (valMax - valMin) * sboundGridSpacing +
                         sboundGrid[colMin];
+        // Make sure sbound is not calculated to be outside range [sMin, sMax]
         if (sbound > sMax)
             return sMax;
         else if (sbound < sMin)
