@@ -85,4 +85,9 @@ inline double dist_point_seg(const double *point, const double *minus,
     return sqrt(dot3(diff, diff));
 };
 
+template <typename T>
+inline int sgn(T val) {
+    return (T(0) < val) - (val < T(0));
+}
+
 #endif /* HELPERS_HPP */
