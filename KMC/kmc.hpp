@@ -253,7 +253,7 @@ void KMC<TRod>::CalcProbSU(const double unbindFactor) {
  * \param k_spring Spring constant between connected heads
  * \param eqLen Equilibrium length of spring connecting heads
  * \param bindFactor Binding factor of head to rods
- * \return void, Changes tot_prob_ variable of this object
+ * \return void, Changes prob_tot_ variable of this object
  */
 template <typename TRod>
 void KMC<TRod>::CalcTotProbsSD(const TRod *const *rods,
@@ -407,6 +407,9 @@ template <typename TRod>
 int KMC<TRod>::whichRodBindUS(const TRod *const *rods, double &bindPos,
                               double roll) {
     assert(roll <= 1.0 && roll >= 0.);
+    // Rescale to total binding probability range
+    roll *= prob_tot_;
+
     // assert probabilities are not zero
     double pos_roll = 0.0;
 
@@ -493,7 +496,8 @@ void KMC<TRod>::whereUnbindSU(double R, double rollVec[3], double pos[3]) {
  */
 template <typename TRod>
 int KMC<TRod>::whichRodBindSD(double &bindPos, double roll) {
-    assert(roll <= 1.0 && roll >= 0.);
+    assert(roll >= 0. && roll <= 1.0);
+    roll *= prob_tot_; // Rescale to non-normalized value
     double pos_roll = 0.0;
     int i = 0; // Index of rods
     for (auto prob : rods_probs_) {

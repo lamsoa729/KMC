@@ -17,10 +17,6 @@ LIBRARIES = $(USERLINK)
 SHELL = /bin/sh
 SIZE =	size
 
-# Files
-#SRCS = \
-#        KMC/lookup_table.cpp \
-#        KMC/integrals.cpp
 
 # Definitions
 TEST     := TEST.X
