@@ -20,13 +20,14 @@
 
 // template <typename TRod>
 inline int choose_kmc_double(double kmc0Prob, double kmc1Prob, double &roll) {
+    assert(roll <= 1.0 && roll >= 0.);
     int activated_end = -1;
     // Get probabilities for binding and unbinding (non-normalized)
-    double totBindProb = kmc0Prob + kmc1Prob;
-    double UnbindProb = exp(-1. * totBindProb); // From Poisson process
+    double totActivateProb = kmc0Prob + kmc1Prob;
+    double passProb = exp(-1. * totActivateProb); // From Poisson process
     // Rescale roll to span unnormalized probabilities
-    roll *= (totBindProb + UnbindProb);
-    if (roll < totBindProb) {
+    roll *= (totActivateProb + passProb);
+    if (roll < totActivateProb) {
         if (roll < kmc0Prob) {
             activated_end = 0;
             // Renormalize random number to kmc 0 binding
@@ -38,9 +39,9 @@ inline int choose_kmc_double(double kmc0Prob, double kmc1Prob, double &roll) {
         }
     }
 #ifndef NDEBUG
-    else {
-        if (totBindProb > 0)
-            printf("Total binding probability: %f \n", totBindProb);
+    else if (totActivateProb > 0) {
+        printf("kmc0 prob: %f, kmc1 prob: %f, no kmc prob: %f,\n", kmc0Prob,
+               kmc1Prob, passProb);
     }
 #endif
     return activated_end;
