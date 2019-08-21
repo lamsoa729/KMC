@@ -13,6 +13,7 @@
 
 #include <array>
 #include <cassert>
+#include <cmath>
 
 template <class TRod>
 TRod MockRod(int id) {
@@ -711,22 +712,23 @@ TEST_CASE("3 crossing perpendicular rods with protein in center",
             CHECK(ABS(kmc.getMu(i) - 0.0) < SMALL);
         }
         // Check total probability
-        REQUIRE(ABS(kmc.getTotProb() - 0.0005729577951308232) < SMALL);
-        // Check binding to rod 0
-        double roll = .00001;
-        double bindpos;
-        int rod_i = kmc.whichRodBindUS(ep_j, bindpos, roll);
-        CHECK(rod_i == 0);
-        CHECK(ABS(bindpos + 0.4476401224401701) < SMALL);
-        // Check binding to rod 1
-        roll = .0003;
-        rod_i = kmc.whichRodBindUS(ep_j, bindpos, roll);
-        CHECK(rod_i == 1);
-        CHECK(ABS(bindpos - 0.07079632679489645) < SMALL);
-        // Check out of range binding returns -1
-        roll = .9;
-        rod_i = kmc.whichRodBindUS(ep_j, bindpos, roll);
-        CHECK(rod_i == -1);
+        double totProb = kmc.getTotProb();
+        REQUIRE(ABS(totProb - 0.0005729577951308232) < SMALL);
+        // Check binding to rods
+        double roll = 0;
+        double prevRodProb = 0;
+        for (int i = 0; i < 3; ++i) {
+            double RodProb = kmc.getProbs(i);
+            for (double j = 0; j < 1.; j += .2) {
+                double roll = ((j * RodProb) + prevRodProb) / totProb;
+                double calcBindPos = 2. * xlink.rc * (j - .5);
+                double bindpos;
+                int rod_i = kmc.whichRodBindUS(ep_j, bindpos, roll);
+                CHECK(rod_i == i);
+                CHECK(ABS(bindpos - calcBindPos) < SMALL);
+            }
+            prevRodProb += RodProb;
+        }
     }
     SECTION("1 head bound to first rod") {
         int end_bound = 0;
@@ -848,34 +850,30 @@ TEST_CASE("4 parallel rods separated by a rod diameter on the sides with "
         kmc.CalcTotProbsUS(ep_j, Uniquefilter, bindFactorsUS);
         for (int i = 0; i < 4; ++i) {
             // Check individual probabilities
-            CHECK(ABS(kmc.getProbs(i) - 0.0001653986686265376) < SMALL);
+            REQUIRE(ABS(kmc.getProbs(i) - 0.0001653986686265376) < SMALL);
             // Check minimum distance
             CHECK(ABS(kmc.getDistMin(i) - 0.25) < SMALL);
             // Check mu distances along rods
             CHECK(ABS(kmc.getMu(i) - 0.0) < SMALL);
         }
         // Check total probability
-        CHECK(ABS(kmc.getTotProb() - (4 * 0.0001653986686265376)) < SMALL);
-        // Check binding to rod 0
-        double roll = .00005;
-        double bindpos;
-        int rod_i = kmc.whichRodBindUS(ep_j, bindpos, roll);
-        CHECK(rod_i == 0);
-        CHECK(ABS(bindpos + 0.1712133140930698) < SMALL);
-        // Check binding to rod 1
-        roll = .0002;
-        rod_i = kmc.whichRodBindUS(ep_j, bindpos, roll);
-        CHECK(rod_i == 1);
-        CHECK(ABS(bindpos + 0.2518405544800601) < SMALL);
-        // Check binding to rod 2
-        roll = .00035;
-        rod_i = kmc.whichRodBindUS(ep_j, bindpos, roll);
-        CHECK(rod_i == 2);
-        // Check out of range binding returns -1
-        CHECK(ABS(bindpos + 0.3324677948670505) < SMALL);
-        roll = .01;
-        rod_i = kmc.whichRodBindUS(ep_j, bindpos, roll);
-        CHECK(rod_i == -1);
+        double totProb = kmc.getTotProb();
+        REQUIRE(ABS(totProb - (4. * kmc.getProbs(0))) < SMALL);
+        // Check binding to rods
+        double prevRodProb = 0;
+        for (int i = 0; i < 3; ++i) {
+            double modRC = sqrt(SQR(xlink.rc) - SQR(kmc.getDistMin(i)));
+            double RodProb = kmc.getProbs(i);
+            for (double j = 0; j < 1.; j += .2) {
+                double roll = ((j * RodProb) + prevRodProb) / totProb;
+                double calcBindPos = 2. * modRC * (j - .5);
+                double bindpos;
+                int rod_i = kmc.whichRodBindUS(ep_j, bindpos, roll);
+                CHECK(rod_i == i);
+                CHECK(ABS(bindpos - calcBindPos) < SMALL);
+            }
+            prevRodProb += RodProb;
+        }
     }
     SECTION("1 head bound to first rod") {
         int end_bound = 0;
@@ -970,7 +968,7 @@ TEST_CASE("4 parallel rods separated by a rod diameter on the sides with "
     }
 }
 
-TEST_CASE("6 perpendicular rods surrounding a sphere of a rod diameter with "
+TEST_CASE("6 perpendicular rods surrounding a sphere of a rod radius with "
           "protein in center",
           "[six_pointing_perp_rods]") {
     // Arrange
@@ -1045,39 +1043,63 @@ TEST_CASE("6 perpendicular rods surrounding a sphere of a rod diameter with "
         kmc.CalcTotProbsUS(ep_j, Uniquefilter, bindFactorsUS);
         for (int i = 0; i < 6; ++i) {
             // Check minimum distance
-            CHECK(ABS(kmc.getDistMin(i) - 0.25) < SMALL);
-            CHECK(ABS(kmc.getDistPerp(i) - 0.0) < SMALL);
+            REQUIRE(ABS(kmc.getDistMin(i) - 0.25) < SMALL);
+            REQUIRE(ABS(kmc.getDistPerp(i) - 0.0) < SMALL);
             // Check mu distances along rods
             if (i == 5) {
-                CHECK(ABS(kmc.getMu(i) - 10.25) < SMALL);
+                REQUIRE(ABS(kmc.getMu(i) - 10.25) < SMALL);
             } else {
-                CHECK(ABS(kmc.getMu(i) + 10.25) < SMALL);
+                REQUIRE(ABS(kmc.getMu(i) + 10.25) < SMALL);
             }
             // Check individual probabilities
             CHECK(ABS(kmc.getProbs(i) - 0.0000477464829275686) < SMALL);
         }
-        // Check total probability
-        CHECK(ABS(kmc.getTotProb() - (6 * 0.0000477464829275686)) < SMALL);
-        // Check binding to rod 0
-        double roll = .00001;
-        double bindpos;
-        int rod_i = kmc.whichRodBindUS(ep_j, bindpos, roll);
-        CHECK(rod_i == 0);
-        CHECK(ABS((bindpos) + 9.94764012244017) < SMALL);
-        // Check binding to rod 1
-        roll = .00005;
-        rod_i = kmc.whichRodBindUS(ep_j, bindpos, roll);
-        CHECK(rod_i == 1);
-        CHECK(ABS(bindpos + 9.98820061220085) < SMALL);
-        // Check binding to rod 5
-        roll = .00028;
-        rod_i = kmc.whichRodBindUS(ep_j, bindpos, roll);
-        CHECK(rod_i == 5);
-        CHECK(ABS(bindpos - 9.966076571675236) < SMALL);
-        // Check out of range binding returns -1
-        roll = .01;
-        rod_i = kmc.whichRodBindUS(ep_j, bindpos, roll);
-        CHECK(rod_i == -1);
+        double totProb = kmc.getTotProb();
+        REQUIRE(ABS(totProb - (6. * kmc.getProbs(0))) < SMALL);
+        // Check binding to rods
+        double prevRodProb = 0;
+        for (int i = 0; i < 6; ++i) {
+            double modRC = xlink.rc - kmc.getDistMin(i);
+            double RodProb = kmc.getProbs(i);
+            for (double j = 0; j < 1.; j += .2) {
+                double roll = ((j * RodProb) + prevRodProb) / totProb;
+                double calcBindPos = 0;
+                if (i == 5) {
+                    calcBindPos =
+                        kmc.getMu(i) - kmc.getDistMin(i) - (modRC * (1. - j));
+                } else {
+                    calcBindPos =
+                        kmc.getMu(i) + kmc.getDistMin(i) + (modRC * j);
+                }
+                double bindpos;
+                int rod_i = kmc.whichRodBindUS(ep_j, bindpos, roll);
+                CHECK(rod_i == i);
+                CHECK(ABS(bindpos - calcBindPos) < SMALL);
+            }
+            prevRodProb += RodProb;
+        }
+        //// Check total probability
+        // CHECK(ABS(kmc.getTotProb() - (6 * 0.0000477464829275686)) < SMALL);
+        //// Check binding to rod 0
+        // double roll = .00001;
+        // double bindpos;
+        // int rod_i = kmc.whichRodBindUS(ep_j, bindpos, roll);
+        // CHECK(rod_i == 0);
+        // CHECK(ABS((bindpos) + 9.94764012244017) < SMALL);
+        //// Check binding to rod 1
+        // roll = .00005;
+        // rod_i = kmc.whichRodBindUS(ep_j, bindpos, roll);
+        // CHECK(rod_i == 1);
+        // CHECK(ABS(bindpos + 9.98820061220085) < SMALL);
+        //// Check binding to rod 5
+        // roll = .00028;
+        // rod_i = kmc.whichRodBindUS(ep_j, bindpos, roll);
+        // CHECK(rod_i == 5);
+        // CHECK(ABS(bindpos - 9.966076571675236) < SMALL);
+        //// Check out of range binding returns -1
+        // roll = .01;
+        // rod_i = kmc.whichRodBindUS(ep_j, bindpos, roll);
+        // CHECK(rod_i == -1);
     }
     SECTION("1 head bound to first rod") {
         int end_bound = 0;
