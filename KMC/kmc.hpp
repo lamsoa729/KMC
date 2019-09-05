@@ -12,11 +12,12 @@
 template <typename TRod>
 class KMC {
   private:
+    // System parameters
+    const double dt_; // Time step
+
     // Probabilities
     double prob_tot_ = 0;
     double r_cutoff_;
-    double DiffConst_; // Diffusion constant of particle
-    bool diff_rad_flag_ = false;
 
     std::vector<double> rods_probs_; ///< binding probabilities
 
@@ -39,36 +40,21 @@ class KMC {
     /******************
      *  Constructors  *
      ******************/
-    // Constructor for unbinding heads
-    KMC(const double *pos) : r_cutoff_(-1) { setPos(pos); }
-
-    // Constructor for binding heads without lookup tables
-    KMC(const double *pos, const int Npj, const double r_cutoff)
-        : r_cutoff_(r_cutoff), LUTablePtr_(nullptr) {
+    // Constructor for unbinding ends
+    KMC(const double *pos, const double dt) : r_cutoff_(-1), dt_(dt) {
         setPos(pos);
-        rods_probs_.resize(Npj, 0);
-        distMinArr_.resize(Npj, 0);
-        distPerpArr_.resize(Npj, 0);
-        muArr_.resize(Npj, 0);
-        lims_.resize(Npj);
     }
 
-    // Constructor for binding heads with diffusion modeled
+    // Constructor for binding ends with diffusion modeled
     // TODO: create unit test for this
     KMC(const double *pos, const int Npj, const double r_cutoff,
         const double DiffConst, const double dt)
-        : DiffConst_(DiffConst), LUTablePtr_(nullptr) {
+        : dt_(dt), LUTablePtr_(nullptr) {
         setPos(pos);
 
         // Find average diffusion distance and compare to given r_cutoff
         double avg_dist = sqrt(6.0 * DiffConst * dt);
-        if (avg_dist > r_cutoff) {
-            r_cutoff_ = avg_dist;
-            diff_rad_flag_ = true;
-        } else {
-            r_cutoff_ = avg_dist;
-            diff_rad_flag_ = false;
-        }
+        r_cutoff_ = avg_dist > r_cutoff ? avg_dist : r_cutoff;
 
         rods_probs_.resize(Npj, 0);
         distMinArr_.resize(Npj, 0);
@@ -77,10 +63,22 @@ class KMC {
         lims_.resize(Npj);
     }
 
-    // Constructor for binding heads with lookup tables
+    // Constructor for S->U end binding without lookup tables
     KMC(const double *pos, const int Npj, const double r_cutoff,
-        const LookupTable *LUTablePtr)
-        : r_cutoff_(r_cutoff), LUTablePtr_(LUTablePtr) {
+        const double dt)
+        : r_cutoff_(r_cutoff), dt_(dt), LUTablePtr_(nullptr) {
+        setPos(pos);
+        rods_probs_.resize(Npj, 0);
+        distMinArr_.resize(Npj, 0);
+        distPerpArr_.resize(Npj, 0);
+        muArr_.resize(Npj, 0);
+        lims_.resize(Npj);
+    }
+
+    // Constructor for binding ends with lookup tables
+    KMC(const double *pos, const int Npj, const double r_cutoff,
+        const double dt, const LookupTable *LUTablePtr)
+        : r_cutoff_(r_cutoff), dt_(dt), LUTablePtr_(LUTablePtr) {
         setPos(pos);
         rods_probs_.resize(Npj, 0);
         distMinArr_.resize(Npj, 0);
@@ -226,6 +224,11 @@ double KMC<TRod>::CalcProbUS(const int j_rod, const TRod &rod,
                              const double bindFactor) {
     // Find and add shortest distance to DistPerp array and the associated
     // locations along rod.
+    double prefact = bindFactor * dt_ / (4.0 / 3.0 * M_PI * CUBE(r_cutoff_));
+
+    // TODO Make sure max binding factor is less than 1
+    // check(prefact*2*rcutoff < 1.)
+
     UpdateRodDistArr(j_rod, rod);
     double distMinSQR = SQR(distMinArr_[j_rod]);
     double r_cutSQR = SQR(r_cutoff_);
@@ -249,7 +252,7 @@ double KMC<TRod>::CalcProbUS(const int j_rod, const TRod &rod,
         else if (min < -0.5 * tLen)
             min = -0.5 * tLen;
 
-        return bindFactor * (max - min) / (4.0 / 3.0 * M_PI * CUBE(r_cutoff_));
+        return prefact * (max - min);
     } else {
         return 0;
     }
@@ -265,7 +268,7 @@ double KMC<TRod>::CalcProbUS(const int j_rod, const TRod &rod,
  */
 template <typename TRod>
 void KMC<TRod>::CalcProbSU(const double unbindFactor) {
-    prob_tot_ = unbindFactor;
+    prob_tot_ = unbindFactor * dt_;
 }
 
 /*! \brief Calculate the total probability of an unbound head to bind to
@@ -277,8 +280,8 @@ void KMC<TRod>::CalcProbSU(const double unbindFactor) {
  * \param rods Array of surrounding rod pointers
  * \param &uniqueFlagJ Reference to filter list making sure you do not over
  * count rods
- * \param k_spring Spring constant between connected heads
- * \param eqLen Equilibrium length of spring connecting heads
+ * \param k_spring Spring constant between connected ends
+ * \param eqLen Equilibrium length of spring connecting ends
  * \param bindFactor Binding factor of head to rods
  * \return void, Changes prob_tot_ variable of this object
  */
@@ -354,7 +357,7 @@ double KMC<TRod>::CalcProbSD(const int j_rod, const TRod &rod,
         // It's integrating time!
         result = integral(distPerp, lim0, lim1, M, ell);
     }
-    return bindFactor * result;
+    return bindFactor * result * dt_;
 }
 
 /*! \brief Calculate the probability of a head to bind to one rod when
@@ -406,7 +409,7 @@ double KMC<TRod>::LUCalcProbSD(const int j_rod, const TRod &rod,
                        ((lim1 < 0) ? -1.0 : 1.0);
         result = (term1 - term0);
     }
-    return bindFactor * result;
+    return bindFactor * result * dt_;
 }
 
 /*! \brief Calculate probability of head unbinding from rod
@@ -417,7 +420,7 @@ double KMC<TRod>::LUCalcProbSD(const int j_rod, const TRod &rod,
  */
 template <typename TRod>
 void KMC<TRod>::CalcProbDS(const double unbindFactor) {
-    prob_tot_ = unbindFactor;
+    prob_tot_ = unbindFactor * dt_;
     return;
 }
 
