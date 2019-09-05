@@ -14,7 +14,10 @@ class KMC {
   private:
     // Probabilities
     double prob_tot_ = 0;
-    const double r_cutoff_;
+    double r_cutoff_;
+    double DiffConst_; // Diffusion constant of particle
+    bool diff_rad_flag_ = false;
+
     std::vector<double> rods_probs_; ///< binding probabilities
 
     // Spatial variables
@@ -43,6 +46,30 @@ class KMC {
     KMC(const double *pos, const int Npj, const double r_cutoff)
         : r_cutoff_(r_cutoff), LUTablePtr_(nullptr) {
         setPos(pos);
+        rods_probs_.resize(Npj, 0);
+        distMinArr_.resize(Npj, 0);
+        distPerpArr_.resize(Npj, 0);
+        muArr_.resize(Npj, 0);
+        lims_.resize(Npj);
+    }
+
+    // Constructor for binding heads with diffusion modeled
+    // TODO: create unit test for this
+    KMC(const double *pos, const int Npj, const double r_cutoff,
+        const double DiffConst, const double dt)
+        : DiffConst_(DiffConst), LUTablePtr_(nullptr) {
+        setPos(pos);
+
+        // Find average diffusion distance and compare to given r_cutoff
+        double avg_dist = sqrt(6.0 * DiffConst * dt);
+        if (avg_dist > r_cutoff) {
+            r_cutoff_ = avg_dist;
+            diff_rad_flag_ = true;
+        } else {
+            r_cutoff_ = avg_dist;
+            diff_rad_flag_ = false;
+        }
+
         rods_probs_.resize(Npj, 0);
         distMinArr_.resize(Npj, 0);
         distPerpArr_.resize(Npj, 0);

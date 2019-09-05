@@ -37,13 +37,11 @@ inline int choose_kmc_double(double kmc0Prob, double kmc1Prob, double &roll) {
             // Shift and renormalize random number to kmc 1 binding
             roll = (roll - kmc0Prob) / kmc1Prob;
         }
-    }
 #ifndef NDEBUG
-    else if (totActivateProb > 0) {
         printf("kmc0 prob: %f, kmc1 prob: %f, no kmc prob: %f,\n", kmc0Prob,
                kmc1Prob, passProb);
-    }
 #endif
+    }
     return activated_end;
 }
 
