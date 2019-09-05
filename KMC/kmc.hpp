@@ -53,8 +53,7 @@ class KMC {
         setPos(pos);
 
         // Find average diffusion distance and compare to given r_cutoff
-        double avg_dist = sqrt(6.0 * DiffConst * dt);
-        r_cutoff_ = avg_dist > r_cutoff ? avg_dist : r_cutoff;
+        double avg_dist = r_cutoff_ = avg_dist > r_cutoff ? avg_dist : r_cutoff;
 
         rods_probs_.resize(Npj, 0);
         distMinArr_.resize(Npj, 0);
@@ -63,7 +62,7 @@ class KMC {
         lims_.resize(Npj);
     }
 
-    // Constructor for S->U end binding without lookup tables
+    // Constructor for S->D end binding without lookup tables
     KMC(const double *pos, const int Npj, const double r_cutoff,
         const double dt)
         : r_cutoff_(r_cutoff), dt_(dt), LUTablePtr_(nullptr) {
@@ -121,7 +120,8 @@ class KMC {
 
     int whichRodBindUS(const TRod *const *rods, double &bindPos, double roll);
 
-    void whereUnbindSU(double R, double rollVec[3], double pos[3]);
+    void whereUnbindSU(double R, double diffConst, double rollVec[3],
+                       double pos[3]);
 
     int whichRodBindSD(double &bindPos, double roll);
 
@@ -132,6 +132,10 @@ class KMC {
     /*******************
      *  Get functions  *
      *******************/
+
+    double getDiffRadius(const double diffConst) {
+        return sqrt(6.0 * diffConst * dt_);
+    }
 
     double getMu(const int j_bond) { return muArr_[j_bond]; }
 
@@ -499,14 +503,20 @@ int KMC<TRod>::whichRodBindUS(const TRod *const *rods, double &bindPos,
  * position.
  *
  * \param R Radius of sphere that protein will unbind to
+ * \param diffConst Diffusion constant
  * \param rollVec Uniformally generated random number 3 vector all from 0
- * to 1. \return Return new position vector of head once detatched.
+ * to 1.
+ * \return Return new position vector of head once detatched.
  */
 template <typename TRod>
-void KMC<TRod>::whereUnbindSU(double R, double rollVec[3], double pos[3]) {
+void KMC<TRod>::whereUnbindSU(double R, double diffConst, double rollVec[3],
+                              double pos[3]) {
     assert(rollVec[0] >= 0 && rollVec[0] <= 1.0);
     assert(rollVec[1] >= 0 && rollVec[1] <= 1.0);
     assert(rollVec[2] >= 0 && rollVec[2] <= 1.0);
+
+    double avg_dist = getDiffRadius(diffConst);
+    r_cutoff_ = avg_dist > R ? avg_dist : R;
 
     double r = R * std::cbrt(rollVec[0]);
     double costheta = 2. * rollVec[1] - 1.;
