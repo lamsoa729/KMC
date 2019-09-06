@@ -56,7 +56,7 @@ class ExampleXlink {
     bool walkOff = true;      ///< walf off the end, i.e., no 'end-dewelling'
     double fixedLocation = 0; ///< in [-1,1]
     double fstall = 1.0;      ///< stall force. unit pN
-    double diffUnbound = 4.5; ///< Unbounded diffusivity, unit um^2/s
+    double diffUnbound = .1;  ///< Unbounded diffusivity, unit um^2/s
     double lambda = 0;        ///< dimensionless unbinding load sensitivity
 
     // TODO: Implement these two functions
@@ -214,45 +214,36 @@ class ExampleXlink {
         }
     }
 
-    double getBindingFactorUS(int e, double dt) const {
+    double getBindingFactorUS(int e) const {
         assert(e == 0 || e == 1);
-        assert(dt > 0);
-        return ko_s[e] * Ka[e] * eps * dt;
+        return ko_s[e] * Ka[e] * eps;
     }
 
     /**
      * @brief Get UnbindingFactor from Singly bound to Unbound
-     * TODO: Test in KMC_Testing
      *
      * @param e
-     * @param dt
      * @return double
      */
-    double getUnbindingFactorSU(int e, double dt) const { return ko_s[e] * dt; }
+    double getUnbindingFactorSU(int e) const { return ko_s[e]; }
 
     /**
      * @brief Get BindingFactor from Singly to Doubly bound
-     * TODO: Test in KMC_Testing
      *
      * @param e
-     * @param dt
      * @return double
      */
-    double getBindingFactorSD(int e, double dt) const {
-        return ko_d[e] * Ke[e] * eps * dt;
-    }
+    double getBindingFactorSD(int e) const { return ko_d[e] * Ke[e] * eps; }
 
     /**
      * @brief Get UnbindingFactor from Doubly to Singly bound
-     * TODO: Test in KMC_Testing
      *
      * @param e
-     * @param dt
      * @return double
      */
-    double getUnbindingFactorDS(int e, double dt, double KBT) const {
+    double getUnbindingFactorDS(int e, double KBT) const {
         // if (lambda == 0)
-        return ko_d[e] * dt;
+        return ko_d[e];
         // else {
         // double M = lambda * .5 * kappa *
         // SQR(getProteinForceLength() - freeLength) / KBT;
@@ -266,6 +257,13 @@ class ExampleXlink {
      * @return double
      */
     double getRcutUS() const { return rc; }
+
+    /**
+     * @brief Get cut off calculation range when calculating 0 to 1 head bound
+     *
+     * @return double
+     */
+    double getDiffU() const { return diffUnbound; }
 
     /**
      * @brief Get cut off calculation range when calculating 1 to 2 head bound
@@ -300,6 +298,7 @@ class ExampleXlink {
         ko_d[0] = ko_d[1] = 1.0;
         vmax[0] = vmax[1] = 1.0; // max velocity. unit um/s
         kappa = 1.0;             // Spring constant when attached to MT
+        diffUnbound = .1;        ///< Unbounded diffusivity, unit um^2/s
         eps = 1.0;
         rc = .5;          // capture radius
         freeLength = 1.0; // the 'bind search' radius
