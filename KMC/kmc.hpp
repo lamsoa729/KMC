@@ -48,7 +48,7 @@ class KMC {
     // Constructor for binding ends with diffusion modeled
     // TODO: create unit test for this
     KMC(const double *pos, const int Npj, const double r_cutoff,
-        const double DiffConst, const double dt)
+        const double diffConst, const double dt)
         : dt_(dt), LUTablePtr_(nullptr) {
         setPos(pos);
 
