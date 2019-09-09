@@ -1,9 +1,9 @@
 #ifndef KMC_HPP
 #define KMC_HPP
 
-#include "KMC/helpers.hpp"
-#include "KMC/lookup_table.hpp"
-#include "KMC/macros.hpp"
+#include "helpers.hpp"
+#include "lookup_table.hpp"
+#include "macros.hpp"
 
 #include <array>
 #include <cassert>
@@ -13,6 +13,8 @@ template <typename TRod>
 class KMC {
   private:
     // System parameters
+    int n_dim_ = 3;
+    int n_periodic_ = 0;
     const double dt_; // Time step
 
     // Probabilities
@@ -23,6 +25,7 @@ class KMC {
 
     // Spatial variables
     double pos_[3];                   ///< position of motor head
+    double unit_cell_[9];             ///< unit cell matrix for PBCs
     std::vector<double> distMinArr_;  ///< min dist to rod segment
     std::vector<double> distPerpArr_; ///< min (perp) dist to rod line
     std::vector<double> muArr_; ///< Closest points of proteins to rods along
@@ -85,6 +88,19 @@ class KMC {
         distPerpArr_.resize(Npj, 0);
         muArr_.resize(Npj, 0);
         lims_.resize(Npj);
+    }
+
+    /*************************************
+     * Set periodic boundary conditions  *
+     *************************************/
+
+    /* Initialize periodic boundary conditions. This function only needs to be
+       called if there are PBCs. */
+    void SetPBCs(const int n_dim, const int n_periodic,
+                 const double *unit_cell) {
+        n_dim_ = n_dim;
+        n_periodic_ = n_periodic;
+        std::copy(unit_cell, unit_cell + 9, unit_cell_);
     }
 
     /*************************************
@@ -160,6 +176,9 @@ class KMC {
  * as the point located on the rod from rods center where
  * this minimum distance occurs (muArr_).
  *
+ * If we have periodic boundary conditions, then this function expects that
+ * rod.pos will be the scaled position of the rod, and pos_ is the scaled
+ * position of the protein.
  *
  * \param j_rod KMC index of rod used in muArr_ and distPerpArr_
  * \param &rod Rod data structure containing center location, length,
@@ -167,29 +186,58 @@ class KMC {
  * \return void, Updates muArr_[j_rod], distMinArr_[j_rod], and
  * distPerpArr_[j_rod] in KMC object.
  */
+
 template <typename TRod>
 void KMC<TRod>::UpdateRodDistArr(const int j_rod, const TRod &rod) {
     const double rLen = rod.length; // Vector of rod
     const double *rUVec = rod.direction;
-    const double *rCenter = rod.pos;
+    const double *rScaled = rod.pos;
     double rVec[3], // Rod length vector
-        rMinus[3],  // Rod minus end position vector
-        rPlus[3],   // Rod plus end position vector
-        sepVec[3];  // Vector of rod center to protein
-    for (int i = 0; i < 3; ++i) {
+        rCenter[3],
+        rMinus[3],       // Rod minus end position vector
+        rPlus[3],        // Rod plus end position vector
+        rPos[3],         // Position of protein
+        sepVecScaled[3], // Scaled vector of rod center to protein
+        ds[3];           // Scaled position separation vector
+
+    /* If we have PBCs, find minimum distance between rod and protein along
+       periodic subspace */
+    for (int i = 0; i < n_periodic_; ++i) {
+        ds[i] = pos_[i] - rScaled[i];
+        ds[i] -= NINT(ds[i]);
+    }
+
+    /* If we have PBCs, then we need to rescale rod and protein positions, as
+       well as separation vector */
+    for (int i = 0; i < n_periodic_; ++i) {
+        sepVecScaled[i] = 0.0;
+        rCenter[i] = 0.0;
+        rPos[i] = 0.0;
+        for (int j = 0; j < n_periodic_; ++j) {
+            sepVecScaled[i] += unit_cell_[n_dim_ * i + j] * ds[j];
+            rCenter[i] += unit_cell_[n_dim_ * i + j] * rScaled[j];
+            rPos[i] += unit_cell_[n_dim_ * i + j] * rScaled[j];
+        }
+    }
+
+    /* Then handle free subspace. */
+    for (int i = n_periodic_; i < 3; ++i) {
+        sepVecScaled[i] = pos_[i] - rScaled[i];
+        rCenter[i] = rScaled[i];
+        rPos[i] = pos_[i];
         rVec[i] = rLen * rUVec[i];
         rMinus[i] = rCenter[i] - (.5 * rVec[i]);
         rPlus[i] = rCenter[i] + (.5 * rVec[i]);
-        sepVec[i] = pos_[i] - rCenter[i];
     }
+
     // the perpendicular distance & position from protein ends to rod
     double pointMin[3];
-    distMinArr_[j_rod] = dist_point_seg(pos_, rMinus, rPlus, pointMin);
+    distMinArr_[j_rod] = dist_point_seg(rPos, rMinus, rPlus, pointMin);
     // Closest point of end_pos along rod axis from rod center.
-    double mu0 = dot3(sepVec, rUVec);
+    double mu0 = dot3(sepVecScaled, rUVec);
     muArr_[j_rod] = mu0;
     // Perpendicular distance away from rod axis
-    distPerpArr_[j_rod] = sqrt(dot3(sepVec, sepVec) - SQR(mu0));
+    distPerpArr_[j_rod] = sqrt(dot3(sepVecScaled, sepVecScaled) - SQR(mu0));
 }
 
 /*! \brief Calculate the probability of a head to bind to surrounding rods.
