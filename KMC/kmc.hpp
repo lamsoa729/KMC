@@ -51,12 +51,13 @@ class KMC {
     // Constructor for binding ends with diffusion modeled
     // TODO: create unit test for this
     KMC(const double *pos, const int Npj, const double r_cutoff,
-        const double DiffConst, const double dt)
+        const double diffConst, const double dt)
         : dt_(dt), LUTablePtr_(nullptr) {
         setPos(pos);
 
         // Find average diffusion distance and compare to given r_cutoff
-        double avg_dist = r_cutoff_ = avg_dist > r_cutoff ? avg_dist : r_cutoff;
+        double avg_dist = getDiffRadius(diffConst);
+        r_cutoff_ = avg_dist > r_cutoff ? avg_dist : r_cutoff;
 
         rods_probs_.resize(Npj, 0);
         distMinArr_.resize(Npj, 0);
