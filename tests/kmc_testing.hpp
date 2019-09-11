@@ -1229,3 +1229,33 @@ TEST_CASE("6 perpendicular rods surrounding a sphere of a rod radius with "
     }
 }
 
+TEST_CASE("Test calculation of U<->S binding radius based on diffusion.",
+          "[cutoff_radius]") {
+    // Define constants for KMC initialization
+    double dt = .001;
+    double pos[3] = {0, 0, 0};
+    int Npj = 1;
+    int rc = .5;
+    int n_trials = 10;
+
+    SECTION("Diffusion radius is larger than given capture radius.") {
+        for (int i = 0; i < n_trials; ++i) {
+            double rad_capture = (i + 1.) * rc;
+            double calc_diff = SQR(rad_capture) / (dt * 6.);
+            KMC<ExampleRod> kmc_U(pos, 1, rc, calc_diff, dt);
+            CHECK(ABS(rad_capture - kmc_U.getDiffRadius(calc_diff)) < SMALL);
+            CHECK(ABS(rad_capture - kmc_U.getRcutoff()) < SMALL);
+        }
+    }
+    SECTION("Diffusion radius is smaller than capture radius.") {
+        for (int i = 0; i < n_trials; ++i) {
+            double diffConst = i;
+            // Make radius capture always greater than diffusion radius
+            double rad_capture = (6. * diffConst * dt) + 1.;
+            KMC<ExampleRod> kmc_U(pos, 1, rad_capture, diffConst, dt);
+            REQUIRE(rad_capture > kmc_U.getDiffRadius(diffConst));
+            CHECK(rad_capture == kmc_U.getRcutoff());
+        }
+    }
+}
+

@@ -153,6 +153,7 @@ class KMC {
     double getDiffRadius(const double diffConst) {
         return sqrt(6.0 * diffConst * dt_);
     }
+    double getRcutoff() { return r_cutoff_; }
 
     double getMu(const int j_bond) { return muArr_[j_bond]; }
 
