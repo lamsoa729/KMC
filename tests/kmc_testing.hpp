@@ -1234,8 +1234,8 @@ TEST_CASE("Test calculation of U<->S binding radius based on diffusion.",
     // Define constants for KMC initialization
     double dt = .001;
     double pos[3] = {0, 0, 0};
+    double rc = .5;
     int Npj = 1;
-    int rc = .5;
     int n_trials = 10;
 
     SECTION("Diffusion radius is larger than given capture radius.") {
@@ -1256,6 +1256,17 @@ TEST_CASE("Test calculation of U<->S binding radius based on diffusion.",
             REQUIRE(rad_capture > kmc_U.getDiffRadius(diffConst));
             CHECK(rad_capture == kmc_U.getRcutoff());
         }
+    }
+    SECTION("Edge cases") {
+        // No diffusion, should just be rc
+        KMC<ExampleRod> kmc0(pos, 1, rc, 0, dt);
+        CHECK(rc == kmc0.getRcutoff());
+
+        // Diff radius is 1 but original rc = 0
+        double diffRad = 1.;
+        double diffConst = 1. / (dt * 6.);
+        KMC<ExampleRod> kmc1(pos, 1, 0, diffConst, dt);
+        CHECK(diffRad == kmc1.getRcutoff());
     }
 }
 

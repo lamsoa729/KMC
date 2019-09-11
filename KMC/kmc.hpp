@@ -57,7 +57,9 @@ class KMC {
 
         // Find average diffusion distance and compare to given r_cutoff
         double avg_dist = getDiffRadius(diffConst);
-        r_cutoff_ = avg_dist > r_cutoff ? avg_dist : r_cutoff;
+        r_cutoff_ = (avg_dist > r_cutoff) ? avg_dist : r_cutoff;
+
+        assert(r_cutoff_ > 0);
 
         rods_probs_.resize(Npj, 0);
         distMinArr_.resize(Npj, 0);
