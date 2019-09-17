@@ -221,6 +221,9 @@ void KMC<TRod>::UpdateRodDistArr(const int j_rod, const TRod &rod) {
             rCenter[i] += unit_cell_[n_dim_ * i + j] * rScaled[j];
             rPos[i] += unit_cell_[n_dim_ * i + j] * rScaled[j];
         }
+        rVec[i] = rLen * rUVec[i];
+        rMinus[i] = rCenter[i] - (.5 * rVec[i]);
+        rPlus[i] = rCenter[i] + (.5 * rVec[i]);
     }
 
     /* Then handle free subspace. */
