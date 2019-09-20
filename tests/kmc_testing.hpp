@@ -132,6 +132,15 @@ TEST_CASE("Test CalcProbUS for KMC<ExampleRod> class", "[calc01prob]") {
         CHECK(kmc.getDistMin(0) == 0.0);
         REQUIRE(prob == Approx(0.0000954929658551372).epsilon(SMALL));
     }
+    SECTION("Exception handling when probability of binding is larger than 1") {
+        double pos[3] = {0, 0, 0};
+        rod.length = .5;
+        KMC<ExampleRod> kmc(xlink.getPosPtr(), 1, xlink.getRcutUS(),
+                            xlink.getDiffU(), dt);
+
+        REQUIRE_THROWS(
+            kmc.CalcProbUS(0, rod, 1e8 * xlink.getBindingFactorUS(0)));
+    }
 }
 
 TEST_CASE("Test CalcProbSU for KMC class", "[calc_prob_su]") {

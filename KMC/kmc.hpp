@@ -48,8 +48,7 @@ class KMC {
         setPos(pos);
     }
 
-    // Constructor for binding ends with diffusion modeled
-    // TODO: create unit test for this
+    // Constructor for U<->S diffusion of crosslinker modeled
     KMC(const double *pos, const int Npj, const double r_cutoff,
         const double diffConst, const double dt)
         : dt_(dt), LUTablePtr_(nullptr) {
@@ -310,6 +309,14 @@ double KMC<TRod>::CalcProbUS(const int j_rod, const TRod &rod,
             min = 0.5 * tLen;
         else if (min < -0.5 * tLen)
             min = -0.5 * tLen;
+        double prob = prefact * (max - min);
+
+        if (prob >= 1.) {
+            fprintf(stderr,
+                    "Probability of binding from U->S(%f) is too high.\n",
+                    prob);
+            throw "Probability of binding from U->S is too high.";
+        }
 
         return prefact * (max - min);
     } else {
