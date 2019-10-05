@@ -242,7 +242,12 @@ void KMC<TRod>::UpdateRodDistArr(const int j_rod, const TRod &rod) {
     double mu0 = dot3(sepVecScaled, rUVec);
     muArr_[j_rod] = mu0;
     // Perpendicular distance away from rod axis
-    distPerpArr_[j_rod] = sqrt(dot3(sepVecScaled, sepVecScaled) - SQR(mu0));
+    double distPerpSqr = dot3(sepVecScaled, sepVecScaled) - SQR(mu0);
+    // Avoid floating point errors resulting in negative values in sqrt
+    if (distPerpSqr < 0 && -distPerpSqr < 1e-8) {
+      distPerpSqr = 0;
+    }
+    distPerpArr_[j_rod] = sqrt(distPerpSqr);
 }
 
 /*! \brief Calculate the probability of a head to bind to surrounding rods.
