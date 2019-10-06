@@ -345,6 +345,11 @@ TEST_CASE("Test CalcProbSD for KMC<ExampleRod> class", "[calc_prob_sd]") {
         // Check to make sure that probability matches up
         CHECK(prob == Approx(0.0005481166497130916).epsilon(SMALL));
     }
+    SECTION("Exception handling when no lookup table is given for SD binding") {
+        KMC<ExampleRod> kmc(xlink.posEndBind[0], 0, xlink.getRcutSD(), dt);
+        REQUIRE_THROWS(kmc.LUCalcProbSD(0, rod0, xlink.getBindingFactorUS(0)));
+        REQUIRE_THROWS(kmc.RandomBindPosSD(0, .1));
+    }
 }
 
 TEST_CASE("Test CalcProbDS for KMC<ExampleRod> class", "[calc21prob]") {

@@ -44,7 +44,8 @@ class KMC {
      *  Constructors  *
      ******************/
     // Constructor for unbinding ends
-    KMC(const double *pos, const double dt) : r_cutoff_(-1), dt_(dt) {
+    KMC(const double *pos, const double dt)
+        : r_cutoff_(-1), dt_(dt), LUTablePtr_(nullptr) {
         setPos(pos);
     }
 
@@ -245,7 +246,7 @@ void KMC<TRod>::UpdateRodDistArr(const int j_rod, const TRod &rod) {
     double distPerpSqr = dot3(sepVecScaled, sepVecScaled) - SQR(mu0);
     // Avoid floating point errors resulting in negative values in sqrt
     if (distPerpSqr < 0 && -distPerpSqr < 1e-8) {
-      distPerpSqr = 0;
+        distPerpSqr = 0;
     }
     distPerpArr_[j_rod] = sqrt(distPerpSqr);
 }
@@ -320,7 +321,8 @@ double KMC<TRod>::CalcProbUS(const int j_rod, const TRod &rod,
             fprintf(stderr,
                     "Probability of binding from U->S(%f) is too high.\n",
                     prob);
-            throw "Probability of binding from U->S is too high.";
+            throw " RunTimeError: Probability of binding from U->S is too "
+                  "high.";
         }
 
         return prefact * (max - min);
@@ -447,9 +449,9 @@ template <typename TRod>
 double KMC<TRod>::LUCalcProbSD(const int j_rod, const TRod &rod,
                                const double bindFactor) {
     if (LUTablePtr_ == nullptr) {
-        std::cerr << " *** Error: Lookup table not initialized ***"
+        std::cerr << " *** RuntimeError: Lookup table not initialized ***"
                   << std::endl;
-        exit(1);
+        throw "RuntimeError: Lookup table not initialized";
     }
     // Find and add shortest distance to DistPerp array and the associated
     // locations along rod.
@@ -634,9 +636,9 @@ template <typename TRod>
 double KMC<TRod>::RandomBindPosSD(int j_rod, double roll) {
     assert(roll <= 1.0 && roll >= 0.);
     if (LUTablePtr_ == nullptr) {
-        std::cerr << " *** Error: Lookup table pointer not initialized ***"
+        std::cerr << " *** RuntimeError: Lookup table not initialized ***"
                   << std::endl;
-        exit(1);
+        throw "RuntimeError: Lookup table not initialized";
     }
     // Limits set at the end of the rod relative to closest point of bound head
     // to unbound rod (mu)
