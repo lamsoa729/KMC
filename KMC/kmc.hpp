@@ -245,7 +245,13 @@ void KMC<TRod>::UpdateRodDistArr(const int j_rod, const TRod &rod) {
     // Perpendicular distance away from rod axis
     double distPerpSqr = dot3(sepVecScaled, sepVecScaled) - SQR(mu0);
     // Avoid floating point errors resulting in negative values in sqrt
-    if (distPerpSqr < 0 && -distPerpSqr < 1e-8) {
+    if (distPerpSqr < 0) {
+#ifndef NDEBUG
+        printf("Warning: distPerpSqr (%f) is less than zero. "
+               "Setting distPerpSqr to zero.\n",
+               distPerpSqr);
+#endif
+
         distPerpSqr = 0;
     }
     distPerpArr_[j_rod] = sqrt(distPerpSqr);

@@ -13,6 +13,7 @@
 
 #include <cassert>
 #include <cmath>
+#include <stdexcept>
 #include <string>
 #include <vector>
 
@@ -166,12 +167,13 @@ class LookupTable {
 
         // clamp to grid bound
         if (rowIndex < 0) {
-            printf("Error: distPerp must be positive value: %g \n", distPerp);
-            exit(1);
+            fprintf(stderr, "Error: distPerp must be positive value: %g \n",
+                    distPerp);
+            throw std::runtime_error("distPerp must be positive value");
         }
         if (colIndex < 0) {
-            printf("Error: sbound too small: %g \n", sbound);
-            exit(1);
+            fprintf(stderr, "Error: sbound too small: %g \n", sbound);
+            throw std::runtime_error("sbound too small");
         }
         if (rowIndex > distPerpGridNumber - 2) {
 #ifndef NDEBUG
@@ -231,8 +233,9 @@ class LookupTable {
 
         // distPerp check
         if (rowIndex < 0) {
-            printf("Error: distPerp too small: %g \n", distPerp);
-            exit(1);
+            fprintf(stderr, "Error: distPerp must be positive value: %g \n",
+                    distPerp);
+            throw std::runtime_error("distPerp must be positive value.");
         }
         if (rowIndex > distPerpGridNumber - 2) {
 #ifndef NDEBUG
@@ -248,9 +251,9 @@ class LookupTable {
         // val should be positive
         if (val < 0) {
 #ifndef NDEBUG
-            printf("Error: val should be positive: %g \n", val);
+            fprintf(stderr, "Error: val should be positive: %g \n", val);
 #endif
-            exit(1);
+            throw std::runtime_error("val should be positive.");
         }
 
         // reverse lookup val on row rowIndex
