@@ -10,12 +10,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED YES)
 
 set(ALLOW_DUPLICATE_CUSTOM_TARGETS TRUE)
 
-if(DEBUG)
-    set(CMAKE_BUILD_TYPE "Debug")
-endif()
-
-if(TESTS)
-  # build in debug mode if we are running unit tests
+if(DEBUG OR UNIT_TESTS)
     set(CMAKE_BUILD_TYPE "Debug")
 endif()
 
