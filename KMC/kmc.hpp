@@ -219,7 +219,7 @@ void KMC<TRod>::UpdateRodDistArr(const int j_rod, const TRod &rod) {
         for (int j = 0; j < n_periodic_; ++j) {
             sepVecScaled[i] += unit_cell_[n_dim_ * i + j] * ds[j];
             rCenter[i] += unit_cell_[n_dim_ * i + j] * rScaled[j];
-            rPos[i] += unit_cell_[n_dim_ * i + j] * rScaled[j];
+            rPos[i] += unit_cell_[n_dim_ * i + j] * pos_[j];
         }
         rVec[i] = rLen * rUVec[i];
         rMinus[i] = rCenter[i] - (.5 * rVec[i]);
