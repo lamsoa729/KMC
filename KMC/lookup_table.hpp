@@ -302,7 +302,8 @@ class LookupTable {
         // const int colIndex0 = lower0 - 1 - table.begin() - index1LB;
         const int colIndexm = lower1 - 1 - table.begin() - index1LB;
         const int colIndexp = lower2 - 1 - table.begin() - index2LB;
-        double sbound0, sboundm, sboundp;
+        // double sbound0;
+        double sboundm, sboundp;
         int out_of_range_case = 0;
 
         //        if (lower0 == table.begin() + index1UB) {
@@ -459,9 +460,9 @@ class LookupTable {
     void FillMatrix() {
         table.resize(distPerpGridNumber * sboundGridNumber, 0);
 
-        // boost integration parameters
-        const int max_depth = 10; // maximum number of interval splittings
-        const double tol = 1e-8;  // maximum relative error
+        //// boost integration parameters
+        // const int max_depth = 10; // maximum number of interval splittings
+        // const double tol = 1e-8;  // maximum relative error
 
         // row major
         // i is slow changing, should be distPerpGrid
