@@ -38,7 +38,7 @@ inline double integral(double lm, double sbound0, double sbound1, double M,
     }
     auto integrand = [&](double s) {
         // lambda capture variabls ell0 and M
-        const double exponent = sqrt(s * s + lm * lm) - ell0 - 1;
+        const double exponent = sqrt(s * s + lm * lm) - ell0;
         return exp(-M * exponent * exponent);
     };
     double error = 0;
