@@ -2,6 +2,7 @@
 #define KMC_HPP
 
 #include "helpers.hpp"
+#include "integrals.hpp"
 #include "lookup_table.hpp"
 #include "macros.hpp"
 
@@ -20,6 +21,7 @@ class KMC {
     // Probabilities
     double prob_tot_ = 0;
     double r_cutoff_;
+    double bind_vol_;
 
     std::vector<double> rods_probs_; ///< binding probabilities
 
@@ -58,6 +60,7 @@ class KMC {
         // Find average diffusion distance and compare to given r_cutoff
         double avg_dist = getDiffRadius(diffConst);
         r_cutoff_ = (avg_dist > r_cutoff) ? avg_dist : r_cutoff;
+        bind_vol_ = M_PI * CUBE(r_cutoff_) / .75;
 
         assert(r_cutoff_ > 0);
 
@@ -81,10 +84,12 @@ class KMC {
     }
 
     // Constructor for binding ends with lookup tables
-    KMC(const double *pos, const int Npj, const double r_cutoff,
-        const double dt, const LookupTable *LUTablePtr)
-        : r_cutoff_(r_cutoff), dt_(dt), LUTablePtr_(LUTablePtr) {
+    KMC(const double *pos, const int Npj, const double dt,
+        const LookupTable *LUTablePtr)
+        : dt_(dt), LUTablePtr_(LUTablePtr) {
         setPos(pos);
+        r_cutoff_ = LUTablePtr_->getLUCutoff();
+        bind_vol_ = LUTablePtr_->getBindVolume();
         rods_probs_.resize(Npj, 0);
         distMinArr_.resize(Npj, 0);
         distPerpArr_.resize(Npj, 0);
@@ -294,10 +299,7 @@ double KMC<TRod>::CalcProbUS(const int j_rod, const TRod &rod,
                              const double bindFactor) {
     // Find and add shortest distance to DistPerp array and the associated
     // locations along rod.
-    double prefact = bindFactor * dt_ / (4.0 / 3.0 * M_PI * CUBE(r_cutoff_));
-
-    // TODO Make sure max binding factor is less than 1
-    // check(prefact*2*rcutoff < 1.)
+    double prefact = bindFactor * dt_ / bind_vol_;
 
     UpdateRodDistArr(j_rod, rod);
     double distMinSQR = SQR(distMinArr_[j_rod]);
@@ -323,15 +325,15 @@ double KMC<TRod>::CalcProbUS(const int j_rod, const TRod &rod,
             min = -0.5 * tLen;
         double prob = prefact * (max - min);
 
-        if (prob >= 1.) {
-            fprintf(stderr,
-                    "Probability of binding from U->S(%f) is too high.\n",
-                    prob);
-            throw " RunTimeError: Probability of binding from U->S is too "
-                  "high.";
-        }
+        // if (prob >= 1.) {
+        //    fprintf(stderr,
+        //            "Probability of binding from U->S(%f) is too high.\n",
+        //            prob);
+        //    throw " RunTimeError: Probability of binding from U->S is too "
+        //          "high.";
+        //}
 
-        return prefact * (max - min);
+        return prob;
     } else {
         return 0;
     }
@@ -371,6 +373,7 @@ void KMC<TRod>::CalcTotProbsSD(const TRod *const *rods,
                                const double kappa, const double beta,
                                const double restLen,
                                const std::vector<double> &bindFactors) {
+
     // Make sure that KMC was properly initialized.
     assert(r_cutoff_ > 0);
     // Stash bind factors for position calculation later
@@ -394,7 +397,8 @@ void KMC<TRod>::CalcTotProbsSD(const TRod *const *rods,
 }
 
 /*! \brief Calculate the probability of a head to bind to one rod when one
- * head is already bound.
+ * head is already bound. BEWARE: This is much much slower than using Lookup
+ * Table!
  *
  * \param j_rod Index of rod object
  * \param &rod Reference to rod object
@@ -423,18 +427,21 @@ double KMC<TRod>::CalcProbSD(const int j_rod, const TRod &rod,
         result = 0;
     else {
         // Non-dimensionalize all exponential factors
+        constexpr double small = 1e-4;
         const double distPerp =
             distPerpArr_[j_rod] / D; // Perpendicular distance to rod axis
         const double mu0 = muArr_[j_rod] / D;
         const double M = (1 - lambda) * .5 * kappa * beta * D * D;
         const double ell = restLen / D;
+        const double lUB = sqrt(-log(small) / M) + ell;
         // Limits of integration
         const double lim0 = -mu0 - 0.5 * (rod.length / D);
         const double lim1 = -mu0 + 0.5 * (rod.length / D);
         lims_[j_rod].first = lim0;
         lims_[j_rod].second = lim1;
         // It's integrating time!
-        result = integral(distPerp, lim0, lim1, M, ell);
+        bind_vol_ = bind_vol_integral(0, lUB, M, ell);
+        result = integral(distPerp, lim0, lim1, M, ell) / bind_vol_;
     }
     return bindFactor * result * dt_;
 }
@@ -488,7 +495,7 @@ double KMC<TRod>::LUCalcProbSD(const int j_rod, const TRod &rod,
                        ((lim1 < 0) ? -1.0 : 1.0);
         result = (term1 - term0);
     }
-    return bindFactor * result * dt_;
+    return bindFactor * result * dt_ / bind_vol_;
 }
 
 /*! \brief Calculate probability of head unbinding from rod

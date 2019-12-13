@@ -18,6 +18,7 @@
 #include <vector>
 
 #include "integrals.hpp"
+#include "macros.hpp"
 /**
  * @brief 2D Lookup Table for the dimensionless functions
  *
@@ -27,11 +28,15 @@
  * Both interface functions and internal caculations are dimensionless
  */
 class LookupTable {
-  public:
-    double D; ///< dimensional rod Diameter, length scale
-
+  private:
+    double bind_vol_; ///< Dimensionless volume that head can bind within
+    double
+        lUB_;  ///< Upper bound distance of lookup table in dimensionless units
+    double M_; ///< (1-\lambda)\kappa\beta/2 * D^2, dimensionless
     double ell0; ///< \ell_0/D, dimensionless
-    double M;    ///< (1-\lambda)\kappa\beta/2 * D^2, dimensionless
+
+  public:
+    double D_; ///< dimensional rod Diameter, length scale
 
     int distPerpGridNumber;
     double distPerpGridSpacing;       ///< dimensionless
@@ -54,7 +59,21 @@ class LookupTable {
      *
      * @return double
      */
-    double getRodDiameter() const { return D; }
+    double getRodDiameter() const { return D_; }
+
+    /**
+     * @brief Get the dimensional biniding volume of attaching end
+     *
+     * @return double
+     */
+    double getBindVolume() const { return CUBE(D_) * bind_vol_; }
+
+    /**
+     * @brief Get the dimensional cutoff distance of the lookup table.
+     *
+     * @return double
+     */
+    double getLUCutoff() const { return D_ * lUB_; }
 
     /**
      * @brief Get the dimensionless sbound for tabulation
@@ -69,36 +88,40 @@ class LookupTable {
      * \int_0^y exp{-M_ (sqrt[x^2 + l_min^2] - l_o - D)^2}dx
      * To do this, grid spacing are calculated based on the value of M_ and
      * freeLength. The upper bound lUB is calculated so that the maximum change
-     * at the end of the integral is less than 10^{-5}. Everything is
+     * at the end of the integral is less than 10^{-4}. Everything is
      * non-dimensionalized by rodD.
      *
-     * \param M_ Exponential prefactor with the dimensions of L^{-2}.
+     * \param M Exponential prefactor with the dimensions of L^{-2}.
      * \param freeLength Rest length of binding crosslink.
      * \param rodD Diameter of rod crosslink is binding to.
      *
      * \return void
      */
-    void Init(double M_, double freeLength, double rodD) {
+    void Init(double M, double freeLength, double rodD) {
+        constexpr double small = 1e-4;
         // setup length scale and dimensionless lengths
-        D = rodD;
+        D_ = rodD;
         ell0 = freeLength / rodD;
-        M = M_ * rodD * rodD;
+        M_ = M * rodD * rodD;
 
         // truncate the integration when integrand < SMALL
         // interation table in dimensionless lengths
         // lUB = sqrt(lm^2 + s^2), dimensionless scaled by D
-        constexpr double SMALL = 1e-4;
-        const double lUB = sqrt(-log(SMALL) / M) + 1 + ell0;
+        lUB_ = sqrt(-log(small) / M_) + ell0;
+        // Get binding volume for simulation
+        bind_vol_ = bind_vol_integral(0, lUB_, M_, ell0);
+        // printf("lUB_ = %f\n", lUB_);
+        // printf("bind_vol_ = %f\n", bind_vol_);
 
         // step 1 determine grid
         const double distPerpLB = 0;
-        const double distPerpUB = lUB;
+        const double distPerpUB = lUB_;
         distPerpGridNumber = 256; // grid in dperp
         distPerpGridSpacing =
             (distPerpUB - distPerpLB) / (distPerpGridNumber - 1);
 
         const double sboundLB = 0;
-        const double sboundUB = sqrt(lUB * lUB - distPerpLB * distPerpLB);
+        const double sboundUB = sqrt(lUB_ * lUB_ - distPerpLB * distPerpLB);
         sboundGridNumber = 256; // grid in s bound
         sboundGridSpacing = (sboundUB - sboundLB) / (sboundGridNumber - 1);
 
@@ -159,8 +182,8 @@ class LookupTable {
      */
     double Lookup(double distPerp, double sbound) const {
         // Non-dimensionalize parameters
-        distPerp /= D;
-        sbound /= D;
+        distPerp /= D_;
+        sbound /= D_;
         double rowFrac = 0, colFrac = 0;
         int rowIndex = getRowIndex(distPerp, rowFrac);
         int colIndex = getColIndex(sbound, colFrac);
@@ -202,7 +225,7 @@ class LookupTable {
                      + table[getTableIndex(rowIndex + 1, colIndex + 1)] *
                            colFrac * rowFrac; //
 
-        return val * D; // IMPORTANT: re-dimensionalize value
+        return val * D_; // IMPORTANT: re-dimensionalize value
     }
 
     /******************
@@ -223,8 +246,8 @@ class LookupTable {
         if (val == 0) {
             return 0;
         } else { // Non-dimensionalize inputs
-            distPerp /= D;
-            val /= D;
+            distPerp /= D_;
+            val /= D_;
         }
 
         double sbound;
@@ -389,7 +412,7 @@ class LookupTable {
         printf("Reverse lookup output = %g, expected range = (%g, %g) \n",
                sbound, sboundm, sboundp);
 #endif
-        return D * sbound;
+        return D_ * sbound;
     }
 
     double ReverseBinaryLookup(const int rowMin, const double rowFrac,
@@ -473,7 +496,7 @@ class LookupTable {
             for (int j = 0; j < sboundGridNumber; j++) {
                 const double sbound = sboundGrid[j];
                 assert(!(sbound < 0));
-                double result = integral(distPerpGrid[i], 0, sbound, M, ell0);
+                double result = integral(distPerpGrid[i], 0, sbound, M_, ell0);
                 table[i * sboundGridNumber + j] = result;
             }
         }

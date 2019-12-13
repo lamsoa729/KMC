@@ -48,4 +48,21 @@ inline double integral(double lm, double sbound0, double sbound1, double M,
     return result;
 }
 
+inline double bind_vol_integral(double sbound0, double sbound1, double M,
+                                double ell0) {
+    if (sbound0 >= sbound1) {
+        return 0;
+    }
+    auto integrand = [&](double s) {
+        // lambda capture variabls ell0 and M
+        const double exponent = s - ell0;
+        return s * s * exp(-M * exponent * exponent);
+    };
+    double error = 0;
+    double result =
+        boost::math::quadrature::gauss_kronrod<double, 21>::integrate(
+            integrand, sbound0, sbound1, 10, 1e-6, &error);
+    return 4. * M_PI * result;
+}
+
 #endif /* INTEGRALS_HPP_ */
