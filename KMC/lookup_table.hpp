@@ -36,6 +36,7 @@ class LookupTable {
     double ell0; ///< \ell_0/D, dimensionless
 
   public:
+    static constexpr double small = 1e-4;
     double D_; ///< dimensional rod Diameter, length scale
 
     int distPerpGridNumber;
@@ -98,7 +99,7 @@ class LookupTable {
      * \return void
      */
     void Init(double M, double freeLength, double rodD) {
-        constexpr double small = 1e-4;
+        // constexpr double small = 1e-4;
         // setup length scale and dimensionless lengths
         D_ = rodD;
         ell0 = freeLength / rodD;

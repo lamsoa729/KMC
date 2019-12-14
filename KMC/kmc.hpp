@@ -495,7 +495,20 @@ double KMC<TRod>::LUCalcProbSD(const int j_rod, const TRod &rod,
                        ((lim1 < 0) ? -1.0 : 1.0);
         result = (term1 - term0);
     }
-    return bindFactor * result * dt_ / bind_vol_;
+    double prefact = bindFactor * dt_ / bind_vol_;
+#ifndef NDEBUG
+    if (prefact * LookupTable::small > 1.) {
+        printf("Warning: S->D binding prefact (%g) times the tolerance of "
+               "lookup table (%g) is large. This could lead to instabilities "
+               "and improper sampling of binding distribution. Reduce time "
+               "step, on rate, or spring constant to prevent this.",
+               prefact, LookupTable::small);
+    }
+#endif
+    // printf("bindFactor = %f\n", bindFactor);
+    // printf("result = %f\n", result);
+    // printf("bind_vol_ = %f\n", bind_vol_);
+    return prefact * result;
 }
 
 /*! \brief Calculate probability of head unbinding from rod
