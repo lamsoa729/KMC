@@ -301,7 +301,7 @@ class ExampleXlink {
         diffUnbound = .1;        ///< Unbounded diffusivity, unit um^2/s
         eps = 1.0;
         rc = .5;          // capture radius
-        freeLength = 1.0; // the 'bind search' radius
+        freeLength = 2.0; // the 'bind search' radius
         fstall = 1.0;     ///< stall force. unit pN
         tag = 0;          ///< user-assigned integer tag for different types
         walkOff = true;   ///< walf off the end, i.e., no 'end-dewelling'

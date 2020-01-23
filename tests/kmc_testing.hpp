@@ -4,6 +4,7 @@
 
 #include "KMC/ExampleRod.hpp"
 #include "KMC/helpers.hpp"
+#include "KMC/integrals.hpp"
 #include "KMC/kmc.hpp"
 #include "KMC/lookup_table.hpp"
 #include "KMC/macros.hpp"
@@ -28,6 +29,15 @@ TRod MockRod(int id) {
     }
     rod.direction[0] = 1;
     return rod;
+}
+
+double test_bind_prob(double lm, double sbound0, double sbound1, double lambda,
+                      double kappa, double beta, double ell0, double bindFactor,
+                      double dt) {
+    double prob = integral(lm, sbound0, sbound1,
+                           (1. - lambda) * kappa * .5 * beta, ell0) *
+                  bindFactor * dt;
+    return prob;
 }
 
 TEST_CASE("Test CalcProbUS for KMC<ExampleRod> class", "[calc01prob]") {
@@ -132,15 +142,6 @@ TEST_CASE("Test CalcProbUS for KMC<ExampleRod> class", "[calc01prob]") {
         CHECK(kmc.getDistMin(0) == 0.0);
         REQUIRE(prob == Approx(0.0000954929658551372).epsilon(SMALL));
     }
-    SECTION("Exception handling when probability of binding is larger than 1") {
-        double pos[3] = {0, 0, 0};
-        rod.length = .5;
-        KMC<ExampleRod> kmc(xlink.getPosPtr(), 1, xlink.getRcutUS(),
-                            xlink.getDiffU(), dt);
-
-        REQUIRE_THROWS(
-            kmc.CalcProbUS(0, rod, 1e8 * xlink.getBindingFactorUS(0)));
-    }
 }
 
 TEST_CASE("Test CalcProbSU for KMC class", "[calc_prob_su]") {
@@ -219,7 +220,11 @@ TEST_CASE("Test CalcProbSD for KMC<ExampleRod> class", "[calc_prob_sd]") {
             kmc.CalcProbSD(0, rod1, xlink.lambda, xlink.kappa, 1. / KBT,
                            xlink.freeLength, xlink.getBindingFactorSD(1));
         // Check to make sure that probability matches up
-        CHECK(prob == Approx(0.0004899204301239162).epsilon(SMALL));
+        double test_prob = test_bind_prob(
+            0, -.5 * rod0.length, .5 * rod0.length, xlink.lambda, xlink.kappa,
+            1. / KBT, xlink.freeLength, xlink.getBindingFactorSD(1), dt);
+        // CHECK(prob == Approx(0.0004899204301239162).epsilon(SMALL));
+        CHECK(prob == Approx(test_prob).epsilon(SMALL));
     }
     SECTION("Test binding to 2 parallel vertically separated rods.") {
         // Bind protein head 0 to the center of rod0
@@ -1133,7 +1138,7 @@ TEST_CASE("6 perpendicular rods surrounding a sphere of a rod radius with "
         // Bind to minus end of the first rod
         xlink.setBind(end_bound, ep_j[0]->gid, ep_j[0]->direction, ep_j[0]->pos,
                       ep_j[0]->length * -.5, ep_j[0]->length, ep_j[0]->rank);
-        SECTION("1->0 unbinding") {
+        SECTION("S->U unbinding") {
             double rollVec[] = {.1, .125, .125};
             KMC<ExampleRod> kmc(xlink.posEndBind[end_bound], 6,
                                 xlink.getRcutUS(), dt);
@@ -1169,7 +1174,7 @@ TEST_CASE("6 perpendicular rods surrounding a sphere of a rod radius with "
             CHECK(err[1] == Approx(0).margin(SMALL));
             CHECK(err[2] == Approx(0).margin(SMALL));
         }
-        SECTION("1->2 binding") {
+        SECTION("S->D binding") {
             KMC<ExampleRod> kmc(xlink.posEndBind[end_bound], 6,
                                 xlink.getRcutSD(), dt);
             std::vector<double> bindFactorsSD(

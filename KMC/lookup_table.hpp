@@ -29,11 +29,10 @@
  */
 class LookupTable {
   private:
-    double bind_vol_; ///< Dimensionless volume that head can bind within
-    double
-        lUB_;  ///< Upper bound distance of lookup table in dimensionless units
-    double M_; ///< (1-\lambda)\kappa\beta/2 * D^2, dimensionless
+    double lUB_; ///< Upper bound distance of lookup table, dimensionless
+    double M_;   ///< (1-\lambda)\kappa\beta/2 * D^2, dimensionless
     double ell0; ///< \ell_0/D, dimensionless
+    double bind_vol_ = 1; ///< Volume that head can bind within, dimensionless
 
   public:
     static constexpr double small = 1e-4;
@@ -110,7 +109,7 @@ class LookupTable {
         // lUB = sqrt(lm^2 + s^2), dimensionless scaled by D
         lUB_ = sqrt(-log(small) / M_) + ell0;
         // Get binding volume for simulation
-        bind_vol_ = bind_vol_integral(0, lUB_, M_, ell0);
+        // bind_vol_ = bind_vol_integral(0, lUB_, M_, ell0);
         // printf("lUB_ = %f\n", lUB_);
         // printf("bind_vol_ = %f\n", bind_vol_);
 
@@ -141,6 +140,20 @@ class LookupTable {
         // step 3 tabulate the matrix
         FillMatrix();
     }
+
+    /*! \brief Calculate the binding volume of second head of protein.
+     * Will remain 1 otherwise.
+     *
+     * \return void
+     */
+    void calcBindVol() { bind_vol_ = bind_vol_integral(0, lUB_, M_, ell0); }
+
+    /*! \brief Set the binding volume of second head of protein.
+     * Will remain 1 otherwise.
+     *
+     * \return void
+     */
+    void setBindVol(double bind_vol) { bind_vol_ = bind_vol; }
 
     /*********************
      *  output LookupTable

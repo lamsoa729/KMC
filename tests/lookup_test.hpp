@@ -105,7 +105,7 @@ TEST_CASE("Lookup table test STIFF spring ", "[lookup]") {
 
     const double D = 0.024;
     const double alpha = 10.0 / (2 * 0.00411);
-    const double freelength = 0.05;
+    const double freelength = 0.05 + D;
     const double M = alpha * D * D;
     const double ell0 = freelength / D;
     LUT.Init(alpha, freelength, D);
@@ -138,7 +138,7 @@ TEST_CASE("Lookup table test manual medium spring REL error", "[lookup]") {
     constexpr double errTol = RELTOL;
 
     double distPerp = 0;
-    LUT.Init(1.0 / (2 * 0.00411), 0.05, D);
+    LUT.Init(1.0 / (2 * 0.00411), 0.05 + D, D);
 
     distPerp = 0.2;
     // ("distPerp = 0.2 > D+ell0, single peaked")
@@ -181,7 +181,7 @@ TEST_CASE("REVERSE Lookup table test manual medium spring REL error",
     const double D = 0.024;
 
     double distPerp = 0;
-    LUT.Init(1.0 / (2 * 0.00411), 0.05, D);
+    LUT.Init(1.0 / (2 * 0.00411), 0.05 + D, D);
 
     double tol = RELTOL * REVERSEFAC;
 

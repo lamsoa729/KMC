@@ -440,7 +440,8 @@ double KMC<TRod>::CalcProbSD(const int j_rod, const TRod &rod,
         lims_[j_rod].first = lim0;
         lims_[j_rod].second = lim1;
         // It's integrating time!
-        bind_vol_ = bind_vol_integral(0, lUB, M, ell);
+        // bind_vol_ = bind_vol_integral(0, lUB, M, ell);
+        bind_vol_ = 1.;
         result = integral(distPerp, lim0, lim1, M, ell) / bind_vol_;
     }
     return bindFactor * result * dt_;
