@@ -83,7 +83,7 @@ class KMC {
         lims_.resize(Npj);
     }
 
-    // Constructor for binding ends with lookup tables
+    // Constructor for S->D end binding with lookup tables
     KMC(const double *pos, const int Npj, const double dt,
         const LookupTable *LUTablePtr)
         : dt_(dt), LUTablePtr_(LUTablePtr) {
@@ -128,6 +128,11 @@ class KMC {
                         const double lambda, const double kappa,
                         const double beta, const double restLen,
                         const std::vector<double> &bindFactors);
+
+    void LUCalcTotProbsSD(const TRod *const *rods,
+                          const std::vector<int> &uniqueFlagJ,
+                          const int boundID,
+                          const std::vector<double> &bindFactors);
 
     double LUCalcProbSD(const int j_rod, const TRod &rod,
                         const double bindFactor);
@@ -176,13 +181,19 @@ class KMC {
         }
     }
 
+    /**************************
+     *  Diagnostic functions  *
+     **************************/
+
+    void Diagnostics(){};
+
     virtual ~KMC() {}
 };
 
 /*! \brief Function to update the minimum distance of KMC object to rod
- * (distMinArr_), perpendicular distance from rod axis (distPerpArr_), as well
- * as the point located on the rod from rods center where
- * this minimum distance occurs (muArr_).
+ * (distMinArr_), perpendicular distance from rod axis (distPerpArr_), as
+ * well as the point located on the rod from rods center where this minimum
+ * distance occurs (muArr_).
  *
  * If we have periodic boundary conditions, then this function expects that
  * rod.pos will be the scaled position of the rod, and pos_ is the scaled
@@ -215,8 +226,8 @@ void KMC<TRod>::UpdateRodDistArr(const int j_rod, const TRod &rod) {
         ds[i] -= NINT(ds[i]);
     }
 
-    /* If we have PBCs, then we need to rescale rod and protein positions, as
-       well as separation vector */
+    /* If we have PBCs, then we need to rescale rod and protein positions,
+       as well as separation vector */
     for (int i = 0; i < n_periodic_; ++i) {
         sepVecScaled[i] = 0.0;
         rCenter[i] = 0.0;
@@ -325,14 +336,6 @@ double KMC<TRod>::CalcProbUS(const int j_rod, const TRod &rod,
             min = -0.5 * tLen;
         double prob = prefact * (max - min);
 
-        // if (prob >= 1.) {
-        //    fprintf(stderr,
-        //            "Probability of binding from U->S(%f) is too high.\n",
-        //            prob);
-        //    throw " RunTimeError: Probability of binding from U->S is too "
-        //          "high.";
-        //}
-
         return prob;
     } else {
         return 0;
@@ -376,8 +379,6 @@ void KMC<TRod>::CalcTotProbsSD(const TRod *const *rods,
 
     // Make sure that KMC was properly initialized.
     assert(r_cutoff_ > 0);
-    // Stash bind factors for position calculation later
-    // bindFactorsArr_ = bindFactors;
     // Sum total probability of binding to surrounding rods
     prob_tot_ = 0;
     for (int j_rod = 0; j_rod < rods_probs_.size(); ++j_rod) {
@@ -392,6 +393,39 @@ void KMC<TRod>::CalcTotProbsSD(const TRod *const *rods,
             }
             prob_tot_ += rods_probs_[j_rod];
         }
+    }
+    return;
+}
+
+/*! \brief Calculate the total probability of an unbound head to bind to
+ * surrounding rods when other head using lookup table only.
+ *
+ *  One head must be bound and its position must be stored in this pos_
+ *  variable. Lookup table must be initialized in KMC to use this function.
+ *
+ * \param rods Array of surrounding rod pointers
+ * \param &uniqueFlagJ Reference to filter list making sure you do not over
+ * count rods
+ * \param boundID ID of rod that bound head is attached to
+ * \param bindFactors Binding factor of head to rods
+ * \return void, Changes prob_tot_ variable of this object
+ */
+template <typename TRod>
+void KMC<TRod>::LUCalcTotProbsSD(const TRod *const *rods,
+                                 const std::vector<int> &uniqueFlagJ,
+                                 const int boundID,
+                                 const std::vector<double> &bindFactors) {
+    // Make sure that KMC was properly initialized.
+    assert(r_cutoff_ > 0);
+    assert(LUTablePtr_);
+    // Sum total probability of binding to surrounding rods
+    prob_tot_ = 0;
+    for (int j_rod = 0; j_rod < rods_probs_.size(); ++j_rod) {
+        if (uniqueFlagJ[j_rod] > 0 && rods[j_rod]->gid != boundID) {
+            rods_probs_[j_rod] =
+                LUCalcProbSD(j_rod, *(rods[j_rod]), bindFactors[j_rod]);
+        }
+        prob_tot_ += rods_probs_[j_rod];
     }
     return;
 }
@@ -414,7 +448,8 @@ double KMC<TRod>::CalcProbSD(const int j_rod, const TRod &rod,
                              const double lambda, const double kappa,
                              const double beta, const double restLen,
                              const double bindFactor) {
-    // // Find and add shortest distance to DistPerp array and the associated
+    // // Find and add shortest distance to DistPerp array and the
+    // associated
     // // locations along rod.
     UpdateRodDistArr(j_rod, rod);
 
@@ -506,9 +541,6 @@ double KMC<TRod>::LUCalcProbSD(const int j_rod, const TRod &rod,
                prefact, LookupTable::small);
     }
 #endif
-    // printf("bindFactor = %f\n", bindFactor);
-    // printf("result = %f\n", result);
-    // printf("bind_vol_ = %f\n", bind_vol_);
     return prefact * result;
 }
 
@@ -561,7 +593,6 @@ int KMC<TRod>::whichRodBindUS(const TRod *const *rods, double &bindPos,
     const double half_length = .5 * rods[i]->length; // half length of rod
     const double mu = muArr_[i]; // Closest position of particle along rod
                                  // from rod center
-    const double distMin = distMinArr_[i];   // Distance from rod
     const double distPerp = distPerpArr_[i]; // Distance from rod
     double bind_range = sqrt(SQR(r_cutoff_) - SQR(distPerp));
     if (std::isnan(bind_range))
@@ -667,8 +698,8 @@ double KMC<TRod>::RandomBindPosSD(int j_rod, double roll) {
                   << std::endl;
         throw "RuntimeError: Lookup table not initialized";
     }
-    // Limits set at the end of the rod relative to closest point of bound head
-    // to unbound rod (mu)
+    // Limits set at the end of the rod relative to closest point of bound
+    // head to unbound rod (mu)
     double lim0 = lims_[j_rod].first;
     double lim1 = lims_[j_rod].second;
 
@@ -682,9 +713,9 @@ double KMC<TRod>::RandomBindPosSD(int j_rod, double roll) {
         LUTablePtr_->Lookup(distPerp, fabs(lim1)) * ((lim1 < 0) ? -1.0 : 1.0);
 
     // Scale random number to be within probability limits
-    //      Since lookup table only stores positive values, take the absolute
-    //      value of the position limit and then negate probability if the
-    //      position limit was less than 0.
+    //      Since lookup table only stores positive values, take the
+    //      absolute value of the position limit and then negate probability
+    //      if the position limit was less than 0.
     roll = roll * (pLim1 - pLim0) + pLim0;
     double preFact = roll < 0 ? -1. : 1.;
     roll *= preFact; // entry in lookup table must be positive
@@ -696,8 +727,8 @@ double KMC<TRod>::RandomBindPosSD(int j_rod, double roll) {
     printf("bind_pos = %f, expected range = (%f, %f) \n", bind_pos, lim0, lim1);
 #endif
 
-    // FIXME Reverse lookup table is not perfect. Bind to end of MT if limit is
-    // exceeded.
+    // FIXME Reverse lookup table is not perfect. Bind to end of MT if limit
+    // is exceeded.
     if (lim0 > bind_pos) {
 #ifndef NDEBUG
         printf("Warning: binding position %g exceeds rod limit of %g. Binding "
