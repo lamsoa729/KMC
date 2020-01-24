@@ -81,6 +81,12 @@ class LookupTable {
      * @return double
      */
     double getNonDsbound() const { return sboundGrid.back(); }
+    /**
+     * @brief Get the dimensionful sbound for tabulation
+     *
+     * @return double
+     */
+    double getDsbound() const { return D_ * sboundGrid.back(); }
 
     /*! \brief Initialize lookup table
      *
