@@ -47,6 +47,7 @@ TEST_CASE("Test CalcProbUS for KMC<ExampleRod> class", "[calc01prob]") {
     // Protein data
     ExampleXlink xlink;
     xlink.setMockXlink();
+
     // Sylinder data
     ExampleRod rod = MockRod<ExampleRod>(0);
 
@@ -257,8 +258,9 @@ TEST_CASE("Test CalcProbSD for KMC<ExampleRod> class", "[calc_prob_sd]") {
         xlink.setBind(end_bound, rod0.gid, rod0.direction, rod0.pos, end_loc,
                       rod0.length, rod0.rank);
         // Change the position of rod1 vertically
+        double sep = 1.0;
         rod1.pos[0] = 0;
-        rod1.pos[1] = 1.0;
+        rod1.pos[1] = sep;
         rod1.pos[2] = 0;
         // Create KMC<ExampleRod> object for protein
         KMC<ExampleRod> kmc(xlink.posEndBind[0], 1, xlink.getRcutSD(), dt);
@@ -266,8 +268,11 @@ TEST_CASE("Test CalcProbSD for KMC<ExampleRod> class", "[calc_prob_sd]") {
         double prob =
             kmc.CalcProbSD(0, rod1, xlink.lambda, xlink.kappa, 1. / KBT,
                            xlink.freeLength, xlink.getBindingFactorSD(1));
+        double test_prob = test_bind_prob(
+            sep, 0, .5 * rod0.length, xlink.lambda, xlink.kappa, 1. / KBT,
+            xlink.freeLength, xlink.getBindingFactorSD(1), dt);
         // Check to make sure that probability matches up
-        CHECK(prob == Approx(0.0002740583248565458).epsilon(SMALL));
+        CHECK(prob == Approx(test_prob).epsilon(SMALL));
     }
     SECTION("Test binding to 2 parallel rods with crosslinker bound at rod "
             "minus end.") {
@@ -275,8 +280,9 @@ TEST_CASE("Test CalcProbSD for KMC<ExampleRod> class", "[calc_prob_sd]") {
         int end_bound = 0;
         double end_loc = -rod0.length * .5;
         // Change the position of rod1 vertically
+        double sep = 1.0;
         rod1.pos[0] = 0;
-        rod1.pos[1] = 1.0;
+        rod1.pos[1] = sep;
         rod1.pos[2] = 0;
         xlink.setBind(end_bound, rod0.gid, rod0.direction, rod0.pos, end_loc,
                       rod0.length, rod0.rank);
@@ -287,8 +293,11 @@ TEST_CASE("Test CalcProbSD for KMC<ExampleRod> class", "[calc_prob_sd]") {
         double prob =
             kmc.CalcProbSD(0, rod1, xlink.lambda, xlink.kappa, 1. / KBT,
                            xlink.freeLength, xlink.getBindingFactorSD(1));
+        double test_prob = test_bind_prob(
+            sep, 0, .5 * rod0.length, xlink.lambda, xlink.kappa, 1. / KBT,
+            xlink.freeLength, xlink.getBindingFactorSD(1), dt);
         // Check to make sure that probability matches up
-        CHECK(prob == Approx(0.0002740583248565458).epsilon(SMALL));
+        CHECK(prob == Approx(test_prob).epsilon(SMALL));
     }
     SECTION("Test binding to 2 parallel inline rods with crosslinker bound at "
             "rod plus end and other rod shifted by rod length + D.") {
@@ -296,7 +305,8 @@ TEST_CASE("Test CalcProbSD for KMC<ExampleRod> class", "[calc_prob_sd]") {
         int end_bound = 0;
         double end_loc = rod0.length * .5;
         // Change the position of rod1 horizontally
-        rod1.pos[0] = 21.0;
+        double sep = 1.0;
+        rod1.pos[0] = rod0.length + sep;
         rod1.pos[1] = 0;
         rod1.pos[2] = 0;
         xlink.setBind(end_bound, rod0.gid, rod0.direction, rod0.pos, end_loc,
@@ -307,8 +317,11 @@ TEST_CASE("Test CalcProbSD for KMC<ExampleRod> class", "[calc_prob_sd]") {
         double prob =
             kmc.CalcProbSD(0, rod1, xlink.lambda, xlink.kappa, 1. / KBT,
                            xlink.freeLength, xlink.getBindingFactorSD(1));
+        double test_prob = test_bind_prob(
+            0, sep, .5 * rod0.length, xlink.lambda, xlink.kappa, 1. / KBT,
+            xlink.freeLength, xlink.getBindingFactorSD(1), dt);
         // Check to make sure that probability matches up
-        CHECK(prob == Approx(0.0002108938529207641).epsilon(SMALL));
+        CHECK(prob == Approx(test_prob).epsilon(SMALL));
     }
     SECTION("Test binding to 2 parallel with crosslinker bound at "
             "rod plus end and other rod shifted horizontially by rod length + "
@@ -317,8 +330,9 @@ TEST_CASE("Test CalcProbSD for KMC<ExampleRod> class", "[calc_prob_sd]") {
         int end_bound = 0;
         double end_loc = rod0.length * .5;
         // Change the position of rod1 horizontally
-        rod1.pos[0] = 21.0;
-        rod1.pos[1] = 1.0;
+        double sep = 1.0;
+        rod1.pos[0] = rod0.length + sep;
+        rod1.pos[1] = sep;
         rod1.pos[2] = 0;
         xlink.setBind(end_bound, rod0.gid, rod0.direction, rod0.pos, end_loc,
                       rod0.length, rod0.rank);
@@ -328,8 +342,11 @@ TEST_CASE("Test CalcProbSD for KMC<ExampleRod> class", "[calc_prob_sd]") {
         double prob =
             kmc.CalcProbSD(0, rod1, xlink.lambda, xlink.kappa, 1. / KBT,
                            xlink.freeLength, xlink.getBindingFactorSD(1));
+        double test_prob = test_bind_prob(
+            sep, sep, .5 * rod0.length, xlink.lambda, xlink.kappa, 1. / KBT,
+            xlink.freeLength, xlink.getBindingFactorSD(1), dt);
         // Check to make sure that probability matches up
-        CHECK(prob == Approx(0.000204684512149819).epsilon(SMALL));
+        CHECK(prob == Approx(test_prob).epsilon(SMALL));
     }
     SECTION("Test binding to 2 perpendicular rods crosslinked in the center "
             "and one rod shifted over by D.") {
@@ -337,8 +354,9 @@ TEST_CASE("Test CalcProbSD for KMC<ExampleRod> class", "[calc_prob_sd]") {
         int end_bound = 0;
         double end_loc = 0;
         // Change the position and direction of rod0
+        double sep = 1.0;
         rod0.pos[0] = 0;
-        rod0.pos[1] = 1.0;
+        rod0.pos[1] = sep;
         rod0.pos[2] = 0;
         rod0.direction[0] = 0;
         rod0.direction[1] = 1.0;
@@ -351,10 +369,14 @@ TEST_CASE("Test CalcProbSD for KMC<ExampleRod> class", "[calc_prob_sd]") {
         double prob =
             kmc.CalcProbSD(0, rod1, xlink.lambda, xlink.kappa, 1. / KBT,
                            xlink.freeLength, xlink.getBindingFactorSD(1));
+        double test_prob = test_bind_prob(
+            sep, -.5 * rod0.length, .5 * rod0.length, xlink.lambda, xlink.kappa,
+            1. / KBT, xlink.freeLength, xlink.getBindingFactorSD(1), dt);
         // Check to make sure that probability matches up
-        CHECK(prob == Approx(0.0005481166497130916).epsilon(SMALL));
+        CHECK(prob == Approx(test_prob).epsilon(SMALL));
     }
-    SECTION("Exception handling when no lookup table is given for SD binding") {
+    SECTION(
+        "Exception handling when no lookup table is given for SD binding.") {
         KMC<ExampleRod> kmc(xlink.posEndBind[0], 0, xlink.getRcutSD(), dt);
         REQUIRE_THROWS(kmc.LUCalcProbSD(0, rod0, xlink.getBindingFactorUS(0)));
         REQUIRE_THROWS(kmc.RandomBindPosSD(0, .1));
@@ -420,7 +442,8 @@ TEST_CASE("Test binding probabilities of one head when near multiple rods.",
     xlink.setMockXlink();
     // Intialize lookup table for binding calculations
     LookupTable LUT;
-    LUT.Init((1. - xlink.lambda) * .5 * xlink.kappa / KBT, xlink.freeLength,
+    // LUT.Init((1. - xlink.lambda) * .5 * xlink.kappa / KBT, xlink.freeLength,
+    LUT.Init(xlink.getExponentFactor() / KBT, xlink.freeLength,
              2. * ep_j[0]->radius);
     xlink.LUTablePtr = &LUT;
     // Initialize other vectors for calculations
@@ -428,10 +451,11 @@ TEST_CASE("Test binding probabilities of one head when near multiple rods.",
     std::vector<int> Uniquefilter(4, 1);
     // Testing
     SECTION("Two semi-overlapping parallel rods with protein in between.") {
+        double sep = .25;
         ep_j[0]->pos[0] = 0.0;
-        ep_j[0]->pos[1] = .5;
+        ep_j[0]->pos[1] = 2. * sep;
         ep_j[0]->pos[2] = 0.0;
-        double pos[3] = {0, 0.25, 0};
+        double pos[3] = {0, sep, 0};
         xlink.setUnBindPos(pos);
         KMC<ExampleRod> kmc(xlink.getPosPtr(), 2, xlink.getRcutUS(),
                             xlink.getDiffU(), dt);

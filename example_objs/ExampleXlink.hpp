@@ -308,39 +308,7 @@ class ExampleXlink {
         lambda = 0;
     }
 
-    /**
-     * @brief Get the ProteinForceLength, subtracting tubule diameter
-     *
-     * @return double the calculated length
-     */
-    /*
-     *double getProteinForceLength() const {
-     *    if (idBind[0] == IDUB || idBind[1] == IDUB) {
-     *        return 0;
-     *    } else {
-     *        // consistent tubuleDiameter as the original LUT construction
-     *        double tubuleDiameter = LUTablePtr->getRodDiameter();
-     *        Evec3 r = ECmap3(posEndBind[0]) - ECmap3(posEndBind[1]);
-     *        return (r.norm() - tubuleDiameter);
-     *    }
-     *}
-     */
-
-    /**
-     * @brief Get the ProteinEndEndLength
-     *
-     * @return double the calculated length
-     */
-    /*
-     *double getProteinEndEndLength() const {
-     *    if (idBind[0] == IDUB || idBind[1] == IDUB) {
-     *        return 0;
-     *    } else {
-     *        Evec3 r = ECmap3(posEndBind[0]) - ECmap3(posEndBind[1]);
-     *        return r.norm();
-     *    }
-     *}
-     */
+    double getExponentFactor() const { return .5 * kappa * (1. - lambda); }
 };
 
 static_assert(std::is_trivially_copyable<ExampleXlink>::value, "");
