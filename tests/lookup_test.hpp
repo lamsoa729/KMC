@@ -310,56 +310,81 @@ TEST_CASE("REVERSE binary Lookup with different springs", "[REVERSE binary]") {
     const double D = 0.024;
     const double freelength = 0.05;
     const double ell0 = freelength / D;
+    double alpha, M;
 
     LookupTable LUT;
 
-    double alpha = 0.1 / (2 * 0.00411);
-    double M = alpha * D * D;
-    LUT.Init(alpha, freelength, D);
     double rowIndexMax = LUT.distPerpGridNumber;
     double colIndexMax = LUT.sboundGridNumber;
-    double distPerpSpacing = LUT.distPerpGridSpacing;
+    double distPerpSpacing;
 
-    for (int i = 0; i < rowIndexMax - 2; ++i) {
-        double C0 = LUT.table[LUT.getTableIndex(i, colIndexMax - 1)] * D;
-        double C1 = LUT.table[LUT.getTableIndex(i + 1, colIndexMax - 1)] * D;
-        double Cavg = .5 * (C0 + C1);
-        double distPerpAvg = distPerpSpacing * (i + .5) * D;
-        double sbound = LUT.ReverseLookup(distPerpAvg, Cavg);
-        double Cintegral =
-            integral(distPerpAvg / D, 0, sbound / D, M, ell0) * D;
-        CHECK(errorPass(Cintegral, Cavg));
+    SECTION("Soft spring") {
+        alpha = 0.1 / (2 * 0.00411);
+        M = alpha * D * D;
+        LUT.Init(alpha, freelength, D);
+        distPerpSpacing = LUT.distPerpGridSpacing;
+        for (int i = 0; i < rowIndexMax - 2; ++i) {
+            double C0 = LUT.table[LUT.getTableIndex(i, colIndexMax - 1)] * D;
+            double C1 =
+                LUT.table[LUT.getTableIndex(i + 1, colIndexMax - 1)] * D;
+            double Cavg = .5 * (C0 + C1);
+            double distPerpAvg = distPerpSpacing * (i + .5) * D;
+            double sbound = LUT.ReverseLookup(distPerpAvg, Cavg);
+            double Cintegral =
+                integral(distPerpAvg / D, 0, sbound / D, M, ell0) * D;
+            CHECK(errorPass(Cintegral, Cavg));
+        }
     }
 
-    // Medium spring
-    alpha = 1.0 / (2 * 0.00411);
-    M = alpha * D * D;
-    LUT.Init(alpha, freelength, D);
-    distPerpSpacing = LUT.distPerpGridSpacing;
-    for (int i = 0; i < rowIndexMax - 2; ++i) {
-        double C0 = LUT.table[LUT.getTableIndex(i, colIndexMax - 1)] * D;
-        double C1 = LUT.table[LUT.getTableIndex(i + 1, colIndexMax - 1)] * D;
-        double Cavg = .5 * (C0 + C1);
-        double distPerpAvg = distPerpSpacing * (i + .5) * D;
-        double sbound = LUT.ReverseLookup(distPerpAvg, Cavg);
-        double Cintegral =
-            integral(distPerpAvg / D, 0, sbound / D, M, ell0) * D;
-        CHECK(errorPass(Cintegral, Cavg));
+    SECTION("Medium spring") {
+        alpha = 1.0 / (2 * 0.00411);
+        M = alpha * D * D;
+        LUT.Init(alpha, freelength, D);
+        distPerpSpacing = LUT.distPerpGridSpacing;
+        for (int i = 0; i < rowIndexMax - 2; ++i) {
+            double C0 = LUT.table[LUT.getTableIndex(i, colIndexMax - 1)] * D;
+            double C1 =
+                LUT.table[LUT.getTableIndex(i + 1, colIndexMax - 1)] * D;
+            double Cavg = .5 * (C0 + C1);
+            double distPerpAvg = distPerpSpacing * (i + .5) * D;
+            double sbound = LUT.ReverseLookup(distPerpAvg, Cavg);
+            double Cintegral =
+                integral(distPerpAvg / D, 0, sbound / D, M, ell0) * D;
+            CHECK(errorPass(Cintegral, Cavg));
+        }
     }
 
-    // Stiff spring
-    alpha = 10. / (2 * 0.00411);
-    M = alpha * D * D;
-    LUT.Init(alpha, freelength, D);
-    distPerpSpacing = LUT.distPerpGridSpacing;
-    for (int i = 0; i < rowIndexMax - 2; ++i) {
-        double C0 = LUT.table[LUT.getTableIndex(i, colIndexMax - 1)] * D;
-        double C1 = LUT.table[LUT.getTableIndex(i + 1, colIndexMax - 1)] * D;
-        double Cavg = .5 * (C0 + C1);
-        double distPerpAvg = distPerpSpacing * (i + .5) * D;
-        double sbound = LUT.ReverseLookup(distPerpAvg, Cavg);
-        double Cintegral =
-            integral(distPerpAvg / D, 0, sbound / D, M, ell0) * D;
-        CHECK(errorPass(Cintegral, Cavg));
+    SECTION("Stiff spring") {
+        alpha = 10. / (2 * 0.00411);
+        M = alpha * D * D;
+        LUT.Init(alpha, freelength, D);
+        distPerpSpacing = LUT.distPerpGridSpacing;
+        for (int i = 0; i < rowIndexMax - 2; ++i) {
+            double C0 = LUT.table[LUT.getTableIndex(i, colIndexMax - 1)] * D;
+            double C1 =
+                LUT.table[LUT.getTableIndex(i + 1, colIndexMax - 1)] * D;
+            double Cavg = .5 * (C0 + C1);
+            double distPerpAvg = distPerpSpacing * (i + .5) * D;
+            double sbound = LUT.ReverseLookup(distPerpAvg, Cavg);
+            double Cintegral =
+                integral(distPerpAvg / D, 0, sbound / D, M, ell0) * D;
+            CHECK(errorPass(Cintegral, Cavg));
+        }
+    }
+}
+
+TEST_CASE("Test the calculation of binding volume.", "[bind volume]") {
+    const double D = 0.024;
+    const double freelength = 0.05;
+    const double ell0 = freelength;
+    double alpha = 1. / (2 * 0.00411);
+
+    for (double i = 0.1; i < 1.0; i += .1) {
+        LookupTable LUT;
+        LUT.Init(alpha * i, freelength, D);
+        LUT.calcBindVol();
+        double bind_vol =
+            bind_vol_integral(0, LUT.getLUCutoff(), i * alpha, ell0);
+        REQUIRE(LUT.getBindVolume() == Approx(bind_vol).epsilon(1e-8));
     }
 }
