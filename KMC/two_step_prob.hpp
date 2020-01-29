@@ -16,9 +16,9 @@ class MaxTimeOfTwoStepProbFunctor {
     // Constructor just stores values find root of function.
     MaxTimeOfTwoStepProbFunctor(T const &rate1, T const &rate2,
                                 T const &total_time, T const &tolerance)
-        : k_ab(rate1), k_bc(rate2), tot_time(total_time), eps(tolerance) {}
+        : k_ab(rate1), k_bc(rate2), tot_time(total_time) {}
     T operator()(T const &t) {
-        T fx = k_ab * (exp(k_bc * (tot_time - t)) - k_bc * exp(k_ab * t)) - eps;
+        T fx = k_ab * (exp(k_bc * (tot_time - t)) - k_bc * exp(k_ab * t));
         return fx;
     }
 
@@ -26,12 +26,11 @@ class MaxTimeOfTwoStepProbFunctor {
     T k_ab;
     T k_bc;
     T tot_time;
-    T eps;
 };
 
 template <class T>
-T MaxTimeOfTwoStepProb(T const &rate1, T const &rate2, T const &total_time,
-                       T const &tolerance) {
+T max_time_of_two_step_prob(T const &rate1, T const &rate2,
+                            T const &total_time) {
 
     T guess = .5 * total_time;
     T factor = 2; // How big steps to take when searching.
@@ -53,9 +52,18 @@ T MaxTimeOfTwoStepProb(T const &rate1, T const &rate2, T const &total_time,
     boost::math::tools::eps_tolerance<T> rel_tol(
         get_digits); // Set the tolerance.
     std::pair<T, T> t = boost::math::tools::bracket_and_solve_root(
-        MaxTimeOfTwoStepProbFunctor<T>(rate1, rate2, total_time, tolerance),
-        guess, factor, is_rising, rel_tol, it);
+        MaxTimeOfTwoStepProbFunctor<T>(rate1, rate2, total_time), guess, factor,
+        is_rising, rel_tol, it);
     return t.first + (t.second - t.first) * .5;
+};
+
+template <class T>
+T two_step_prob(T const &rate1, T const &rate2, T const &total_time,
+                T const &tolerance) {
+    T t_max = max_time_of_two_step_prob(rate1, rate2, total_time);
+    T prob = (1. - exp(-1. * rate1 * t_max)) *
+             (1. - exp(-1. * rate2(total_time - t_max)));
+    return prob;
 };
 
 #endif /* end of include guard TWO_STEP_PROB_HPP */
