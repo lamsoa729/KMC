@@ -32,7 +32,7 @@ class LookupTable {
     double lUB_; ///< Upper bound distance of lookup table, dimensionless
     double M_;   ///< (1-\lambda)\kappa\beta/2 * D^2, dimensionless
     double ell0; ///< \ell_0/D, dimensionless
-    double bind_vol_ = 1; ///< Volume that head can bind within, dimensionless
+    double bind_vol_ = 1.; ///< Volume that head can bind within, dimensionless
 
   public:
     static constexpr double small = 1e-4;
@@ -81,6 +81,7 @@ class LookupTable {
      * @return double
      */
     double getNonDsbound() const { return sboundGrid.back(); }
+
     /**
      * @brief Get the dimensionful sbound for tabulation
      *
@@ -152,7 +153,10 @@ class LookupTable {
      *
      * \return void
      */
-    void calcBindVol() { bind_vol_ = bind_vol_integral(0, lUB_, M_, ell0); }
+    void calcBindVol() {
+        bind_vol_ = bind_vol_integral(lUB_, M_, ell0);
+        printf("bind_vol_ = %f\n", bind_vol_);
+    }
 
     /*! \brief Set the binding volume of second head of protein.
      * Will remain 1 otherwise.
@@ -490,7 +494,7 @@ class LookupTable {
         return row * sboundGridNumber + col;
     }
 
-  private:
+  protected:
     /*! \brief Fills the lookup table with values after grid has been
      * created.
      *
