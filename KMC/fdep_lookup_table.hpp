@@ -34,7 +34,7 @@ class FdepLookupTable : public LookupTable {
     double fdep_length_; ///< xc/ D, dimensionless
 
   public:
-    static constexpr double fd_small_ = 1e-6;
+    static constexpr double fd_small_ = 1e-4;
     FdepLookupTable() = default;
     ~FdepLookupTable() = default;
 
@@ -79,15 +79,15 @@ class FdepLookupTable : public LookupTable {
         // step 1 determine grid
         const double distPerpLB = 0;
         const double distPerpUB = lUB_;
-        // distPerpGridNumber = 256; // grid in dperp
-        distPerpGridNumber = 512; // grid in dperp
+        distPerpGridNumber = 256; // grid in dperp
+        // distPerpGridNumber = 512; // grid in dperp
         distPerpGridSpacing =
             (distPerpUB - distPerpLB) / (distPerpGridNumber - 1);
 
         const double sboundLB = 0;
         const double sboundUB = sqrt(lUB_ * lUB_ - distPerpLB * distPerpLB);
-        // sboundGridNumber = 256; // grid in s bound
-        sboundGridNumber = 512; // grid in s bound
+        sboundGridNumber = 256; // grid in s bound
+        // sboundGridNumber = 512; // grid in s bound
         sboundGridSpacing = (sboundUB - sboundLB) / (sboundGridNumber - 1);
 
         // step 2 init grid
@@ -115,6 +115,11 @@ class FdepLookupTable : public LookupTable {
         bind_vol_ =
             fdep_bind_vol_integral(lUB_, M_, e_fact_, fdep_length_, ell0_);
         printf("bind_vol_ = %f\n", bind_vol_);
+    }
+
+    double getIntegralResult(double distPerp, double sbound0, double sbound1) {
+        return fdep_integral(distPerp, sbound0, sbound1, M_, e_fact_,
+                             fdep_length_, ell0_);
     }
 };
 

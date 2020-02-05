@@ -21,29 +21,21 @@ TEST_CASE("Fdep lookup table sbound", "[sbound]") {
     SECTION("Test SOFT spring") {
         const double M = 0.1 / 0.00411;
         LUT.Init(M, e_fact, fdep_length, freelength, D);
-        // REQUIRE(LUT.getLUCutoff() ==
         // For fd_small_ = 1e-4
-        // Approx(1.300682719937549).epsilon(1e-8));
-        // For fd_small_ = 1e-6
-        REQUIRE(LUT.getLUCutoff() == Approx(1.577206003082965).epsilon(1e-8));
+        REQUIRE(LUT.getLUCutoff() == Approx(1.300682719937549).epsilon(1e-8));
     }
     SECTION("Test MEDIUM spring") {
         const double M = 1. / 0.00411;
         LUT.Init(M, e_fact, fdep_length, freelength, D);
         // For fd_small_ = 1e-4
-        // REQUIRE(LUT.getLUCutoff() ==
-        // Approx(0.4596382883076154).epsilon(1e-8));
-        // For fd_small_ = 1e-6
-        REQUIRE(LUT.getLUCutoff() == Approx(0.5469978968223368).epsilon(1e-8));
+        REQUIRE(LUT.getLUCutoff() == Approx(0.4596382883076154).epsilon(1e-8));
     }
     SECTION("Test STIFF spring") {
         const double M = 10. / 0.00411;
         LUT.Init(M, e_fact, fdep_length, freelength, D);
         // For fd_small_ = 1e-4
-        // REQUIRE(LUT.getLUCutoff() ==
-        // Approx(0.1946667540747286).epsilon(1e-8));
+        REQUIRE(LUT.getLUCutoff() == Approx(0.1946667540747286).epsilon(1e-8));
         // For fd_small_ = 1e-6
-        REQUIRE(LUT.getLUCutoff() == Approx(0.2220286136136657).epsilon(1e-8));
     }
 }
 
@@ -57,7 +49,7 @@ TEST_CASE("Fdep lookup table Lookup method test ", "[lookup]") {
 
     double distPerp = 0;
     SECTION("Test SOFT spring") {
-        constexpr double errTol = 1e-3;
+        constexpr double errTol = 1e-4;
         const double M = 0.1 / 0.00411;
 
         LUT.Init(M, e_fact, fdep_length, freelength, D);
@@ -93,7 +85,7 @@ TEST_CASE("Fdep lookup table Lookup method test ", "[lookup]") {
     }
 
     SECTION("Test MEDIUM spring") {
-        constexpr double errTol = 1e-3;
+        constexpr double errTol = 1e-4;
         const double M = 1.0 / (0.00411);
 
         LUT.Init(M, e_fact, fdep_length, freelength, D);
@@ -125,7 +117,7 @@ TEST_CASE("Fdep lookup table Lookup method test ", "[lookup]") {
     }
 
     SECTION("Test STIFF spring") {
-        constexpr double errTol = 1e-3;
+        constexpr double errTol = 1e-4;
         const double M = 10 / (0.00411);
 
         LUT.Init(M, e_fact, fdep_length, freelength, D);

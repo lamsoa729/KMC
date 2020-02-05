@@ -519,11 +519,14 @@ class LookupTable {
             for (int j = 0; j < sboundGridNumber; j++) {
                 const double sbound = sboundGrid[j];
                 assert(!(sbound < 0));
-                double result = integral(distPerpGrid[i], 0, sbound, M_, ell0_);
+                // double result = integral(distPerpGrid[i], 0, sbound, M_,
+                // ell0_);
+                double result = getIntegralResult(distPerpGrid[i], 0, sbound);
                 table[i * sboundGridNumber + j] = result;
             }
         }
     }
+
     /**
      * @brief get row index with distPerp
      *
@@ -548,6 +551,11 @@ class LookupTable {
         int index = floor(x);
         colFrac = x - index;
         return index;
+    }
+
+    virtual double getIntegralResult(double distPerp, double sbound0,
+                                     double sbound1) {
+        return integral(distPerp, sbound0, sbound1, M_, ell0_);
     }
 };
 
