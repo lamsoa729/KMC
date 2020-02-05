@@ -34,7 +34,7 @@ class FdepLookupTable : public LookupTable {
     double fdep_length_; ///< xc/ D, dimensionless
 
   public:
-    static constexpr double fd_small_ = 1e-4;
+    static constexpr double fd_small_ = 1e-6;
     FdepLookupTable() = default;
     ~FdepLookupTable() = default;
 
@@ -79,13 +79,15 @@ class FdepLookupTable : public LookupTable {
         // step 1 determine grid
         const double distPerpLB = 0;
         const double distPerpUB = lUB_;
-        distPerpGridNumber = 256; // grid in dperp
+        // distPerpGridNumber = 256; // grid in dperp
+        distPerpGridNumber = 512; // grid in dperp
         distPerpGridSpacing =
             (distPerpUB - distPerpLB) / (distPerpGridNumber - 1);
 
         const double sboundLB = 0;
         const double sboundUB = sqrt(lUB_ * lUB_ - distPerpLB * distPerpLB);
-        sboundGridNumber = 256; // grid in s bound
+        // sboundGridNumber = 256; // grid in s bound
+        sboundGridNumber = 512; // grid in s bound
         sboundGridSpacing = (sboundUB - sboundLB) / (sboundGridNumber - 1);
 
         // step 2 init grid
