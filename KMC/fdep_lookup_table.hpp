@@ -34,6 +34,7 @@ class FdepLookupTable : public LookupTable {
     double fdep_length_; ///< xc/ D, dimensionless
 
   public:
+    static constexpr double fd_small_ = 1e-4;
     FdepLookupTable() = default;
     ~FdepLookupTable() = default;
 
@@ -70,7 +71,7 @@ class FdepLookupTable : public LookupTable {
         // Solve ln(small)/M = .5(1-e_fact)(r-ell0)^2 -
         // 2*fdep_length*(r-ell0) for r
         lUB_ = ell0_ + ((sqrt(SQR(fdep_length_) -
-                              (2. * (1. - e_fact_) * log(small_) / M_)) +
+                              (2. * (1. - e_fact_) * log(fd_small_) / M_)) +
                          fdep_length_) /
                         (1. - e_fact_));
         assert(lUB_ > 0);
