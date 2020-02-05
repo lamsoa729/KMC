@@ -1,6 +1,7 @@
 #include "KMC/integrals.hpp"
 #include "KMC/lookup_table.hpp"
 #include "catch.hpp"
+#include "test_helpers.hpp"
 
 #include <cmath>
 #include <cstdio>
@@ -8,31 +9,6 @@
 #include <string>
 
 #include <boost/math/quadrature/gauss_kronrod.hpp>
-
-constexpr double ABSTOL = 1e-3;
-constexpr double RELTOL = 1e-2;
-
-constexpr double REVERSEFAC = 10;
-/**
- * EXPLAIN:
- * Reverse lookup on regions where the CDF is flat gives large error
- * But this is a rare event in simulations because this requires
- * the U01 rng to be very close to either 0 or 1
- * WARNING:
- * When spring is stiff and distPerp is large,
- * the reverse lookup error is very large
- * because function values are tiny and very flat.
- */
-
-inline double absError(double a, double b) { return fabs(a - b); }
-
-inline double relError(double a, double b) {
-    return b < 1e-8 ? absError(a, b) : fabs((a - b) / b);
-}
-
-inline bool errorPass(double a, double b, double fac = 1) {
-    return absError(a, b) < fac * ABSTOL || relError(a, b) < fac * RELTOL;
-}
 
 TEST_CASE("Lookup table test SOFT spring ", "[lookup]") {
     constexpr double errTol = 1e-2;
@@ -383,8 +359,7 @@ TEST_CASE("Test the calculation of binding volume.", "[bind volume]") {
         LookupTable LUT;
         LUT.Init(alpha * i, freelength, D);
         LUT.calcBindVol();
-        double bind_vol =
-            bind_vol_integral(0, LUT.getLUCutoff(), i * alpha, ell0);
+        double bind_vol = bind_vol_integral(LUT.getLUCutoff(), i * alpha, ell0);
         REQUIRE(LUT.getBindVolume() == Approx(bind_vol).epsilon(1e-8));
     }
 }

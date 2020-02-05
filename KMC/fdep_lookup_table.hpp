@@ -30,12 +30,8 @@
  */
 class FdepLookupTable : public LookupTable {
   private:
-    double lUB_;    ///< Upper bound distance of lookup table, dimensionless
-    double M_;      ///< \kappa\beta/ * D^2, dimensionless
-    double e_fact_; ///< \lambda, dimensionless
-    double fdep_length_;   ///< xc/ D, dimensionless
-    double ell0;           ///< \ell_0/D, dimensionless
-    double bind_vol_ = 1.; ///< Volume that head can bind within, dimensionless
+    double e_fact_;      ///< \lambda, dimensionless
+    double fdep_length_; ///< xc/ D, dimensionless
 
   public:
     FdepLookupTable() = default;
@@ -61,7 +57,7 @@ class FdepLookupTable : public LookupTable {
         // constexpr double small = 1e-4;
         // setup length scale and dimensionless lengths
         D_ = rodD;
-        ell0 = freeLength / rodD;
+        ell0_ = freeLength / rodD;
         fdep_length_ = fdep_length / rodD;
         e_fact_ = e_fact;
         M_ = M * rodD * rodD;
@@ -69,15 +65,14 @@ class FdepLookupTable : public LookupTable {
         assert(0 <= e_fact_ && e_fact <= 1);
         assert(M_ > 0);
 
-        // truncate the integration when integrand < SMALL
+        // Truncate the integration when integrand < SMALL
         // interation table in dimensionless lengths
         // Solve ln(small)/M = .5(1-e_fact)(r-ell0)^2 -
         // 2*fdep_length*(r-ell0) for r
-        lUB_ =
-            ((2. * fdep_length_ + sqrt(4. * SQR(fdep_length) -
-                                       2. * (1. - e_fact) * log(small) / M_)) /
-             (1. - e_fact)) +
-            ell0;
+        lUB_ = ell0_ + ((sqrt(SQR(fdep_length_) -
+                              (2. * (1. - e_fact_) * log(small_) / M_)) +
+                         fdep_length_) /
+                        (1. - e_fact_));
         assert(lUB_ > 0);
 
         // step 1 determine grid
@@ -115,7 +110,7 @@ class FdepLookupTable : public LookupTable {
      */
     void calcBindVol() {
         bind_vol_ =
-            fdep_bind_vol_integral(lUB_, M_, e_fact_, fdep_length_, ell0);
+            fdep_bind_vol_integral(lUB_, M_, e_fact_, fdep_length_, ell0_);
         printf("bind_vol_ = %f\n", bind_vol_);
     }
 };

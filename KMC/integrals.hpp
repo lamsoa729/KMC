@@ -61,6 +61,7 @@ inline double bind_vol_integral(double sbound, double M, double ell0) {
             integrand, 0, sbound, 10, 1e-6, &error);
     return 4. * M_PI * result;
 }
+
 /*! \brief Integrate exponential factor with the form of
  * e^{-M * [ (1-e_fact)\sqrt{s^2 + lm^2} - ell0)^2 -
  *          fdep_length * (\sqrt{ s^2 + lm^2} - ell0) ] }

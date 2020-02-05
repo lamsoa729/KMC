@@ -28,15 +28,15 @@
  * Both interface functions and internal caculations are dimensionless
  */
 class LookupTable {
-  private:
-    double lUB_; ///< Upper bound distance of lookup table, dimensionless
-    double M_;   ///< (1-\lambda)\kappa\beta/2 * D^2, dimensionless
-    double ell0; ///< \ell_0/D, dimensionless
+  protected:
+    double lUB_;  ///< Upper bound distance of lookup table, dimensionless
+    double M_;    ///< (1-\lambda)\kappa\beta/2 * D^2, dimensionless
+    double ell0_; ///< \ell_0/D, dimensionless
     double bind_vol_ = 1.; ///< Volume that head can bind within, dimensionless
+    double D_;             ///< dimensional rod Diameter, length scale
 
   public:
-    static constexpr double small = 1e-4;
-    double D_; ///< dimensional rod Diameter, length scale
+    static constexpr double small_ = 1e-4;
 
     int distPerpGridNumber;
     double distPerpGridSpacing;       ///< dimensionless
@@ -105,18 +105,17 @@ class LookupTable {
      * \return void
      */
     void Init(double M, double freeLength, double rodD) {
-        // constexpr double small = 1e-4;
         // setup length scale and dimensionless lengths
         D_ = rodD;
-        ell0 = freeLength / rodD;
+        ell0_ = freeLength / rodD;
         M_ = M * rodD * rodD;
 
         // truncate the integration when integrand < SMALL
         // interation table in dimensionless lengths
         // lUB = sqrt(lm^2 + s^2), dimensionless scaled by D
-        lUB_ = sqrt(-log(small) / M_) + ell0;
+        lUB_ = sqrt(-log(small_) / M_) + ell0_;
         // Get binding volume for simulation
-        // bind_vol_ = bind_vol_integral(0, lUB_, M_, ell0);
+        // bind_vol_ = bind_vol_integral(0, lUB_, M_, ell0_);
         // printf("lUB_ = %f\n", lUB_);
         // printf("bind_vol_ = %f\n", bind_vol_);
 
@@ -154,7 +153,7 @@ class LookupTable {
      * \return void
      */
     void calcBindVol() {
-        bind_vol_ = bind_vol_integral(lUB_, M_, ell0);
+        bind_vol_ = bind_vol_integral(lUB_, M_, ell0_);
         printf("bind_vol_ = %f\n", bind_vol_);
     }
 
@@ -520,7 +519,7 @@ class LookupTable {
             for (int j = 0; j < sboundGridNumber; j++) {
                 const double sbound = sboundGrid[j];
                 assert(!(sbound < 0));
-                double result = integral(distPerpGrid[i], 0, sbound, M_, ell0);
+                double result = integral(distPerpGrid[i], 0, sbound, M_, ell0_);
                 table[i * sboundGridNumber + j] = result;
             }
         }
