@@ -13,12 +13,15 @@
 // Solve the for the time that maximizes the probability of two events occuring
 template <class T>
 class MaxTimeOfTwoStepProbFunctor {
+  public:
     // Constructor just stores values find root of function.
     MaxTimeOfTwoStepProbFunctor(T const &rate1, T const &rate2,
-                                T const &total_time, T const &tolerance)
+                                T const &total_time)
         : k_ab(rate1), k_bc(rate2), tot_time(total_time) {}
+
     T operator()(T const &t) {
-        T fx = k_ab * (exp(k_bc * (tot_time - t)) - k_bc * exp(k_ab * t));
+        T fx = k_ab * (exp(k_bc * (tot_time - t)) - 1.) -
+               k_bc * (exp(k_ab * t) - 1.);
         return fx;
     }
 
@@ -39,7 +42,7 @@ T max_time_of_two_step_prob(T const &rate1, T const &rate2,
     boost::uintmax_t it =
         maxit; // Initally our chosen max iterations, but updated with actual.
     bool is_rising =
-        true; // So if result if guess^3 is too low, then try increasing guess.
+        false; // So if guess is too low, then try increasing guess.
     int digits = std::numeric_limits<T>::digits; // Maximum possible binary
                                                  // digits accuracy for type T.
     // Some fraction of digits is used to control how accurate o try to make the
@@ -58,11 +61,17 @@ T max_time_of_two_step_prob(T const &rate1, T const &rate2,
 };
 
 template <class T>
-T two_step_prob(T const &rate1, T const &rate2, T const &total_time,
-                T const &tolerance) {
+T two_step_prob_max(T const &rate1, T const &rate2, T const &total_time) {
     T t_max = max_time_of_two_step_prob(rate1, rate2, total_time);
-    T prob = (1. - exp(-1. * rate1 * t_max)) *
-             (1. - exp(-1. * rate2(total_time - t_max)));
+    T prob = two_step_prob(rate1, rate2, total_time, t_max);
+    return prob;
+};
+
+template <class T>
+T two_step_prob(T const &rate1, T const &rate2, T const &total_time,
+                T const &t) {
+    T prob = (1. - exp(-1. * rate1 * t)) *
+             (1. - exp(-1. * rate2 * (total_time - t)));
     return prob;
 };
 
