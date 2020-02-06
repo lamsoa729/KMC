@@ -38,15 +38,15 @@ class LookupTable {
     static constexpr double small = 1e-4;
     double D_; ///< dimensional rod Diameter, length scale
 
-    int distPerpGridNumber;
-    double distPerpGridSpacing;       ///< dimensionless
-    double distPerpGridSpacingInv;    ///< dimensionless
-    std::vector<double> distPerpGrid; ///< dimensionless vertical direction
+    const int distPerpGridNumber = 256; ///< grid in dperp
+    double distPerpGridSpacing;         ///< dimensionless
+    double distPerpGridSpacingInv;      ///< dimensionless
+    std::vector<double> distPerpGrid;   ///< dimensionless vertical direction
 
-    int sboundGridNumber;
-    double sboundGridSpacing;       ///< dimensionless
-    double sboundGridSpacingInv;    ///< dimensionless
-    std::vector<double> sboundGrid; ///< dimensionless horizontal direction
+    const int sboundGridNumber = 256; ///< grid in s bound
+    double sboundGridSpacing;         ///< dimensionless
+    double sboundGridSpacingInv;      ///< dimensionless
+    std::vector<double> sboundGrid;   ///< dimensionless horizontal direction
 
     std::vector<double> table; ///< the 2D matrix of dimensionless values
 
@@ -122,13 +122,11 @@ class LookupTable {
         // step 1 determine grid
         const double distPerpLB = 0;
         const double distPerpUB = lUB_;
-        distPerpGridNumber = 256; // grid in dperp
         distPerpGridSpacing =
             (distPerpUB - distPerpLB) / (distPerpGridNumber - 1);
 
         const double sboundLB = 0;
         const double sboundUB = sqrt(lUB_ * lUB_ - distPerpLB * distPerpLB);
-        sboundGridNumber = 256; // grid in s bound
         sboundGridSpacing = (sboundUB - sboundLB) / (sboundGridNumber - 1);
 
         // step 2 init grid
