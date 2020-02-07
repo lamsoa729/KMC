@@ -19,6 +19,7 @@
 
 #include "integrals.hpp"
 #include "macros.hpp"
+
 /**
  * @brief 2D Lookup Table for the dimensionless functions
  *
