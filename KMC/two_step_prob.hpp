@@ -8,6 +8,7 @@
 
 #define TWO_STEP_PROB_HPP
 #include <boost/math/tools/roots.hpp>
+#include <cassert>
 #include <cmath>
 
 // Solve the for the time that maximizes the probability of two events occuring
@@ -61,17 +62,18 @@ T max_time_of_two_step_prob(T const &rate1, T const &rate2,
 };
 
 template <class T>
-T two_step_prob_max(T const &rate1, T const &rate2, T const &total_time) {
-    T t_max = max_time_of_two_step_prob(rate1, rate2, total_time);
-    T prob = two_step_prob(rate1, rate2, total_time, t_max);
+T two_step_prob(T const &rate1, T const &rate2, T const &total_time,
+                T const &t) {
+    assert(total_time >= t);
+    T prob = (1. - exp(-1. * rate1 * t)) *
+             (1. - exp(-1. * rate2 * (total_time - t)));
     return prob;
 };
 
 template <class T>
-T two_step_prob(T const &rate1, T const &rate2, T const &total_time,
-                T const &t) {
-    T prob = (1. - exp(-1. * rate1 * t)) *
-             (1. - exp(-1. * rate2 * (total_time - t)));
+T two_step_max_prob(T const &rate1, T const &rate2, T const &total_time) {
+    T t_max = max_time_of_two_step_prob(rate1, rate2, total_time);
+    T prob = two_step_prob(rate1, rate2, total_time, t_max);
     return prob;
 };
 
