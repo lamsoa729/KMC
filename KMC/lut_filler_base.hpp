@@ -31,22 +31,26 @@ class LUTFillerBase {
 
     virtual ~LUTFillerBase();
 
-    void Init();
+    void Init() {
+        upper_bound_ = getUpperBound();
+        fillDistParaGrid(dist_para_grid_);
+        fillDistPerpGrid(dist_perp_grid_);
+    }
 
     virtual double getUpperBound() const;
     virtual double getBindingVolume() const;
     virtual double getIntegralResult(double dist_perp, double dist_para_l,
                                      double dist_para_u) const;
 
-    inline double getDistParaGridSpacing() const {
+    inline const double getDistParaGridSpacing() const {
         assert(dist_para_grid_num_ > 1);
         return (upper_bound_) / (dist_para_grid_num_ - 1);
     }
-    inline double getDistPerpGridSpacing() const {
+    inline const double getDistPerpGridSpacing() const {
         assert(dist_perp_grid_num_ > 1);
         return (upper_bound_) / (dist_perp_grid_num_ - 1);
     }
-    inline double getDiameter() const { return D_; }
+    inline const double getDiameter() const { return D_; }
 
     void fillDistParaGrid(std::vector<double> &dist_para_grid) {
         double spacing = getDistParaGridSpacing();
@@ -64,10 +68,6 @@ class LUTFillerBase {
     }
 
     void fillMatrix(std::vector<double> &table) const {
-        fillDistParaGrid(dist_para_grid_);
-        fillDistPerpGrid(dist_perp_grid_);
-        double para_spacing = getDistParaGridSpacing();
-        double perp_spacing = getDistPerpGridSpacing();
         table.resize(dist_para_grid_num_ * dist_perp_grid_num_, 0);
 
         //// boost integration parameters
