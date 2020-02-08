@@ -7,11 +7,9 @@
 #ifndef LUT_FILLER_BASE_HPP
 
 #define LUT_FILLER_BASE_HPP
-#include "integrals.hpp"
-#include <array>
 #include <cassert>
+#include <vector>
 
-template <typename T>
 class LUTFillerBase {
   protected:
     const int dist_para_grid_num_;
@@ -20,8 +18,6 @@ class LUTFillerBase {
     std::vector<double> dist_para_grid_;
     std::vector<double> dist_perp_grid_;
 
-    double D_;
-
     double upper_bound_ = -1;
 
   public:
@@ -29,18 +25,18 @@ class LUTFillerBase {
         : dist_para_grid_num_(dist_para_grid_num),
           dist_perp_grid_num_(dist_perp_grid_num) {}
 
-    virtual ~LUTFillerBase();
+    // virtual ~LUTFillerBase();
 
-    void Init() {
+    virtual void Init() {
         upper_bound_ = getUpperBound();
         fillDistParaGrid(dist_para_grid_);
         fillDistPerpGrid(dist_perp_grid_);
     }
 
-    virtual double getUpperBound() const;
-    virtual double getBindingVolume() const;
+    virtual double getUpperBound() const = 0;
+    virtual double getBindingVolume() const = 0;
     virtual double getIntegralResult(double dist_perp, double dist_para_l,
-                                     double dist_para_u) const;
+                                     double dist_para_u) const = 0;
 
     inline const double getDistParaGridSpacing() const {
         assert(dist_para_grid_num_ > 1);
@@ -50,7 +46,6 @@ class LUTFillerBase {
         assert(dist_perp_grid_num_ > 1);
         return (upper_bound_) / (dist_perp_grid_num_ - 1);
     }
-    inline const double getDiameter() const { return D_; }
 
     void fillDistParaGrid(std::vector<double> &dist_para_grid) {
         double spacing = getDistParaGridSpacing();

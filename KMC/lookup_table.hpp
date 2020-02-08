@@ -18,6 +18,7 @@
 #include <vector>
 
 #include "integrals.hpp"
+#include "lut_filler_edep.hpp"
 #include "macros.hpp"
 
 /**
@@ -146,6 +147,7 @@ class LookupTable {
 
         // step 3 tabulate the matrix
         FillMatrix();
+        LUTFillerEdep lut_filler(sboundGridNumber, distPerpGridNumber);
     }
 
     /*! \brief Calculate the binding volume of second head of protein.
