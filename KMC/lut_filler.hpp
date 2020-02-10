@@ -19,6 +19,7 @@ class LUTFiller {
     std::vector<double> dist_perp_grid_;
 
     double upper_bound_ = -1;
+    double length_scale_ = -1;
 
   public:
     LUTFiller(double dist_para_grid_num, double dist_perp_grid_num)
@@ -28,15 +29,24 @@ class LUTFiller {
     // virtual ~LUTFillerBase();
 
     virtual void Init() {
+        assert(length_scale_ > 0);
         upper_bound_ = getUpperBound();
-        fillDistParaGrid(dist_para_grid_);
-        fillDistPerpGrid(dist_perp_grid_);
+        FillDistParaGrid(dist_para_grid_);
+        FillDistPerpGrid(dist_perp_grid_);
     }
 
     virtual double getUpperBound() const = 0;
     virtual double getBindingVolume() const = 0;
     virtual double getIntegralResult(double dist_perp, double dist_para_l,
                                      double dist_para_u) const = 0;
+
+    inline const double getDistParaGridNum() const {
+        return dist_para_grid_num_;
+    }
+
+    inline const double getDistPerpGridNum() const {
+        return dist_perp_grid_num_;
+    }
 
     inline const double getDistParaGridSpacing() const {
         assert(dist_para_grid_num_ > 1);
@@ -46,15 +56,16 @@ class LUTFiller {
         assert(dist_perp_grid_num_ > 1);
         return (upper_bound_) / (dist_perp_grid_num_ - 1);
     }
+    inline const double getLengthScale() const { return length_scale_; }
 
-    void fillDistParaGrid(std::vector<double> &dist_para_grid) {
+    void FillDistParaGrid(std::vector<double> &dist_para_grid) {
         double spacing = getDistParaGridSpacing();
         dist_para_grid.resize(dist_para_grid_num_);
         for (int i = 0; i < dist_para_grid_num_; i++) {
             dist_para_grid[i] = i * spacing;
         }
     }
-    void fillDistPerpGrid(std::vector<double> &dist_perp_grid) {
+    void FillDistPerpGrid(std::vector<double> &dist_perp_grid) {
         double spacing = getDistPerpGridSpacing();
         dist_perp_grid.resize(dist_perp_grid_num_);
         for (int i = 0; i < dist_perp_grid_num_; i++) {

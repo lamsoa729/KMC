@@ -32,8 +32,6 @@
 class LookupTable {
   protected:
     double UB_; ///< Upper bound distance of lookup table, dimensionless
-    // double M_;    ///< (1-\lambda)\kappa\beta/2 * D^2, dimensionless
-    // double ell0_; ///< \ell_0/D, dimensionless
     double bind_vol_ = 1.; ///< Volume that head can bind within,
     // dimensionless
     double D_; ///< dimensional rod Diameter, length scale
@@ -54,8 +52,38 @@ class LookupTable {
     std::vector<double> table_; ///< the 2D matrix of dimensionless values
 
   public:
-    LookupTable() = default;
+    // LookupTable() = default;
     ~LookupTable() = default;
+
+    /*! \brief Initialize lookup table
+     *
+     * Stores precalculated values of the integral from lut_filler
+     *
+     * \param lut_filler Initialized lookup table filler pointer
+     *
+     * \return void
+     */
+    LookupTable(LUTFiller *lut_filler) {
+        // setup length scale and dimensionless lengths
+
+        // truncate the integration when integrand < SMALL
+        // interation table in dimensionless lengths
+        UB_ = lut_filler->getUpperBound();
+        D_ = lut_filler->getLengthScale();
+
+        para_grid_num_ = lut_filler->getDistParaGridNum();
+        perp_grid_num_ = lut_filler->getDistPerpGridNum();
+
+        para_spacing_ = lut_filler->getDistParaGridSpacing();
+        perp_spacing_ = lut_filler->getDistPerpGridSpacing();
+        para_spacing_inv_ = 1. / para_spacing_;
+        perp_spacing_inv_ = 1. / perp_spacing_;
+
+        lut_filler->FillDistParaGrid(para_grid_);
+        lut_filler->FillDistPerpGrid(perp_grid_);
+
+        lut_filler->FillMatrix(table_);
+    }
 
     /**
      * @brief Get the rodDiameter length scale
@@ -92,40 +120,6 @@ class LookupTable {
      */
     double getDsbound() const { return D_ * para_grid_.back(); }
 
-    /*! \brief Initialize lookup table
-     *
-     * Stores precalculated values of the integral from lut_filler
-     *
-     * \param lut_filler Initialized lookup table filler pointer
-     *
-     * \return void
-     */
-    void Init(LUTFiller *lut_filler) {
-        // setup length scale and dimensionless lengths
-
-        // truncate the integration when integrand < SMALL
-        // interation table in dimensionless lengths
-        UB_ = lut_filler->getUpperBound();
-
-        para_spacing_ = lut_filler->getDistParaGridSpacing();
-        perp_spacing_ = lut_filler->getDistPerpGridSpacing();
-        para_spacing_inv_ = 1. / para_spacing_;
-        perp_spacing_inv_ = 1. / perp_spacing_;
-
-        lut_filler->FillMatrix(table_);
-        // FillMatrix();
-    }
-
-    /*! \brief Calculate the binding volume of second head of protein.
-     * Will remain 1 otherwise.
-     *
-     * \return void
-     */
-    // void calcBindVol() {
-    //    bind_vol_ = bind_vol_integral(UB_, M_, ell0_);
-    //    printf("bind_vol_ = %f\n", bind_vol_);
-    //}
-
     /*! \brief Set the binding volume of second head of protein.
      * Will remain 1 otherwise.
      *
@@ -149,8 +143,8 @@ class LookupTable {
         // IMPORTANT: Table stores dimensionless val
         for (int i = 0; i < perp_grid_num_; i++) {
             for (int j = 0; j < para_grid_num_; j++) {
-                std::cout << "(dist_perp, sbound) = (" << perp_grid_[i] << ","
-                          << para_grid_[j]
+                std::cout << "(dist_perp, dist_para) = (" << perp_grid_[i]
+                          << "," << para_grid_[j]
                           << ") = " << table_[i * para_grid_num_ + j]
                           << std::endl;
             }
@@ -163,12 +157,10 @@ class LookupTable {
 
     /*! \brief Lookup the value of the integral given two parameters.
      *
-     * $\int_0^y exp{-M_ (sqrt[x^2 + l_min^2] - l_o - D)^2}dx$
      *
-     * \param dist_perp l_min in the above integral. The distance away from the
+     * \param dist_perp The distance away from the
      * infinite carrier line.
-     * \param sbound y in the above integral. The limit of
-     * integration.
+     * \param dist_para The limit of integration.
      *
      * \return double Dimensional value of integral calculated
      */
@@ -512,21 +504,16 @@ class LookupTable {
     }
 
     /**
-     * @brief Get col index with sbound
+     * @brief Get col index with dist_para
      *
-     * @param sbound dimensionless
+     * @param dist_para dimensionless
      * @return int
      */
-    inline int getColIndex(double sbound, double &colFrac) const {
-        const double x = (sbound - para_grid_[0]) * para_spacing_inv_;
+    inline int getColIndex(double dist_para, double &colFrac) const {
+        const double x = (dist_para - para_grid_[0]) * para_spacing_inv_;
         int index = floor(x);
         colFrac = x - index;
         return index;
-    }
-
-    virtual double getIntegralResult(double dist_perp, double sbound0,
-                                     double sbound1) {
-        return integral(dist_perp, sbound0, sbound1, M_, ell0_);
     }
 };
 
