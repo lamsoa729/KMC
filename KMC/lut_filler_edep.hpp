@@ -8,12 +8,12 @@
 
 #define LUT_FILLER_EDEP_HPP
 #include "integrals.hpp"
-#include "lut_filler_base.hpp"
+#include "lut_filler.hpp"
 
 #include <cassert>
 #include <vector>
 
-class LUTFillerEdep : public LUTFillerBase {
+class LUTFillerEdep : public LUTFiller {
   protected:
     double exp_fact_;
     double rest_length_;
@@ -23,17 +23,31 @@ class LUTFillerEdep : public LUTFillerBase {
     static constexpr double small_ = 1e-4;
 
     LUTFillerEdep(double dist_para_grid_num, double dist_perp_grid_num)
-        : LUTFillerBase(dist_para_grid_num, dist_perp_grid_num) {}
+        : LUTFiller(dist_para_grid_num, dist_perp_grid_num) {}
 
     // virtual ~LUTFillerEdep();
 
-    void Init(double exp_fact, double rest_length, double D);
-    // void Init(double exp_fact, double rest_length, double D) {
-    //    D_ = D;
-    //    exp_fact_ = exp_fact * D_ * D_;
-    //    rest_length_ = rest_length / D_;
-    //    LUTFillerBase::Init();
-    //}
+    /*! \brief Initialize lookup table filler
+     *
+     * Stores precalculated values of the integral
+     * \int_0^y exp{-M_ (sqrt[x^2 + l_min^2] - l_o - D)^2}dx
+     * To do this, grid spacing are calculated based on the value of M_ and
+     * freeLength. The upper bound lUB is calculated so that the maximum change
+     * at the end of the integral is less than 10^{-4}. Everything is
+     * non-dimensionalized by rodD.
+     *
+     * \param M Exponential prefactor with the dimensions of L^{-2}.
+     * \param freeLength Rest length of binding crosslink.
+     * \param rodD Diameter of rod crosslink is binding to.
+     *
+     * \return void
+     */
+    void Init(double exp_fact, double rest_length, double D) {
+        D_ = D;
+        exp_fact_ = exp_fact * D_ * D_;
+        rest_length_ = rest_length / D_;
+        LUTFiller::Init();
+    }
 
     double getUpperBound() const;
     // double getUpperBound() const {
@@ -53,12 +67,6 @@ class LUTFillerEdep : public LUTFillerBase {
     inline const double getDiameter() const { return D_; }
 };
 
-void LUTFillerEdep::Init(double exp_fact, double rest_length, double D) {
-    D_ = D;
-    exp_fact_ = exp_fact * D_ * D_;
-    rest_length_ = rest_length / D_;
-    LUTFillerBase::Init();
-}
 double LUTFillerEdep::getUpperBound() const {
     return sqrt(-log(small_) / exp_fact_) + rest_length_;
 }

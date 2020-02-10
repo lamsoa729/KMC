@@ -4,13 +4,13 @@
  * @created     : Friday Feb 07, 2020 15:46:13 MST
  */
 
-#ifndef LUT_FILLER_BASE_HPP
+#ifndef LUT_FILLER_HPP
 
-#define LUT_FILLER_BASE_HPP
+#define LUT_FILLER_HPP
 #include <cassert>
 #include <vector>
 
-class LUTFillerBase {
+class LUTFiller {
   protected:
     const int dist_para_grid_num_;
     const int dist_perp_grid_num_;
@@ -21,7 +21,7 @@ class LUTFillerBase {
     double upper_bound_ = -1;
 
   public:
-    LUTFillerBase(double dist_para_grid_num, double dist_perp_grid_num)
+    LUTFiller(double dist_para_grid_num, double dist_perp_grid_num)
         : dist_para_grid_num_(dist_para_grid_num),
           dist_perp_grid_num_(dist_perp_grid_num) {}
 
@@ -62,7 +62,7 @@ class LUTFillerBase {
         }
     }
 
-    void fillMatrix(std::vector<double> &table) const {
+    void FillMatrix(std::vector<double> &table) const {
         table.resize(dist_para_grid_num_ * dist_perp_grid_num_, 0);
 
         //// boost integration parameters
@@ -86,4 +86,4 @@ class LUTFillerBase {
     }
 };
 
-#endif /* end of include guard LUT_FILLER_BASE_HPP */
+#endif /* end of include guard LUT_FILLER_HPP */
