@@ -19,6 +19,8 @@
 
 #include "integrals.hpp"
 #include "lut_filler.hpp"
+#include "lut_filler_edep.hpp"
+#include "lut_filler_fdep.hpp"
 #include "macros.hpp"
 
 /**
@@ -52,7 +54,7 @@ class LookupTable {
     std::vector<double> table_; ///< the 2D matrix of dimensionless values
 
   public:
-    // LookupTable() = default;
+    LookupTable() = default;
     ~LookupTable() = default;
 
     /*! \brief Initialize lookup table
