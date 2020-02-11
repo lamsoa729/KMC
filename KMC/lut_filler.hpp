@@ -1,6 +1,6 @@
 /**
  * @author      : adamlamson (adamlamson@LamsonMacbookPro)
- * @file        : lut_filler_base
+ * @file        : lut_filler
  * @created     : Friday Feb 07, 2020 15:46:13 MST
  */
 
@@ -31,6 +31,7 @@ class LUTFiller {
     virtual void Init() {
         assert(length_scale_ > 0);
         upper_bound_ = getUpperBound();
+        assert(upper_bound_ > 0);
         FillDistParaGrid(dist_para_grid_);
         FillDistPerpGrid(dist_perp_grid_);
     }
