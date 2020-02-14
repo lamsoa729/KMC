@@ -5,6 +5,7 @@
 #include "integrals.hpp"
 #include "lookup_table.hpp"
 #include "macros.hpp"
+#include "two_step_prob.hpp"
 
 #include <array>
 #include <cassert>
@@ -42,6 +43,8 @@ class KMC {
     const LookupTable *LUTablePtr_; ///< lookup table
 
   public:
+    static constexpr double ksmall = 1e-4;
+
     /******************
      *  Constructors  *
      ******************/
@@ -49,6 +52,14 @@ class KMC {
     KMC(const double *pos, const double dt)
         : r_cutoff_(-1), dt_(dt), LUTablePtr_(nullptr) {
         setPos(pos);
+    }
+
+    // Diagnostic constructor
+    KMC(double r_cutoff, const double diffConst, const double dt,
+        const LookupTable *LUTablePtr)
+        : dt_(dt), LUTablePtr_(LUTablePtr) {
+        double avg_dist = getDiffRadius(diffConst);
+        r_cutoff_ = (avg_dist > r_cutoff) ? avg_dist : r_cutoff;
     }
 
     // Constructor for U<->S diffusion of crosslinker modeled
@@ -96,6 +107,8 @@ class KMC {
         muArr_.resize(Npj, 0);
         lims_.resize(Npj);
     }
+
+    // Constructor for diagnostics
 
     /*************************************
      * Set periodic boundary conditions  *
@@ -185,8 +198,42 @@ class KMC {
      *  Diagnostic functions  *
      **************************/
 
-    void Diagnostics(){};
-
+    void Diagnostic(const double u_s_fact, const double s_u_fact,
+                    const double s_d_fact, const double d_s_fact) {
+        // Get full binding rates
+        double k_u_s = u_s_fact * 2. * r_cutoff_;
+        double k_s_d =
+            s_d_fact * 2. * LUTablePtr_->Lookup(0, LUTablePtr_->getDsbound());
+        // Keeps notation consistent. Might change in the future.
+        double k_s_u = s_u_fact;
+        double k_d_s = d_s_fact;
+        if (two_step_max_prob(k_u_s, k_s_u, dt_) > ksmall) {
+            std::cout
+                << " !!!WARNING: Probability of double event (U->S->U) is too "
+                   "high. Try decreasing dt, diffUnbound, or single "
+                   "(un)binding parameters."
+                << std::endl;
+        }
+        if (two_step_max_prob(k_u_s, k_s_d, dt_) > ksmall) {
+            std::cout
+                << " !!!WARNING: Probability of double event (U->S->D) is too "
+                   "high. Try decreasing dt, diffUnbound, or binding "
+                   "parameters."
+                << std::endl;
+        }
+        if (two_step_max_prob(k_s_d, k_d_s, dt_) > ksmall) {
+            std::cout
+                << " !!!WARNING: Probability of double event (S->D->S) is too "
+                   "high. Try decreasing dt or double (un)binding parameters."
+                << std::endl;
+        }
+        if (two_step_max_prob(k_d_s, k_s_u, dt_) > ksmall) {
+            std::cout
+                << " !!!WARNING: Probability of double event (D->S->U) is too "
+                   "high. Try decreasing dt or unbinding parameters."
+                << std::endl;
+        }
+    }
     virtual ~KMC() {}
 };
 
