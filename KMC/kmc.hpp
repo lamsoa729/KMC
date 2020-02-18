@@ -108,8 +108,6 @@ class KMC {
         lims_.resize(Npj);
     }
 
-    // Constructor for diagnostics
-
     /*************************************
      * Set periodic boundary conditions  *
      *************************************/
@@ -208,30 +206,45 @@ class KMC {
         double k_s_u = s_u_fact;
         double k_d_s = d_s_fact;
         if (two_step_max_prob(k_u_s, k_s_u, dt_) > ksmall) {
-            std::cout
-                << " !!!WARNING: Probability of double event (U->S->U) is too "
-                   "high. Try decreasing dt, diffUnbound, or single "
-                   "(un)binding parameters."
-                << std::endl;
+            throw " !!!WARNING: Probability of double event (U->S->U) is too "
+                  "high. Try decreasing dt, diffUnbound, or single "
+                  "(un)binding parameters.";
+
+            // std::cout
+            //    << " !!!WARNING: Probability of double event (U->S->U) is too
+            //    "
+            //       "high. Try decreasing dt, diffUnbound, or single "
+            //       "(un)binding parameters."
+            //    << std::endl;
         }
         if (two_step_max_prob(k_u_s, k_s_d, dt_) > ksmall) {
-            std::cout
-                << " !!!WARNING: Probability of double event (U->S->D) is too "
-                   "high. Try decreasing dt, diffUnbound, or binding "
-                   "parameters."
-                << std::endl;
+            throw " !!!WARNING: Probability of double event (U->S->D) is too "
+                  "high. Try decreasing dt, diffUnbound, or binding "
+                  "parameters.";
+            // std::cout
+            //    << " !!!WARNING: Probability of double event (U->S->D) is too
+            //    "
+            //       "high. Try decreasing dt, diffUnbound, or binding "
+            //       "parameters."
+            //    << std::endl;
         }
         if (two_step_max_prob(k_s_d, k_d_s, dt_) > ksmall) {
-            std::cout
-                << " !!!WARNING: Probability of double event (S->D->S) is too "
-                   "high. Try decreasing dt or double (un)binding parameters."
-                << std::endl;
+            throw " !!!WARNING: Probability of double event (S->D->S) is too "
+                  "high. Try decreasing dt or double (un)binding parameters.";
+            // std::cout
+            //    << " !!!WARNING: Probability of double event (S->D->S) is too
+            //    "
+            //       "high. Try decreasing dt or double (un)binding parameters."
+            //    << std::endl;
         }
         if (two_step_max_prob(k_d_s, k_s_u, dt_) > ksmall) {
-            std::cout
-                << " !!!WARNING: Probability of double event (D->S->U) is too "
-                   "high. Try decreasing dt or unbinding parameters."
-                << std::endl;
+            throw " !!!WARNING: Probability of double event (D->S->U) is too "
+                  "high. Try decreasing dt or unbinding parameters.";
+            // std::cout
+            //    << " !!!WARNING: Probability of double event (D->S->U) is too
+            //    "
+            //       "high. Try decreasing dt or unbinding parameters."
+            //    << std::endl;
         }
     }
     virtual ~KMC() {}
