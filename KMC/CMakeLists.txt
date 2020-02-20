@@ -17,8 +17,6 @@ target_include_directories(KMC INTERFACE
     $<INSTALL_INTERFACE:>)
 
 target_link_libraries(KMC ${LIB})
-# Associate the include files with the target, so they will be installed
-set_target_properties(KMC PROPERTIES PUBLIC_HEADER "${HEADERS}")
 
 # Set install targets and destinations
 install(TARGETS KMC
