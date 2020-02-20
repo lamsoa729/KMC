@@ -7,6 +7,7 @@
 #include "KMC/integrals.hpp"
 #include "KMC/kmc.hpp"
 #include "KMC/lookup_table.hpp"
+#include "KMC/lut_filler_edep.hpp"
 #include "KMC/macros.hpp"
 #include "example_objs/ExampleXlink.hpp"
 
@@ -196,16 +197,17 @@ TEST_CASE("Test CalcProbSD for KMC<ExampleRod> class", "[calc_prob_sd]") {
     // Protein data
     ExampleXlink xlink;
     xlink.setMockXlink();
-    // //ProteinType *pType = &xlink.property;
     // Sylinder data
     ExampleRod rod0, rod1;
     rod0 = MockRod<ExampleRod>(0);
     rod0.length = 20;
     rod1 = MockRod<ExampleRod>(1);
     rod1.length = 20;
-    LookupTable LUT;
-    LUT.Init((1. - xlink.lambda) * .5 * xlink.kappa / KBT, xlink.freeLength,
-             2. * rod0.radius);
+    // Initialize lookup table
+    LUTFillerEdep lut_filler(256, 256);
+    lut_filler.Init((1. - xlink.lambda) * .5 * xlink.kappa / KBT,
+                    xlink.freeLength, 2. * rod0.radius);
+    LookupTable LUT(&lut_filler);
     xlink.LUTablePtr = &LUT;
 
     SECTION("Test binding to 2 parallel overlapping rods") {
@@ -401,9 +403,10 @@ TEST_CASE("Test CalcProbDS for KMC<ExampleRod> class", "[calc21prob]") {
     rod1.pos[2] = 0;
 
     // Set up lookup table
-    LookupTable LUT;
-    LUT.Init((1. - xlink.lambda) * .5 * xlink.kappa / KBT, xlink.freeLength,
-             2. * rod0.radius);
+    LUTFillerEdep lut_filler(256, 256);
+    lut_filler.Init((1. - xlink.lambda) * .5 * xlink.kappa / KBT,
+                    xlink.freeLength, 2. * rod0.radius);
+    LookupTable LUT(&lut_filler);
     xlink.LUTablePtr = &LUT;
 
     SECTION("Test unbinding of end 0 from rod0.") {
@@ -441,10 +444,10 @@ TEST_CASE("Test binding probabilities of one head when near multiple rods.",
     ExampleXlink xlink;
     xlink.setMockXlink();
     // Intialize lookup table for binding calculations
-    LookupTable LUT;
-    // LUT.Init((1. - xlink.lambda) * .5 * xlink.kappa / KBT, xlink.freeLength,
-    LUT.Init(xlink.getExponentFactor() / KBT, xlink.freeLength,
-             2. * ep_j[0]->radius);
+    LUTFillerEdep lut_filler(256, 256);
+    lut_filler.Init(xlink.getExponentFactor() / KBT, xlink.freeLength,
+                    2. * ep_j[0]->radius);
+    LookupTable LUT(&lut_filler);
     xlink.LUTablePtr = &LUT;
     // Initialize other vectors for calculations
     std::vector<double> bindFactors(4, xlink.getBindingFactorUS(0));
@@ -518,9 +521,10 @@ TEST_CASE("Test binding probabilities of one head when near multiple rods and "
     ExampleXlink xlink;
     xlink.setMockXlink();
 
-    LookupTable LUT;
-    LUT.Init((1. - xlink.lambda) * .5 * xlink.kappa / KBT, xlink.freeLength,
-             2. * ep_j[0]->radius);
+    LUTFillerEdep lut_filler(256, 256);
+    lut_filler.Init((1. - xlink.lambda) * .5 * xlink.kappa / KBT,
+                    xlink.freeLength, 2. * ep_j[0]->radius);
+    LookupTable LUT(&lut_filler);
     xlink.LUTablePtr = &LUT;
 
     std::vector<double> bindFactors(4, xlink.getBindingFactorUS(1));
@@ -754,9 +758,10 @@ TEST_CASE("3 crossing perpendicular rods with protein in center",
     ExampleXlink xlink;
     xlink.setMockXlink();
 
-    LookupTable LUT;
-    LUT.Init((1. - xlink.lambda) * .5 * xlink.kappa / KBT, xlink.freeLength,
-             2. * ep_j[0]->radius);
+    LUTFillerEdep lut_filler(256, 256);
+    lut_filler.Init((1. - xlink.lambda) * .5 * xlink.kappa / KBT,
+                    xlink.freeLength, 2. * ep_j[0]->radius);
+    LookupTable LUT(&lut_filler);
     xlink.LUTablePtr = &LUT;
 
     std::vector<int> Uniquefilter(3, 1);
@@ -907,11 +912,13 @@ TEST_CASE("4 parallel rods separated by a rod diameter on the sides with "
     ep_j[3]->direction[0] = 1;
     ExampleXlink xlink;
     xlink.setMockXlink();
-    // ProteinType *pType = &xlink.property;
-    LookupTable LUT;
-    LUT.Init((1. - xlink.lambda) * .5 * xlink.kappa / KBT, xlink.freeLength,
-             2. * ep_j[0]->radius);
+    // Initialize lookup table
+    LUTFillerEdep lut_filler(256, 256);
+    lut_filler.Init((1. - xlink.lambda) * .5 * xlink.kappa / KBT,
+                    xlink.freeLength, 2. * ep_j[0]->radius);
+    LookupTable LUT(&lut_filler);
     xlink.LUTablePtr = &LUT;
+
     std::vector<int> Uniquefilter(4, 1);
     // Act
     SECTION("Unbound") {
@@ -1112,10 +1119,11 @@ TEST_CASE("6 perpendicular rods surrounding a sphere of a rod radius with "
     // Set protein data
     ExampleXlink xlink;
     xlink.setMockXlink();
-    // ProteinType *pType = &xlink.property;
-    LookupTable LUT;
-    LUT.Init((1. - xlink.lambda) * .5 * xlink.kappa / KBT, xlink.freeLength,
-             2. * ep_j[0]->radius);
+
+    LUTFillerEdep lut_filler(256, 256);
+    lut_filler.Init((1. - xlink.lambda) * .5 * xlink.kappa / KBT,
+                    xlink.freeLength, 2. * ep_j[0]->radius);
+    LookupTable LUT(&lut_filler);
     xlink.LUTablePtr = &LUT;
     SECTION("Unbound") {
         KMC<ExampleRod> kmc(xlink.getPosPtr(), 6, xlink.getRcutUS(),

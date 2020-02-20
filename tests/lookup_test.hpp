@@ -1,6 +1,9 @@
 #include "KMC/integrals.hpp"
 #include "KMC/lookup_table.hpp"
+#include "KMC/lut_filler_edep.hpp"
+#include "KMC/macros.hpp"
 #include "catch.hpp"
+#include "test_helpers.hpp"
 
 #include <cmath>
 #include <cstdio>
@@ -9,41 +12,17 @@
 
 #include <boost/math/quadrature/gauss_kronrod.hpp>
 
-constexpr double ABSTOL = 1e-3;
-constexpr double RELTOL = 1e-2;
-
-constexpr double REVERSEFAC = 10;
-/**
- * EXPLAIN:
- * Reverse lookup on regions where the CDF is flat gives large error
- * But this is a rare event in simulations because this requires
- * the U01 rng to be very close to either 0 or 1
- * WARNING:
- * When spring is stiff and distPerp is large,
- * the reverse lookup error is very large
- * because function values are tiny and very flat.
- */
-
-inline double absError(double a, double b) { return fabs(a - b); }
-
-inline double relError(double a, double b) {
-    return b < 1e-8 ? absError(a, b) : fabs((a - b) / b);
-}
-
-inline bool errorPass(double a, double b, double fac = 1) {
-    return absError(a, b) < fac * ABSTOL || relError(a, b) < fac * RELTOL;
-}
-
-TEST_CASE("Lookup table test SOFT spring ", "[lookup]") {
+TEST_CASE("Lookup table test SOFT spring ", "[lookup_soft]") {
     constexpr double errTol = 1e-2;
-    LookupTable LUT;
-
     const double D = 0.024;
     const double alpha = 0.1 / (2 * 0.00411);
     const double freelength = 0.05;
     const double M = alpha * D * D;
     const double ell0 = freelength / D;
-    LUT.Init(alpha, freelength, D);
+
+    LUTFillerEdep lut_filler(256, 256);
+    lut_filler.Init(alpha, freelength, D);
+    LookupTable LUT(&lut_filler);
 
     double distPerp = 0;
     distPerp = 0.2;
@@ -69,15 +48,16 @@ TEST_CASE("Lookup table test SOFT spring ", "[lookup]") {
     }
 }
 
-TEST_CASE("Lookup table test MEDIUM spring ", "[lookup]") {
-    LookupTable LUT;
-
+TEST_CASE("Lookup table test MEDIUM spring ", "[lookup_med]") {
     const double D = 0.024;
     const double alpha = 1.0 / (2 * 0.00411);
     const double freelength = 0.05;
     const double M = alpha * D * D;
     const double ell0 = freelength / D;
-    LUT.Init(alpha, freelength, D);
+
+    LUTFillerEdep lut_filler(256, 256);
+    lut_filler.Init(alpha, freelength, D);
+    LookupTable LUT(&lut_filler);
 
     double distPerp = 0;
     distPerp = 0.2;
@@ -100,15 +80,16 @@ TEST_CASE("Lookup table test MEDIUM spring ", "[lookup]") {
     }
 }
 
-TEST_CASE("Lookup table test STIFF spring ", "[lookup]") {
-    LookupTable LUT;
-
+TEST_CASE("Lookup table test STIFF spring ", "[lookup_stiff]") {
     const double D = 0.024;
     const double alpha = 10.0 / (2 * 0.00411);
     const double freelength = 0.05 + D;
     const double M = alpha * D * D;
     const double ell0 = freelength / D;
-    LUT.Init(alpha, freelength, D);
+
+    LUTFillerEdep lut_filler(256, 256);
+    lut_filler.Init(alpha, freelength, D);
+    LookupTable LUT(&lut_filler);
 
     double distPerp = 0;
     distPerp = 0.2;
@@ -133,12 +114,14 @@ TEST_CASE("Lookup table test STIFF spring ", "[lookup]") {
 
 TEST_CASE("Lookup table test manual medium spring REL error", "[lookup]") {
     // integrated by mathematica
-    LookupTable LUT;
     const double D = 0.024;
     constexpr double errTol = RELTOL;
 
+    LUTFillerEdep lut_filler(256, 256);
+    lut_filler.Init(1.0 / (2 * 0.00411), 0.05 + D, D);
+    LookupTable LUT(&lut_filler);
+
     double distPerp = 0;
-    LUT.Init(1.0 / (2 * 0.00411), 0.05 + D, D);
 
     distPerp = 0.2;
     // ("distPerp = 0.2 > D+ell0, single peaked")
@@ -177,11 +160,13 @@ TEST_CASE("Lookup table test manual medium spring REL error", "[lookup]") {
 TEST_CASE("REVERSE Lookup table test manual medium spring REL error",
           "[REVERSE lookup]") {
     // integrated by mathematica
-    LookupTable LUT;
     const double D = 0.024;
 
     double distPerp = 0;
-    LUT.Init(1.0 / (2 * 0.00411), 0.05 + D, D);
+    LUTFillerEdep lut_filler(256, 256);
+    lut_filler.Init(1.0 / (2 * 0.00411), 0.05 + D, D);
+    LookupTable LUT(&lut_filler);
+    // LUT.Init(&lut_filler);
 
     double tol = RELTOL * REVERSEFAC;
 
@@ -202,14 +187,15 @@ TEST_CASE("REVERSE Lookup table test manual medium spring REL error",
 }
 
 TEST_CASE("REVERSE Lookup table test soft spring ", "[REVERSE lookup]") {
-    LookupTable LUT;
-
     const double D = 0.024;
     const double alpha = 0.1 / (2 * 0.00411);
     const double freelength = 0.05;
     const double M = alpha * D * D;
     const double ell0 = freelength / D;
-    LUT.Init(alpha, freelength, D);
+
+    LUTFillerEdep lut_filler(256, 256);
+    lut_filler.Init(alpha, freelength, D);
+    LookupTable LUT(&lut_filler);
 
     double distPerp = 0;
     distPerp = 0.2;
@@ -236,14 +222,15 @@ TEST_CASE("REVERSE Lookup table test soft spring ", "[REVERSE lookup]") {
 }
 
 TEST_CASE("REVERSE Lookup table test medium spring ", "[REVERSE lookup]") {
-    LookupTable LUT;
-
     const double D = 0.024;
     const double alpha = 1.0 / (2 * 0.00411);
     const double freelength = 0.05;
     const double M = alpha * D * D;
     const double ell0 = freelength / D;
-    LUT.Init(alpha, freelength, D);
+
+    LUTFillerEdep lut_filler(256, 256);
+    lut_filler.Init(alpha, freelength, D);
+    LookupTable LUT(&lut_filler);
 
     double distPerp = 0;
     distPerp = 0.2;
@@ -267,14 +254,16 @@ TEST_CASE("REVERSE Lookup table test medium spring ", "[REVERSE lookup]") {
 }
 
 TEST_CASE("REVERSE Lookup table test stiff spring ", "[REVERSE lookup]") {
-    LookupTable LUT;
 
     const double D = 0.024;
     const double alpha = 10.0 / (2 * 0.00411);
     const double freelength = 0.05;
     const double M = alpha * D * D;
     const double ell0 = freelength / D;
-    LUT.Init(alpha, freelength, D);
+
+    LUTFillerEdep lut_filler(256, 256);
+    lut_filler.Init(alpha, freelength, D);
+    LookupTable LUT(&lut_filler);
 
     double distPerp = 0;
     // ("distPerp = 0.2 > D+ell0, single peaked")
@@ -312,21 +301,24 @@ TEST_CASE("REVERSE binary Lookup with different springs", "[REVERSE binary]") {
     const double ell0 = freelength / D;
     double alpha, M;
 
-    LookupTable LUT;
+    LUTFillerEdep lut_filler(256, 256);
 
-    double rowIndexMax = LUT.distPerpGridNumber;
-    double colIndexMax = LUT.sboundGridNumber;
+    double rowIndexMax = lut_filler.getDistPerpGridNum();
+    double colIndexMax = lut_filler.getDistParaGridNum();
     double distPerpSpacing;
 
     SECTION("Soft spring") {
         alpha = 0.1 / (2 * 0.00411);
         M = alpha * D * D;
-        LUT.Init(alpha, freelength, D);
-        distPerpSpacing = LUT.distPerpGridSpacing;
+
+        lut_filler.Init(alpha, freelength, D);
+        LookupTable LUT(&lut_filler);
+
+        distPerpSpacing = LUT.perp_spacing_;
         for (int i = 0; i < rowIndexMax - 2; ++i) {
-            double C0 = LUT.table[LUT.getTableIndex(i, colIndexMax - 1)] * D;
+            double C0 = LUT.table_[LUT.getTableIndex(i, colIndexMax - 1)] * D;
             double C1 =
-                LUT.table[LUT.getTableIndex(i + 1, colIndexMax - 1)] * D;
+                LUT.table_[LUT.getTableIndex(i + 1, colIndexMax - 1)] * D;
             double Cavg = .5 * (C0 + C1);
             double distPerpAvg = distPerpSpacing * (i + .5) * D;
             double sbound = LUT.ReverseLookup(distPerpAvg, Cavg);
@@ -339,12 +331,15 @@ TEST_CASE("REVERSE binary Lookup with different springs", "[REVERSE binary]") {
     SECTION("Medium spring") {
         alpha = 1.0 / (2 * 0.00411);
         M = alpha * D * D;
-        LUT.Init(alpha, freelength, D);
-        distPerpSpacing = LUT.distPerpGridSpacing;
+
+        lut_filler.Init(alpha, freelength, D);
+        LookupTable LUT(&lut_filler);
+
+        distPerpSpacing = LUT.perp_spacing_;
         for (int i = 0; i < rowIndexMax - 2; ++i) {
-            double C0 = LUT.table[LUT.getTableIndex(i, colIndexMax - 1)] * D;
+            double C0 = LUT.table_[LUT.getTableIndex(i, colIndexMax - 1)] * D;
             double C1 =
-                LUT.table[LUT.getTableIndex(i + 1, colIndexMax - 1)] * D;
+                LUT.table_[LUT.getTableIndex(i + 1, colIndexMax - 1)] * D;
             double Cavg = .5 * (C0 + C1);
             double distPerpAvg = distPerpSpacing * (i + .5) * D;
             double sbound = LUT.ReverseLookup(distPerpAvg, Cavg);
@@ -357,12 +352,15 @@ TEST_CASE("REVERSE binary Lookup with different springs", "[REVERSE binary]") {
     SECTION("Stiff spring") {
         alpha = 10. / (2 * 0.00411);
         M = alpha * D * D;
-        LUT.Init(alpha, freelength, D);
-        distPerpSpacing = LUT.distPerpGridSpacing;
+
+        lut_filler.Init(alpha, freelength, D);
+        LookupTable LUT(&lut_filler);
+
+        distPerpSpacing = LUT.perp_spacing_;
         for (int i = 0; i < rowIndexMax - 2; ++i) {
-            double C0 = LUT.table[LUT.getTableIndex(i, colIndexMax - 1)] * D;
+            double C0 = LUT.table_[LUT.getTableIndex(i, colIndexMax - 1)] * D;
             double C1 =
-                LUT.table[LUT.getTableIndex(i + 1, colIndexMax - 1)] * D;
+                LUT.table_[LUT.getTableIndex(i + 1, colIndexMax - 1)] * D;
             double Cavg = .5 * (C0 + C1);
             double distPerpAvg = distPerpSpacing * (i + .5) * D;
             double sbound = LUT.ReverseLookup(distPerpAvg, Cavg);
@@ -376,15 +374,17 @@ TEST_CASE("REVERSE binary Lookup with different springs", "[REVERSE binary]") {
 TEST_CASE("Test the calculation of binding volume.", "[bind volume]") {
     const double D = 0.024;
     const double freelength = 0.05;
-    const double ell0 = freelength;
     double alpha = 1. / (2 * 0.00411);
+    const double ell0 = freelength / D;
+    double M = alpha * D * D;
+
+    LUTFillerEdep lut_filler(256, 256);
 
     for (double i = 0.1; i < 1.0; i += .1) {
-        LookupTable LUT;
-        LUT.Init(alpha * i, freelength, D);
-        LUT.calcBindVol();
+        lut_filler.Init(alpha * i, freelength, D);
         double bind_vol =
-            bind_vol_integral(0, LUT.getLUCutoff(), i * alpha, ell0);
-        REQUIRE(LUT.getBindVolume() == Approx(bind_vol).epsilon(1e-8));
+            bind_vol_integral(lut_filler.getUpperBound(), i * M, ell0);
+        REQUIRE(lut_filler.getBindingVolume() ==
+                Approx(bind_vol).epsilon(1e-8));
     }
 }
