@@ -14,7 +14,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED YES)
 ## add_subdirectory(extern/example_sub_project)
 
 ## The directory for the library
-add_subdirectory(src)
+add_subdirectory(KMC)
 
 ## Only build documentation if this is the main project, and not if it is included through add_subdirectory
 if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
