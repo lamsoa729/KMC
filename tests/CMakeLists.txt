@@ -1,5 +1,7 @@
 
-include_directories(../extern/catch2)
+find_package(MPI REQUIRED)
+
+set(CMAKE_CXX_COMPILER mpicxx)
 
 add_executable(test_kmc test_main.cpp)
 
