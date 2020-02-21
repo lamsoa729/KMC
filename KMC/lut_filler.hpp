@@ -26,7 +26,7 @@ class LUTFiller {
         : dist_para_grid_num_(dist_para_grid_num),
           dist_perp_grid_num_(dist_perp_grid_num) {}
 
-    // virtual ~LUTFillerBase();
+    virtual ~LUTFiller() {}
 
     virtual void Init() {
         assert(length_scale_ > 0);
