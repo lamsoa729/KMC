@@ -10,6 +10,12 @@ project (KMC
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED YES)
 
+if(DEBUG)
+  set(CMAKE_BUILD_TYPE "Debug")
+else()
+  set(CMAKE_BUILD_TYPE "Release")
+endif()
+
 ## Add external dependencies here, e.g.:
 ## add_subdirectory(extern/example_sub_project)
 
