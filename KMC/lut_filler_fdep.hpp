@@ -64,7 +64,7 @@ class LUTFillerFdep : public LUTFiller {
         exp_fact_ = exp_fact * rodD * rodD;
 
         assert(exp_fact_ > 0);
-        assert(0 <= e_fact_ && e_fact <= 1);
+        assert(e_fact < 1);
         assert(rest_length_ > 0);
 
         LUTFiller::Init();

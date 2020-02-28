@@ -48,7 +48,10 @@ class LUTFillerAsym : public LUTFiller {
      * change at the end of the integral is less than 10^{-4}. Everything is
      * non-dimensionalized by rodD.
      *
-     * \param exp_fact Exponential prefactor with the dimensions of L^{-2}.
+     * \param exp_fact1 Exponential prefactor when spring is compressed with
+     * the dimensions of L^{-2}.
+     * \param exp_fact Exponential prefactor when spring is stretched with the
+     * dimensions of L^{-2}.
      * \param freeLength Rest length of binding crosslink.
      * \param rodD Diameter of rod crosslink is binding to.
      *
@@ -67,7 +70,7 @@ class LUTFillerAsym : public LUTFiller {
 
         assert(exp_fact1_ >= 0);
         assert(exp_fact2_ > 0);
-        assert(0 <= e_fact_ && e_fact <= 1);
+        assert(e_fact < 1);
         assert(rest_length_ > 0);
 
         LUTFiller::Init();
