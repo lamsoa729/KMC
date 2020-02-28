@@ -130,9 +130,9 @@ inline double fdep_bind_vol_integral(double sbound, double M, double e_fact,
  * \return result The value of the integration
 
  */
-inline double asym_fdep_integral(double lm, double sbound0, double sbound1,
-                                 double M1, double M2, double e_fact,
-                                 double fdep_length, double ell0) {
+inline double asym_integral(double lm, double sbound0, double sbound1,
+                            double M1, double M2, double e_fact,
+                            double fdep_length, double ell0) {
     if (sbound0 >= sbound1) {
         return 0;
     }
@@ -150,7 +150,7 @@ inline double asym_fdep_integral(double lm, double sbound0, double sbound1,
     return result;
 }
 
-inline double fdep_bind_vol_integral(double sbound, double M1, double M2,
+inline double asym_bind_vol_integral(double sbound, double M1, double M2,
                                      double e_fact, double fdep_length,
                                      double ell0) {
     assert(sbound > 0);
