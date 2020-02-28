@@ -112,4 +112,60 @@ inline double fdep_bind_vol_integral(double sbound, double M, double e_fact,
     return 4. * M_PI * result;
 }
 
+/*! \brief Integrate exponential factor with the form of
+ * e^{-M * [ (1-e_fact)\sqrt{s^2 + lm^2} - ell0)^2 -
+ *          fdep_length * (\sqrt{ s^2 + lm^2} - ell0) ] }
+ * from sbound0 to sbound1  with respect to the variable s.
+ *
+ * \param lm Physically, this is the perpendicular distance above rod
+ * \param sbound lowerr limit of integral
+ * \param sbound Upper limit of integral
+ * \param M1 exponential constant factor when spring is compressed.
+ *    Physically, this is the product of spring_const_1/(k_B * Temperature)
+ * \param M2 exponential constant factor when spring is stretched.
+ *    Physically, this is the product of spring_const_2/(k_B * Temperature)
+ * \param e_fact energy(load) sensitivity to unbinding.
+ * \param fdep_length Characteristic length for force dependent unbinding.
+ * \param ell0 Shift of the integrands mean. Physically, protein rest length
+ * \return result The value of the integration
+
+ */
+inline double asym_fdep_integral(double lm, double sbound0, double sbound1,
+                                 double M1, double M2, double e_fact,
+                                 double fdep_length, double ell0) {
+    if (sbound0 >= sbound1) {
+        return 0;
+    }
+    auto integrand = [&](double s) {
+        const double rprime = sqrt(s * s + lm * lm) - ell0;
+        const double energy_term = .5 * (1. - e_fact) * rprime * rprime;
+        const double force_term = fdep_length * rprime;
+        const double M = rprime < 0. ? M1 : M2;
+        return exp(-M * (energy_term - force_term));
+    };
+    double error = 0;
+    double result =
+        boost::math::quadrature::gauss_kronrod<double, 21>::integrate(
+            integrand, sbound0, sbound1, 10, 1e-6, &error);
+    return result;
+}
+
+inline double fdep_bind_vol_integral(double sbound, double M1, double M2,
+                                     double e_fact, double fdep_length,
+                                     double ell0) {
+    assert(sbound > 0);
+    auto integrand = [&](double s) {
+        const double rprime = s - ell0;
+        const double energy_term = .5 * (1. - e_fact) * rprime * rprime;
+        const double force_term = fdep_length * rprime;
+        const double M = rprime < 0. ? M1 : M2;
+        return exp(-M * (energy_term - force_term));
+    };
+    double error = 0;
+    double result =
+        boost::math::quadrature::gauss_kronrod<double, 21>::integrate(
+            integrand, 0, sbound, 10, 1e-6, &error);
+    return 4. * M_PI * result;
+}
+
 #endif /* INTEGRALS_HPP_ */
