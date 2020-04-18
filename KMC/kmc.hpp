@@ -593,12 +593,12 @@ double KMC<TRod>::LUCalcProbSD(const int j_rod, const TRod &rod,
     }
     double prefact = bindFactor * dt_ / bind_vol_;
 #ifndef NDEBUG
-    if (prefact * LookupTable::small > 1.) {
+    if (prefact * LookupTable::small_ > 1.) {
         printf("Warning: S->D binding prefact (%g) times the tolerance of "
                "lookup table (%g) is large. This could lead to instabilities "
                "and improper sampling of binding distribution. Reduce time "
                "step, on rate, or spring constant to prevent this.",
-               prefact, LookupTable::small);
+               prefact, LookupTable::small_);
     }
 #endif
     return prefact * result;

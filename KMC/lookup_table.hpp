@@ -18,7 +18,12 @@
 #include <vector>
 
 #include "integrals.hpp"
+#include "lut_filler.hpp"
+#include "lut_filler_asym.hpp"
+#include "lut_filler_edep.hpp"
+#include "lut_filler_fdep.hpp"
 #include "macros.hpp"
+
 /**
  * @brief 2D Lookup Table for the dimensionless functions
  *
@@ -28,31 +33,60 @@
  * Both interface functions and internal caculations are dimensionless
  */
 class LookupTable {
-  private:
-    double lUB_; ///< Upper bound distance of lookup table, dimensionless
-    double M_;   ///< (1-\lambda)\kappa\beta/2 * D^2, dimensionless
-    double ell0; ///< \ell_0/D, dimensionless
-    double bind_vol_ = 1; ///< Volume that head can bind within, dimensionless
-
-  public:
-    static constexpr double small = 1e-4;
+  protected:
+    double UB_; ///< Upper bound distance of lookup table, dimensionless
+    double bind_vol_ = 1.; ///< Volume that head can bind within,
+    // dimensionless
     double D_; ///< dimensional rod Diameter, length scale
 
-    const int distPerpGridNumber = 256; ///< grid in dperp
-    double distPerpGridSpacing;         ///< dimensionless
-    double distPerpGridSpacingInv;      ///< dimensionless
-    std::vector<double> distPerpGrid;   ///< dimensionless vertical direction
+  public:
+    static constexpr double small_ = 1e-4;
 
-    const int sboundGridNumber = 256; ///< grid in s bound
-    double sboundGridSpacing;         ///< dimensionless
-    double sboundGridSpacingInv;      ///< dimensionless
-    std::vector<double> sboundGrid;   ///< dimensionless horizontal direction
+    int perp_grid_num_ = 256;
+    double perp_spacing_;           ///< dimensionless
+    double perp_spacing_inv_;       ///< dimensionless
+    std::vector<double> perp_grid_; ///< dimensionless vertical direction
 
-    std::vector<double> table; ///< the 2D matrix of dimensionless values
+    int para_grid_num_ = 256;
+    double para_spacing_;           ///< dimensionless
+    double para_spacing_inv_;       ///< dimensionless
+    std::vector<double> para_grid_; ///< dimensionless horizontal direction
+
+    std::vector<double> table_; ///< the 2D matrix of dimensionless values
 
   public:
     LookupTable() = default;
     ~LookupTable() = default;
+
+    /*! \brief Initialize lookup table
+     *
+     * Stores precalculated values of the integral from lut_filler
+     *
+     * \param lut_filler Initialized lookup table filler pointer
+     *
+     * \return void
+     */
+    LookupTable(LUTFiller *lut_filler) {
+        // setup length scale and dimensionless lengths
+
+        // truncate the integration when integrand < SMALL
+        // interation table in dimensionless lengths
+        UB_ = lut_filler->getUpperBound();
+        D_ = lut_filler->getLengthScale();
+
+        para_grid_num_ = lut_filler->getDistParaGridNum();
+        perp_grid_num_ = lut_filler->getDistPerpGridNum();
+
+        para_spacing_ = lut_filler->getDistParaGridSpacing();
+        perp_spacing_ = lut_filler->getDistPerpGridSpacing();
+        para_spacing_inv_ = 1. / para_spacing_;
+        perp_spacing_inv_ = 1. / perp_spacing_;
+
+        lut_filler->FillDistParaGrid(para_grid_);
+        lut_filler->FillDistPerpGrid(perp_grid_);
+
+        lut_filler->FillMatrix(table_);
+    }
 
     /**
      * @brief Get the rodDiameter length scale
@@ -73,84 +107,21 @@ class LookupTable {
      *
      * @return double
      */
-    double getLUCutoff() const { return D_ * lUB_; }
+    double getLUCutoff() const { return D_ * UB_; }
 
     /**
      * @brief Get the dimensionless sbound for tabulation
      *
      * @return double
      */
-    double getNonDsbound() const { return sboundGrid.back(); }
+    double getNonDsbound() const { return para_grid_.back(); }
+
     /**
      * @brief Get the dimensionful sbound for tabulation
      *
      * @return double
      */
-    double getDsbound() const { return D_ * sboundGrid.back(); }
-
-    /*! \brief Initialize lookup table
-     *
-     * Stores precalculated values of the integral
-     * \int_0^y exp{-M_ (sqrt[x^2 + l_min^2] - l_o - D)^2}dx
-     * To do this, grid spacing are calculated based on the value of M_ and
-     * freeLength. The upper bound lUB is calculated so that the maximum change
-     * at the end of the integral is less than 10^{-4}. Everything is
-     * non-dimensionalized by rodD.
-     *
-     * \param M Exponential prefactor with the dimensions of L^{-2}.
-     * \param freeLength Rest length of binding crosslink.
-     * \param rodD Diameter of rod crosslink is binding to.
-     *
-     * \return void
-     */
-    void Init(double M, double freeLength, double rodD) {
-        // constexpr double small = 1e-4;
-        // setup length scale and dimensionless lengths
-        D_ = rodD;
-        ell0 = freeLength / rodD;
-        M_ = M * rodD * rodD;
-
-        // truncate the integration when integrand < SMALL
-        // interation table in dimensionless lengths
-        // lUB = sqrt(lm^2 + s^2), dimensionless scaled by D
-        lUB_ = sqrt(-log(small) / M_) + ell0;
-        // Get binding volume for simulation
-        // bind_vol_ = bind_vol_integral(0, lUB_, M_, ell0);
-        // printf("lUB_ = %f\n", lUB_);
-        // printf("bind_vol_ = %f\n", bind_vol_);
-
-        // step 1 determine grid
-        const double distPerpLB = 0;
-        const double distPerpUB = lUB_;
-        distPerpGridSpacing =
-            (distPerpUB - distPerpLB) / (distPerpGridNumber - 1);
-
-        const double sboundLB = 0;
-        const double sboundUB = sqrt(lUB_ * lUB_ - distPerpLB * distPerpLB);
-        sboundGridSpacing = (sboundUB - sboundLB) / (sboundGridNumber - 1);
-
-        // step 2 init grid
-        distPerpGrid.resize(distPerpGridNumber);
-        for (int i = 0; i < distPerpGridNumber; i++) {
-            distPerpGrid[i] = i * distPerpGridSpacing + distPerpLB;
-        }
-        sboundGrid.resize(sboundGridNumber);
-        for (int i = 0; i < sboundGridNumber; i++) {
-            sboundGrid[i] = i * sboundGridSpacing + sboundLB;
-        }
-        distPerpGridSpacingInv = 1. / distPerpGridSpacing;
-        sboundGridSpacingInv = 1. / sboundGridSpacing;
-
-        // step 3 tabulate the matrix
-        FillMatrix();
-    }
-
-    /*! \brief Calculate the binding volume of second head of protein.
-     * Will remain 1 otherwise.
-     *
-     * \return void
-     */
-    void calcBindVol() { bind_vol_ = bind_vol_integral(0, lUB_, M_, ell0); }
+    double getDsbound() const { return D_ * para_grid_.back(); }
 
     /*! \brief Set the binding volume of second head of protein.
      * Will remain 1 otherwise.
@@ -169,15 +140,15 @@ class LookupTable {
      * \return void
      */
     void PrintTable() const {
-        const int distPerpGridNumber = distPerpGrid.size();
-        const int sboundGridNumber = sboundGrid.size();
+        const int perp_grid_num_ = perp_grid_.size();
+        const int para_grid_num_ = para_grid_.size();
 
         // IMPORTANT: Table stores dimensionless val
-        for (int i = 0; i < distPerpGridNumber; i++) {
-            for (int j = 0; j < sboundGridNumber; j++) {
-                std::cout << "(distPerp, sbound) = (" << distPerpGrid[i] << ","
-                          << sboundGrid[j]
-                          << ") = " << table[i * sboundGridNumber + j]
+        for (int i = 0; i < perp_grid_num_; i++) {
+            for (int j = 0; j < para_grid_num_; j++) {
+                std::cout << "(dist_perp, dist_para) = (" << perp_grid_[i]
+                          << "," << para_grid_[j]
+                          << ") = " << table_[i * para_grid_num_ + j]
                           << std::endl;
             }
         }
@@ -189,58 +160,56 @@ class LookupTable {
 
     /*! \brief Lookup the value of the integral given two parameters.
      *
-     * $\int_0^y exp{-M_ (sqrt[x^2 + l_min^2] - l_o - D)^2}dx$
      *
-     * \param distPerp l_min in the above integral. The distance away from the
+     * \param dist_perp The distance away from the
      * infinite carrier line.
-     * \param sbound y in the above integral. The limit of
-     * integration.
+     * \param dist_para The limit of integration.
      *
      * \return double Dimensional value of integral calculated
      */
-    double Lookup(double distPerp, double sbound) const {
+    double Lookup(double dist_perp, double dist_para) const {
         // Non-dimensionalize parameters
-        distPerp /= D_;
-        sbound /= D_;
+        dist_perp /= D_;
+        dist_para /= D_;
         double rowFrac = 0, colFrac = 0;
-        int rowIndex = getRowIndex(distPerp, rowFrac);
-        int colIndex = getColIndex(sbound, colFrac);
+        int rowIndex = getRowIndex(dist_perp, rowFrac);
+        int colIndex = getColIndex(dist_para, colFrac);
 
         // clamp to grid bound
         if (rowIndex < 0) {
-            fprintf(stderr, "Error: distPerp must be positive value: %g \n",
-                    distPerp);
-            throw std::runtime_error("distPerp must be positive value");
+            fprintf(stderr, "Error: dist_perp must be positive value: %g \n",
+                    dist_perp);
+            throw std::runtime_error("dist_perp must be positive value");
         }
         if (colIndex < 0) {
-            fprintf(stderr, "Error: sbound too small: %g \n", sbound);
+            fprintf(stderr, "Error: sbound too small: %g \n", dist_para);
             throw std::runtime_error("sbound too small");
         }
-        if (rowIndex > distPerpGridNumber - 2) {
+        if (rowIndex > perp_grid_num_ - 2) {
 #ifndef NDEBUG
-            printf("Warning: distPerp %g very large, clamp to grid UB\n",
-                   distPerp);
+            printf("Warning: dist_perp %g very large, clamp to grid UB\n",
+                   dist_perp);
 #endif
-            rowIndex = distPerpGridNumber - 2;
+            rowIndex = perp_grid_num_ - 2;
             rowFrac = 1;
         }
-        if (colIndex > sboundGridNumber - 2) {
+        if (colIndex > para_grid_num_ - 2) {
             //#ifndef NDEBUG
             //            printf("Warning: sbound %g very large, clamp to grid
             //            UB\n", sbound);
             //#endif
-            colIndex = sboundGridNumber - 2;
+            colIndex = para_grid_num_ - 2;
             colFrac = 1;
         }
 
         // linear interpolation using surrounding grid values
-        double val = table[getTableIndex(rowIndex, colIndex)] * (1 - colFrac) *
+        double val = table_[getTableIndex(rowIndex, colIndex)] * (1 - colFrac) *
                          (1 - rowFrac) //
-                     + table[getTableIndex(rowIndex, colIndex + 1)] * colFrac *
+                     + table_[getTableIndex(rowIndex, colIndex + 1)] * colFrac *
                            (1 - rowFrac) //
-                     + table[getTableIndex(rowIndex + 1, colIndex)] *
+                     + table_[getTableIndex(rowIndex + 1, colIndex)] *
                            (1 - colFrac) * rowFrac //
-                     + table[getTableIndex(rowIndex + 1, colIndex + 1)] *
+                     + table_[getTableIndex(rowIndex + 1, colIndex + 1)] *
                            colFrac * rowFrac; //
 
         return val * D_; // IMPORTANT: re-dimensionalize value
@@ -254,37 +223,37 @@ class LookupTable {
      * distance away and value of integral you retrieve the upper limit of
      * integration
      *
-     * \param distPerp l_min in the above integral. The distance away from the
+     * \param dist_perp l_min in the above integral. The distance away from the
      * infinite carrier line.
      * \param val Resultant value of integral
      *
      * \return double Dimensional upper bound of integral
      */
-    double ReverseLookup(double distPerp, double val) const {
+    double ReverseLookup(double dist_perp, double val) const {
         if (val == 0) {
             return 0;
         } else { // Non-dimensionalize inputs
-            distPerp /= D_;
+            dist_perp /= D_;
             val /= D_;
         }
 
         double sbound;
         double rowFrac = 0;
-        int rowIndex = getRowIndex(distPerp, rowFrac);
+        int rowIndex = getRowIndex(dist_perp, rowFrac);
 
-        // distPerp check
+        // dist_perp check
         if (rowIndex < 0) {
-            fprintf(stderr, "Error: distPerp must be positive value: %g \n",
-                    distPerp);
-            throw std::runtime_error("distPerp must be positive value.");
+            fprintf(stderr, "Error: dist_perp must be positive value: %g \n",
+                    dist_perp);
+            throw std::runtime_error("dist_perp must be positive value.");
         }
-        if (rowIndex > distPerpGridNumber - 2) {
+        if (rowIndex > perp_grid_num_ - 2) {
 #ifndef NDEBUG
             printf(
-                "Warning: distPerp %g very large, clamp to grid upper limit\n",
-                distPerp);
+                "Warning: dist_perp %g very large, clamp to grid upper limit\n",
+                dist_perp);
 #endif
-            rowIndex = distPerpGridNumber - 2;
+            rowIndex = perp_grid_num_ - 2;
             rowFrac = 1;
         }
 
@@ -304,31 +273,31 @@ class LookupTable {
         // int index0UB;
         // if (rowIndex > 0) {
         //    index0LB = getTableIndex(rowIndex - 1, 0);
-        //    index0UB = getTableIndex(rowIndex - 1, sboundGridNumber - 1);
+        //    index0UB = getTableIndex(rowIndex - 1, para_grid_num_ - 1);
         //} else {
         //    index0LB = getTableIndex(rowIndex, 0);
-        //    index0UB = getTableIndex(rowIndex, sboundGridNumber - 1);
+        //    index0UB = getTableIndex(rowIndex, para_grid_num_ - 1);
         //}
 
         const int index1LB = getTableIndex(rowIndex, 0);
-        const int index1UB = getTableIndex(rowIndex, sboundGridNumber - 1);
+        const int index1UB = getTableIndex(rowIndex, para_grid_num_ - 1);
         const int index2LB = getTableIndex(rowIndex + 1, 0);
-        const int index2UB = getTableIndex(rowIndex + 1, sboundGridNumber - 1);
+        const int index2UB = getTableIndex(rowIndex + 1, para_grid_num_ - 1);
 
         // reverse lookup
         // auto lower0 = std::lower_bound(table.begin() + index0LB,
         // table.begin() + index0UB, val);
         // reverse lookup val on row rowIndex
-        auto lower1 = std::lower_bound(table.begin() + index1LB,
-                                       table.begin() + index1UB, val);
+        auto lower1 = std::lower_bound(table_.begin() + index1LB,
+                                       table_.begin() + index1UB, val);
         // reverse lookup val on row rowIndex+1
-        auto lower2 = std::lower_bound(table.begin() + index2LB,
-                                       table.begin() + index2UB, val);
+        auto lower2 = std::lower_bound(table_.begin() + index2LB,
+                                       table_.begin() + index2UB, val);
 
-        // find cross point of distPerp and two points
+        // find cross point of dist_perp and two points
         // assert(lower0 - table.begin() >= index0LB);
-        assert(lower1 - table.begin() >= index1LB);
-        assert(lower2 - table.begin() >= index2LB);
+        assert(lower1 - table_.begin() >= index1LB);
+        assert(lower2 - table_.begin() >= index2LB);
 
         /**
          * value on table grids
@@ -338,11 +307,11 @@ class LookupTable {
          * rowIndex+1 -----------+--------+
          *                  colIndexp colIndexp+1
          *
-         * Off set because different distPerps have different cutoff values
+         * Off set because different dist_perps have different cutoff values
          */
         // const int colIndex0 = lower0 - 1 - table.begin() - index1LB;
-        const int colIndexm = lower1 - 1 - table.begin() - index1LB;
-        const int colIndexp = lower2 - 1 - table.begin() - index2LB;
+        const int colIndexm = lower1 - 1 - table_.begin() - index1LB;
+        const int colIndexp = lower2 - 1 - table_.begin() - index2LB;
         // double sbound0;
         double sboundm, sboundp;
         int out_of_range_case = 0;
@@ -352,52 +321,52 @@ class LookupTable {
         //            printf("Warning: val %g too large for row0 lookup with max
         //            of %g. "
         //                   "Setting to a max sbound of %g \n",
-        //                   val, *(lower0), sboundGrid[colIndex0]);
+        //                   val, *(lower0), para_grid_[colIndex0]);
         //#endif
-        //            sbound0 = sboundGrid[colIndex0];
+        //            sbound0 = para_grid_[colIndex0];
         //        } else {
         //            double val0A = *(lower0 - 1);
         //            double val0B = *(lower0);
-        //            sbound0 = sboundGrid[colIndex0] +
+        //            sbound0 = para_grid_[colIndex0] +
         //                      (val - val0A) / (val0B - val0A) *
-        //                      sboundGridSpacing;
+        //                      para_spacing_;
         //        }
         // Interpolate first row in the sbound direction
-        if (lower1 == table.begin() + index1UB) {
+        if (lower1 == table_.begin() + index1UB) {
 #ifndef NDEBUG
             printf("Warning: val %g too large for row1 lookup with max of %g. "
                    "Setting sbound max to %g \n",
-                   val, *(lower1), sboundGrid[colIndexm]);
+                   val, *(lower1), para_grid_[colIndexm]);
 #endif
             out_of_range_case = 1;
-            sboundm = sboundGrid[colIndexm]; // Go to end of sbound grid
+            sboundm = para_grid_[colIndexm]; // Go to end of sbound grid
         } else {
             double valmA = *(lower1 - 1);
             double valmB = *(lower1);
-            sboundm = sboundGrid[colIndexm] +
-                      ((val - valmA) / (valmB - valmA)) * sboundGridSpacing;
+            sboundm = para_grid_[colIndexm] +
+                      ((val - valmA) / (valmB - valmA)) * para_spacing_;
         }
         // Interpolate second row in the sbound direction
-        if (lower2 == table.begin() + index2UB) {
+        if (lower2 == table_.begin() + index2UB) {
 #ifndef NDEBUG
             printf("Warning: val %g too large for row2 lookup with max of %g. "
                    "Setting sbound max to %g \n",
-                   val, *(lower2), sboundGrid[colIndexp]);
+                   val, *(lower2), para_grid_[colIndexp]);
 #endif
             assert(out_of_range_case != 1); // Something has gone horribly wrong
             out_of_range_case = 2;
-            sboundp = sboundGrid[colIndexp]; // Go to end of sbound grid
+            sboundp = para_grid_[colIndexp]; // Go to end of sbound grid
             // return D * sboundm;
         } else {
             double valpA = *(lower2 - 1);
             double valpB = *(lower2);
-            sboundp = sboundGrid[colIndexp] +
-                      ((val - valpA) / (valpB - valpA)) * sboundGridSpacing;
+            sboundp = para_grid_[colIndexp] +
+                      ((val - valpA) / (valpB - valpA)) * para_spacing_;
         }
         // printf("sboundm = %f\n", sboundm);
         // printf("sboundp = %f\n", sboundp);
 
-        // Interpolate two sbound values in the distPerp direction
+        // Interpolate two sbound values in the dist_perp direction
         // if (rowIndex == 0) { // Linear interpolation
         switch (out_of_range_case) {
         case 0:
@@ -423,8 +392,8 @@ class LookupTable {
         //}
 
 #ifndef NDEBUG
-        double UB_val1 = *(table.begin() + index1UB);
-        double UB_val2 = *(table.begin() + index2UB);
+        double UB_val1 = *(table_.begin() + index1UB);
+        double UB_val2 = *(table_.begin() + index2UB);
         printf("Reverse lookup input = %g, Upper limits = %g or %g \n", val,
                UB_val1, UB_val2);
         printf("Reverse lookup output = %g, expected range = (%g, %g) \n",
@@ -444,14 +413,14 @@ class LookupTable {
         // printf("colMin init = %d\n", colMin);
         // printf("colMax init= %d\n", colMax);
         assert(colMin >= 0);
-        assert(colMax < sboundGridNumber);
+        assert(colMax < para_grid_num_);
         // Simple binary search using linear interpolation to find value
         while ((colMax - 1) > colMin) {
             double avg = (colMax + colMin) * .5;
             int colAvg = floor(avg);
             double colVal =
-                table[getTableIndex(rowMin, colAvg)] * (1 - rowFrac)  //
-                + table[getTableIndex(rowMin + 1, colAvg)] * rowFrac; //
+                table_[getTableIndex(rowMin, colAvg)] * (1 - rowFrac)  //
+                + table_[getTableIndex(rowMin + 1, colAvg)] * rowFrac; //
             // printf("colAvg = %d, colVal = %f, val = %f\n", colAvg, colVal,
             // val);
 
@@ -465,14 +434,16 @@ class LookupTable {
         // printf("colMin final = %d\n", colMin);
         // printf("colMax final = %d\n", colMax);
         // Interpolate using function of the line
-        double valMin = table[getTableIndex(rowMin, colMin)] * (1 - rowFrac)  //
-                        + table[getTableIndex(rowMin + 1, colMin)] * rowFrac; //
-        double valMax = table[getTableIndex(rowMin, colMax)] * (1 - rowFrac)  //
-                        + table[getTableIndex(rowMin + 1, colMax)] * rowFrac; //
+        double valMin = table_[getTableIndex(rowMin, colMin)] * (1 - rowFrac) //
+                        +
+                        table_[getTableIndex(rowMin + 1, colMin)] * rowFrac;  //
+        double valMax = table_[getTableIndex(rowMin, colMax)] * (1 - rowFrac) //
+                        +
+                        table_[getTableIndex(rowMin + 1, colMax)] * rowFrac; //
 
         // Linear interpolation with known values
-        double sbound = (val - valMin) / (valMax - valMin) * sboundGridSpacing +
-                        sboundGrid[colMin];
+        double sbound = (val - valMin) / (valMax - valMin) * para_spacing_ +
+                        para_grid_[colMin];
         // Make sure sbound is not calculated to be outside range [sMin, sMax]
         if (sbound > sMax)
             return sMax;
@@ -483,12 +454,12 @@ class LookupTable {
     }
 
     inline int getTableIndex(int row, int col) const {
-        assert(row < distPerpGridNumber && row >= 0);
-        assert(col < sboundGridNumber && col >= 0);
-        return row * sboundGridNumber + col;
+        assert(row < perp_grid_num_ && row >= 0);
+        assert(col < para_grid_num_ && col >= 0);
+        return row * para_grid_num_ + col;
     }
 
-  private:
+  protected:
     /*! \brief Fills the lookup table with values after grid has been
      * created.
      *
@@ -498,48 +469,51 @@ class LookupTable {
      *
      * \return void
      */
-    void FillMatrix() {
-        table.resize(distPerpGridNumber * sboundGridNumber, 0);
+    // void FillMatrix() {
+    //    table.resize(perp_grid_num_ * para_grid_num_, 0);
 
-        //// boost integration parameters
-        // const int max_depth = 10; // maximum number of interval splittings
-        // const double tol = 1e-8;  // maximum relative error
+    //    //// boost integration parameters
+    //    // const int max_depth = 10; // maximum number of interval splittings
+    //    // const double tol = 1e-8;  // maximum relative error
 
-        // row major
-        // i is slow changing, should be distPerpGrid
-        // j is fast changing, should be sboundGrid
+    //    // row major
+    //    // i is slow changing, should be perp_grid_
+    //    // j is fast changing, should be para_grid_
 
-        // IMPORTANT: Table stores dimensionless val
-        for (int i = 0; i < distPerpGridNumber; i++) {
-            for (int j = 0; j < sboundGridNumber; j++) {
-                const double sbound = sboundGrid[j];
-                assert(!(sbound < 0));
-                double result = integral(distPerpGrid[i], 0, sbound, M_, ell0);
-                table[i * sboundGridNumber + j] = result;
-            }
-        }
-    }
+    //    // IMPORTANT: Table stores dimensionless val
+    //    for (int i = 0; i < perp_grid_num_; i++) {
+    //        for (int j = 0; j < para_grid_num_; j++) {
+    //            const double sbound = para_grid_[j];
+    //            assert(!(sbound < 0));
+    //            // double result = integral(perp_grid_[i], 0, sbound, M_,
+    //            // ell0_);
+    //            double result = getIntegralResult(perp_grid_[i], 0, sbound);
+    //            table_[i * para_grid_num_ + j] = result;
+    //        }
+    //    }
+    //}
+
     /**
-     * @brief get row index with distPerp
+     * @brief get row index with dist_perp
      *
-     * @param distPerp dimensionless
+     * @param dist_perp dimensionless
      * @return int
      */
-    inline int getRowIndex(double distPerp, double &rowFrac) const {
-        const double x = (distPerp - distPerpGrid[0]) * distPerpGridSpacingInv;
+    inline int getRowIndex(double dist_perp, double &rowFrac) const {
+        const double x = (dist_perp - perp_grid_[0]) * perp_spacing_inv_;
         int index = floor(x);
         rowFrac = x - index;
         return index;
     }
 
     /**
-     * @brief Get col index with sbound
+     * @brief Get col index with dist_para
      *
-     * @param sbound dimensionless
+     * @param dist_para dimensionless
      * @return int
      */
-    inline int getColIndex(double sbound, double &colFrac) const {
-        const double x = (sbound - sboundGrid[0]) * sboundGridSpacingInv;
+    inline int getColIndex(double dist_para, double &colFrac) const {
+        const double x = (dist_para - para_grid_[0]) * para_spacing_inv_;
         int index = floor(x);
         colFrac = x - index;
         return index;

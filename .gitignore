@@ -5,3 +5,4 @@
 MakefileInc.mk
 doc/
 *.swp
+build*

@@ -3,5 +3,6 @@
 
 #include "choose_test.hpp"
 #include "diagnostic_test.hpp"
+#include "fdep_lookup_test.hpp"
 #include "kmc_testing.hpp"
 #include "lookup_test.hpp"
