@@ -197,7 +197,8 @@ class KMC {
      **************************/
 
     void Diagnostic(const double u_s_fact, const double s_u_fact,
-                    const double s_d_fact, const double d_s_fact) {
+                    const double s_d_fact, const double d_s_fact,
+                    double *probs = nullptr) {
         // Get full binding rates
         double k_u_s = u_s_fact * 2. * r_cutoff_;
         double k_s_d =
@@ -210,11 +211,18 @@ class KMC {
         double p_max_usd = two_step_max_prob(k_u_s, k_s_d, dt_);
         double p_max_sds = two_step_max_prob(k_s_d, k_d_s, dt_);
         double p_max_dsu = two_step_max_prob(k_d_s, k_s_u, dt_);
-        TestDiagnosticProbs(p_max_usu, p_max_usd, p_max_sds, p_max_dsu);
+        if (probs) {
+            probs[0] = p_max_usu;
+            probs[1] = p_max_usd;
+            probs[2] = p_max_sds;
+            probs[3] = p_max_dsu;
+        } else {
+            TestDiagnosticProbs(p_max_usu, p_max_usd, p_max_sds, p_max_dsu);
+        }
     }
 
     void DiagnosticUnBindDep(const double u_s_fact, const double s_u_fact,
-                             const double s_d_fact) {
+                             const double s_d_fact, double *probs = nullptr) {
         // Get full binding rates
         double k_u_s = u_s_fact * 2. * r_cutoff_;
         double k_s_d =
@@ -225,7 +233,14 @@ class KMC {
         double p_max_usd = two_step_max_prob(k_u_s, k_s_d, dt_);
         double p_max_sds = k_s_d * dt_;
         double p_max_dsu = k_s_u * dt_;
-        TestDiagnosticProbs(p_max_usu, p_max_usd, p_max_sds, p_max_dsu);
+        if (probs) {
+            probs[0] = p_max_usu;
+            probs[1] = p_max_usd;
+            probs[2] = p_max_sds;
+            probs[3] = p_max_dsu;
+        } else {
+            TestDiagnosticProbs(p_max_usu, p_max_usd, p_max_sds, p_max_dsu);
+        }
     }
 
     void TestDiagnosticProbs(const double p_max_usu, const double p_max_usd,

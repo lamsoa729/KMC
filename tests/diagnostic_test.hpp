@@ -35,26 +35,26 @@ TEST_CASE("Throw error from non-energy(force) dependent unbinding diagnostic",
     SECTION("U->S->U testing") {
         // Assert
         REQUIRE_THROWS(kmc_diag.Diagnostic(1, 1, .0001, .0001));
-        REQUIRE_THROWS(kmc_diag.Diagnostic(1000., 1., .0001, .0001));
-        REQUIRE_THROWS(kmc_diag.Diagnostic(1., 1000., .0001, .0001));
+        REQUIRE_THROWS(kmc_diag.Diagnostic(1000., .001, .0001, .0001));
+        REQUIRE_THROWS(kmc_diag.Diagnostic(.001, 1000., .0001, .0001));
     }
     SECTION("U->S->D testing") {
         // Assert
-        REQUIRE_THROWS(kmc_diag.Diagnostic(1, 1, .0001, .0001));
-        REQUIRE_THROWS(kmc_diag.Diagnostic(1000., 1., .0001, .0001));
-        REQUIRE_THROWS(kmc_diag.Diagnostic(1., 1000., .0001, .0001));
+        REQUIRE_THROWS(kmc_diag.Diagnostic(1, .0001, 1, .0001));
+        REQUIRE_THROWS(kmc_diag.Diagnostic(1000., .0001, .001, .0001));
+        REQUIRE_THROWS(kmc_diag.Diagnostic(.001, .0001, 1000., .0001));
     }
     SECTION("D->S->D testing") {
         // Assert
-        REQUIRE_THROWS(kmc_diag.Diagnostic(1, 1, .0001, .0001));
-        REQUIRE_THROWS(kmc_diag.Diagnostic(1000., 1., .0001, .0001));
-        REQUIRE_THROWS(kmc_diag.Diagnostic(1., 1000., .0001, .0001));
+        REQUIRE_THROWS(kmc_diag.Diagnostic(.0001, .0001, 1, 1));
+        REQUIRE_THROWS(kmc_diag.Diagnostic(.0001, .0001, 1000., .001));
+        REQUIRE_THROWS(kmc_diag.Diagnostic(.0001, .0001, .001, 1000.));
     }
     SECTION("D->S->U testing") {
         // Assert
-        REQUIRE_THROWS(kmc_diag.Diagnostic(1, 1, .0001, .0001));
-        REQUIRE_THROWS(kmc_diag.Diagnostic(1000., 1., .0001, .0001));
-        REQUIRE_THROWS(kmc_diag.Diagnostic(1., 1000., .0001, .0001));
+        REQUIRE_THROWS(kmc_diag.Diagnostic(.0001, 1, .0001, 1));
+        REQUIRE_THROWS(kmc_diag.Diagnostic(.0001, 1000., .0001, .001));
+        REQUIRE_THROWS(kmc_diag.Diagnostic(.0001, .001, .0001, 1000.));
     }
 }
 
@@ -68,14 +68,30 @@ TEST_CASE("Throw error from energy(force) dependent unbinding diagnostic",
     lut_filler.Init(M_PI, 0, 1); // Gaussian distribution normalized to 1
     LookupTable LUT(&lut_filler);
 
+    // Apply
+    KMC<ExampleRod> kmc_diag(r_cutoff, diffConst, dt, &LUT);
+
+    // Assert
+    REQUIRE_NOTHROW(kmc_diag.DiagnosticUnBindDep(.0001, .0001, .0001));
     SECTION("U->S->U testing") {
-        // Apply
-        KMC<ExampleRod> kmc_diag(r_cutoff, diffConst, dt, &LUT);
         // Assert
-        REQUIRE_NOTHROW(kmc_diag.DiagnosticUnBindDep(.0001, .0001, .0001));
         REQUIRE_THROWS(kmc_diag.DiagnosticUnBindDep(1, 1, .0001));
-        REQUIRE_THROWS(kmc_diag.DiagnosticUnBindDep(1000., 1., .0001));
-        REQUIRE_THROWS(kmc_diag.DiagnosticUnBindDep(1., 1000., .0001));
+        REQUIRE_THROWS(kmc_diag.DiagnosticUnBindDep(1000., .001, .0001));
+        REQUIRE_THROWS(kmc_diag.DiagnosticUnBindDep(.001, 1000., .0001));
+    }
+    SECTION("U->S->D testing") {
+        // Assert
+        REQUIRE_THROWS(kmc_diag.DiagnosticUnBindDep(1, .0001, 1));
+        REQUIRE_THROWS(kmc_diag.DiagnosticUnBindDep(1000., .0001, .001));
+        REQUIRE_THROWS(kmc_diag.DiagnosticUnBindDep(.001, .0001, 1000.));
+    }
+    SECTION("D->S->D testing") {
+        // Assert
+        REQUIRE_THROWS(kmc_diag.DiagnosticUnBindDep(.0001, .0001, 1));
+    }
+    SECTION("D->S->U testing") {
+        // Assert
+        REQUIRE_THROWS(kmc_diag.DiagnosticUnBindDep(.0001, 1, .0001));
     }
 }
 
