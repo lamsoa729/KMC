@@ -205,50 +205,14 @@ class KMC {
         // Keeps notation consistent. Might change in the future.
         double k_s_u = s_u_fact;
         double k_d_s = d_s_fact;
-        printf("two_step_max_prob(k_u_s, k_s_d, dt_) = %f\n",
-               two_step_max_prob(k_u_s, k_s_d, dt_));
-        if (two_step_max_prob(k_u_s, k_s_u, dt_) > ksmall) {
-            throw " !!!WARNING: Probability of double event (U->S->U) is too "
-                  "high. Try decreasing dt, diffUnbound, or single "
-                  "(un)binding parameters.";
 
-            // std::cout
-            //    << " !!!WARNING: Probability of double event (U->S->U) is too
-            //    "
-            //       "high. Try decreasing dt, diffUnbound, or single "
-            //       "(un)binding parameters."
-            //    << std::endl;
-        }
-        if (two_step_max_prob(k_u_s, k_s_d, dt_) > ksmall) {
-            throw " !!!WARNING: Probability of double event (U->S->D) is too "
-                  "high. Try decreasing dt, diffUnbound, or binding "
-                  "parameters.";
-            // std::cout
-            //    << " !!!WARNING: Probability of double event (U->S->D) is too
-            //    "
-            //       "high. Try decreasing dt, diffUnbound, or binding "
-            //       "parameters."
-            //    << std::endl;
-        }
-        if (two_step_max_prob(k_s_d, k_d_s, dt_) > ksmall) {
-            throw " !!!WARNING: Probability of double event (S->D->S) is too "
-                  "high. Try decreasing dt or double (un)binding parameters.";
-            // std::cout
-            //    << " !!!WARNING: Probability of double event (S->D->S) is too
-            //    "
-            //       "high. Try decreasing dt or double (un)binding parameters."
-            //    << std::endl;
-        }
-        if (two_step_max_prob(k_d_s, k_s_u, dt_) > ksmall) {
-            throw " !!!WARNING: Probability of double event (D->S->U) is too "
-                  "high. Try decreasing dt or unbinding parameters.";
-            // std::cout
-            //    << " !!!WARNING: Probability of double event (D->S->U) is too
-            //    "
-            //       "high. Try decreasing dt or unbinding parameters."
-            //    << std::endl;
-        }
+        double p_max_usu = two_step_max_prob(k_u_s, k_s_u, dt_);
+        double p_max_usd = two_step_max_prob(k_u_s, k_s_d, dt_);
+        double p_max_sds = two_step_max_prob(k_s_d, k_d_s, dt_);
+        double p_max_dsu = two_step_max_prob(k_d_s, k_s_u, dt_);
+        TestDiagnosticProbs(p_max_usu, p_max_usd, p_max_sds, p_max_dsu);
     }
+
     void DiagnosticUnBindDep(const double u_s_fact, const double s_u_fact,
                              const double s_d_fact) {
         // Get full binding rates
@@ -257,48 +221,50 @@ class KMC {
             s_d_fact * 2. * LUTablePtr_->Lookup(0, LUTablePtr_->getDsbound());
         // Keeps notation consistent. Might change in the future.
         double k_s_u = s_u_fact;
-        if (two_step_max_prob(k_u_s, k_s_u, dt_) > ksmall) {
-            throw " !!!WARNING: Probability of double event (U->S->U) is too "
-                  "high. Try decreasing dt, diffUnbound, or single "
-                  "(un)binding parameters.";
+        double p_max_usu = two_step_max_prob(k_u_s, k_s_u, dt_);
+        double p_max_usd = two_step_max_prob(k_u_s, k_s_d, dt_);
+        double p_max_sds = k_s_d * dt_;
+        double p_max_dsu = k_s_u * dt_;
+        TestDiagnosticProbs(p_max_usu, p_max_usd, p_max_sds, p_max_dsu);
+    }
 
-            // std::cout
-            //    << " !!!WARNING: Probability of double event (U->S->U) is too
-            //    "
-            //       "high. Try decreasing dt, diffUnbound, or single "
-            //       "(un)binding parameters."
-            //    << std::endl;
+    void TestDiagnosticProbs(const double p_max_usu, const double p_max_usd,
+                             const double p_max_sds, const double p_max_dsu) {
+#ifndef NDEBUG
+        std::cout << " --- KMC DIAGNOSTICS --- " << std::endl;
+        printf("  - p_max_usu = %f\n", p_max_usu);
+        printf("  - p_max_usd = %f\n", p_max_usd);
+        printf("  - p_max_sds = %f\n", p_max_sds);
+        printf("  - p_max_dsu = %f\n", p_max_dsu);
+#endif
+        if (p_max_usu > ksmall || std::isnan(p_max_usu)) {
+            printf("*** p_max_usu = %f\n", p_max_usu);
+            throw std::runtime_error(
+                " !!!WARNING: Probability of double event (U->S->U) is too "
+                "high. Try decreasing dt, diffUnbound, or single "
+                "(un)binding parameters.");
         }
-        if (two_step_max_prob(k_u_s, k_s_d, dt_) > ksmall) {
-            throw " !!!WARNING: Probability of double event (U->S->D) is too "
-                  "high. Try decreasing dt, diffUnbound, or binding "
-                  "parameters.";
-            // std::cout
-            //    << " !!!WARNING: Probability of double event (U->S->D) is too
-            //    "
-            //       "high. Try decreasing dt, diffUnbound, or binding "
-            //       "parameters."
-            //    << std::endl;
+        if (p_max_usd > ksmall || std::isnan(p_max_usd)) {
+            printf("*** p_max_usd = %f\n", p_max_usd);
+            throw std::runtime_error(
+                " !!!WARNING: Probability of double event (U->S->D) is too "
+                "high. Try decreasing dt, diffUnbound, or binding "
+                "parameters.");
         }
-        if (k_s_d * dt_ > ksmall) {
-            throw " !!!WARNING: Probability of double event (S->D->S) is too "
-                  "high. Try decreasing dt or double (un)binding parameters.";
-            // std::cout
-            //    << " !!!WARNING: Probability of double event (S->D->S) is too
-            //    "
-            //       "high. Try decreasing dt or double (un)binding parameters."
-            //    << std::endl;
+        if (p_max_sds > ksmall || std::isnan(p_max_sds)) {
+            printf("*** p_max_sds = %f\n", p_max_sds);
+            throw std::runtime_error(
+                " !!!WARNING: Probability of double event (S->D->S) is too "
+                "high. Try decreasing dt or double (un)binding parameters.");
         }
-        if (k_s_u * dt_ > ksmall) {
-            throw " !!!WARNING: Probability of double event (D->S->U) is too "
-                  "high. Try decreasing dt or unbinding parameters.";
-            // std::cout
-            //    << " !!!WARNING: Probability of double event (D->S->U) is too
-            //    "
-            //       "high. Try decreasing dt or unbinding parameters."
-            //    << std::endl;
+        if (p_max_dsu > ksmall || std::isnan(p_max_dsu)) {
+            printf("*** p_max_dsu = %f\n", p_max_dsu);
+            throw std::runtime_error(
+                " !!!WARNING: Probability of double event (D->S->U) is too "
+                "high. Try decreasing dt or unbinding parameters.");
         }
     }
+
     virtual ~KMC() {}
 };
 
