@@ -6,3 +6,4 @@
 #include "fdep_lookup_test.hpp"
 #include "kmc_testing.hpp"
 #include "lookup_test.hpp"
+#include "two_step_prob_test.hpp"

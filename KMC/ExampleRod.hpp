@@ -30,6 +30,21 @@
 #include <mpi.h>
 #include <omp.h>
 
+template <class TRod>
+TRod MockRod(int id) {
+    TRod rod;
+    rod.gid = id;
+    rod.length = 400;
+    rod.rank = 0;
+    rod.radius = .5;
+    for (int i = 0; i < 3; ++i) {
+        rod.pos[i] = 0;
+        rod.direction[i] = 0;
+    }
+    rod.direction[0] = 1;
+    return rod;
+}
+
 /**
  *  Do not use PS::F64vec3 except in required function interfaces
  *

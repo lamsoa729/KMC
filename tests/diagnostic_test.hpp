@@ -8,74 +8,38 @@
 
 #define DIAGNOSTIC_TEST_HPP
 
-#include "KMC/two_step_prob.hpp"
+//#include "KMC/two_step_prob.hpp"
+#include "KMC/ExampleRod.hpp"
+#include "KMC/helpers.hpp"
+#include "KMC/integrals.hpp"
+#include "KMC/kmc.hpp"
+#include "KMC/lookup_table.hpp"
+#include "KMC/lut_filler_edep.hpp"
+#include "KMC/macros.hpp"
+#include "catch.hpp"
+#include "example_objs/ExampleXlink.hpp"
 #include <cmath>
 
-TEST_CASE("Test time at which max probability is reached between two steps",
-          "[time_max]") {
+TEST_CASE("Throw error from diagnostic when time step is too large",
+          "[diagnostic]") {
     // Assemble
-    double k1 = 10.;
-    double k2 = 20.;
-    double t = .1;
-    double t1 = .5 * t;
+    double KBT = 1.;
+    ExampleXlink xlink;
+    ExampleRod rod = MockRod<ExampleRod>(0);
 
-    SECTION("Hard coded cases") {
-        REQUIRE(max_time_of_two_step_prob(k1, k2, t) ==
-                Approx(0.05491770806462643).epsilon(1e-8));
-        REQUIRE(max_time_of_two_step_prob(k2, k1, t) ==
-                Approx(t - 0.05491770806462643).epsilon(1e-8));
-        REQUIRE(max_time_of_two_step_prob(10 * k1, k2, t) ==
-                Approx(0.02831502220553105).epsilon(1e-8));
-        REQUIRE(max_time_of_two_step_prob(k2, 10 * k1, t) ==
-                Approx(t - 0.02831502220553105).epsilon(1e-8));
-    }
-    SECTION("Always true results of max time") {
-        REQUIRE(max_time_of_two_step_prob(k1, k1, t) ==
-                Approx(t1).epsilon(1e-8));
-        REQUIRE(max_time_of_two_step_prob(k2, k2, t) ==
-                Approx(t1).epsilon(1e-8));
-    }
-}
+    xlink.setMockXlink();
 
-TEST_CASE("Test two step probability function", "[two_step_prob]") {
-    double k1 = 10.;
-    double k2 = 20.;
-    double t = .1;
-    double t1 = .75 * t;
+    LUTFillerEdep lut_filler(256, 256);
+    lut_filler.Init((1. - xlink.lambda) * .5 * xlink.kappa / KBT,
+                    xlink.freeLength, 2. * rod.radius);
+    LookupTable LUT(&lut_filler);
 
-    // Assemble
-    SECTION("Symmetry cases") {
-        REQUIRE(two_step_prob(k1, k2, t, t1) ==
-                Approx(two_step_prob(k2, k1, t, t - t1)).epsilon(1e-8));
-    }
-
-    SECTION("Zero cases") {
-        REQUIRE(two_step_prob(0., k1, t, t1) == 0.);
-        REQUIRE(two_step_prob(k2, 0., t, t1) == 0.);
-        REQUIRE(two_step_prob(k2, k1, 0., 0.) == 0.);
-    }
-
-    SECTION("Scaling cases") {
-        REQUIRE(two_step_prob(k1, k1, t, t1) ==
-                Approx(two_step_prob(k2, k2, .5 * t, .5 * t1)).epsilon(1e-8));
-    }
-}
-
-TEST_CASE("Test two step max probability function", "[two_step_max_prob]") {
-    double k1 = 10.;
-    double k2 = 20.;
-    double t = .1;
-
-    // Assemble
-    SECTION("Symmetry cases") {
-        REQUIRE(two_step_max_prob(k1, k2, t) ==
-                Approx(two_step_max_prob(k2, k1, t)).epsilon(1e-8));
-        REQUIRE(two_step_max_prob(10 * k1, k2, t) ==
-                Approx(two_step_max_prob(k2, 10 * k1, t)).epsilon(1e-8));
-        REQUIRE(two_step_max_prob(k1, k2, .5 * t) ==
-                Approx(two_step_max_prob(k2, k1, .5 * t)).epsilon(1e-8));
-        REQUIRE(two_step_max_prob(k1, k2, 10 * t) ==
-                Approx(two_step_max_prob(k2, k1, 10 * t)).epsilon(1e-8));
+    // int i = 1;
+    SECTION("specific case") {
+        // Apply
+        KMC<ExampleRod> kmc_diag(1., 1., 1., &LUT);
+        // Assert
+        REQUIRE_THROWS(kmc_diag.Diagnostic(1, 1, 1, 1));
     }
 }
 

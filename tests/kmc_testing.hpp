@@ -17,21 +17,6 @@
 #include <cassert>
 #include <cmath>
 
-template <class TRod>
-TRod MockRod(int id) {
-    TRod rod;
-    rod.gid = id;
-    rod.length = 400;
-    rod.rank = 0;
-    rod.radius = .5;
-    for (int i = 0; i < 3; ++i) {
-        rod.pos[i] = 0;
-        rod.direction[i] = 0;
-    }
-    rod.direction[0] = 1;
-    return rod;
-}
-
 double test_bind_prob(double lm, double sbound0, double sbound1, double lambda,
                       double kappa, double beta, double ell0, double bindFactor,
                       double dt) {
