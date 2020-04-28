@@ -8,7 +8,6 @@
 
 #define DIAGNOSTIC_TEST_HPP
 
-#include "KMC/ExampleRod.hpp"
 #include "KMC/helpers.hpp"
 #include "KMC/kmc.hpp"
 #include "KMC/lookup_table.hpp"
@@ -27,8 +26,8 @@ TEST_CASE("Throw error from non-energy(force) dependent unbinding diagnostic",
     lut_filler.Init(M_PI, 0, 1); // Gaussian distribution normalized to 1
     LookupTable LUT(&lut_filler);
 
-    // Apply
-    KMC<ExampleRod> kmc_diag(r_cutoff, diffConst, dt, &LUT);
+    // Apply (int as place holder)
+    KMC<int> kmc_diag(r_cutoff, diffConst, dt, &LUT);
 
     // Assert
     REQUIRE_NOTHROW(kmc_diag.Diagnostic(.0001, .0001, .0001, .0001));
@@ -69,7 +68,7 @@ TEST_CASE("Throw error from energy(force) dependent unbinding diagnostic",
     LookupTable LUT(&lut_filler);
 
     // Apply
-    KMC<ExampleRod> kmc_diag(r_cutoff, diffConst, dt, &LUT);
+    KMC<int> kmc_diag(r_cutoff, diffConst, dt, &LUT);
 
     // Assert
     REQUIRE_NOTHROW(kmc_diag.DiagnosticUnBindDep(.0001, .0001, .0001));
