@@ -54,12 +54,19 @@ class KMC {
         setPos(pos);
     }
 
-    // Diagnostic constructor
+    // Explicit unbound diagnostic constructor
     KMC(double r_cutoff, const double diffConst, const double dt,
         const LookupTable *LUTablePtr)
         : dt_(dt), LUTablePtr_(LUTablePtr) {
         double avg_dist = getDiffRadius(diffConst);
         r_cutoff_ = (avg_dist > r_cutoff) ? avg_dist : r_cutoff;
+    }
+
+    // Implicit unbound diagnostic constructor
+    KMC(const double dt, const LookupTable *LUTablePtr)
+        : r_cutoff_(-1), dt_(dt), LUTablePtr_(LUTablePtr) {
+        // double avg_dist = getDiffRadius(diffConst);
+        // r_cutoff_ = (avg_dist > r_cutoff) ? avg_dist : r_cutoff;
     }
 
     // Constructor for U<->S diffusion of crosslinker modeled
@@ -200,10 +207,12 @@ class KMC {
                     const double s_d_fact, const double d_s_fact,
                     double *probs = nullptr) {
         // Get full binding rates
-        double k_u_s = u_s_fact * 2. * r_cutoff_;
+        double k_u_s = u_s_fact;
+        // Explicit vs implicit reservoir. Concentration already factored into
+        // implicit on rate.
+        k_u_s *= r_cutoff_ > 0 ? 2. * r_cutoff_ : 1.;
         double k_s_d =
             s_d_fact * 2. * LUTablePtr_->Lookup(0, LUTablePtr_->getDsbound());
-        // Keeps notation consistent. Might change in the future.
         double k_s_u = s_u_fact;
         double k_d_s = d_s_fact;
 
@@ -224,7 +233,8 @@ class KMC {
     void DiagnosticUnBindDep(const double u_s_fact, const double s_u_fact,
                              const double s_d_fact, double *probs = nullptr) {
         // Get full binding rates
-        double k_u_s = u_s_fact * 2. * r_cutoff_;
+        double k_u_s = u_s_fact;
+        k_u_s *= r_cutoff_ > 0 ? 2. * r_cutoff_ : 1.; // Explicit vs implicit
         double k_s_d =
             s_d_fact * 2. * LUTablePtr_->Lookup(0, LUTablePtr_->getDsbound());
         // Keeps notation consistent. Might change in the future.
