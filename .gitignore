@@ -5,4 +5,5 @@
 MakefileInc.mk
 doc/
 *.swp
+tags
 build*
