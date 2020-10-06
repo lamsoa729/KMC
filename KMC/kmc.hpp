@@ -264,29 +264,37 @@ class KMC {
 #endif
         if (p_max_usu > ksmall || std::isnan(p_max_usu)) {
             printf("*** p_max_usu = %f\n", p_max_usu);
+#ifndef NDEBUG
             throw std::runtime_error(
                 " !!!WARNING: Probability of double event (U->S->U) is too "
                 "high. Try decreasing dt, diffUnbound, or single "
                 "(un)binding parameters.");
         }
+#endif
         if (p_max_usd > ksmall || std::isnan(p_max_usd)) {
             printf("*** p_max_usd = %f\n", p_max_usd);
+#ifndef NDEBUG
             throw std::runtime_error(
                 " !!!WARNING: Probability of double event (U->S->D) is too "
                 "high. Try decreasing dt, diffUnbound, or binding "
                 "parameters.");
+#endif
         }
         if (p_max_sds > ksmall || std::isnan(p_max_sds)) {
             printf("*** p_max_sds = %f\n", p_max_sds);
+#ifndef NDEBUG
             throw std::runtime_error(
                 " !!!WARNING: Probability of double event (S->D->S) is too "
                 "high. Try decreasing dt or double (un)binding parameters.");
+#endif
         }
         if (p_max_dsu > ksmall || std::isnan(p_max_dsu)) {
             printf("*** p_max_dsu = %f\n", p_max_dsu);
+#ifndef NDEBUG
             throw std::runtime_error(
                 " !!!WARNING: Probability of double event (D->S->U) is too "
                 "high. Try decreasing dt or unbinding parameters.");
+#endif
         }
     }
 
