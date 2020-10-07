@@ -269,8 +269,8 @@ class KMC {
                 " !!!WARNING: Probability of double event (U->S->U) is too "
                 "high. Try decreasing dt, diffUnbound, or single "
                 "(un)binding parameters.");
-        }
 #endif
+        }
         if (p_max_usd > ksmall || std::isnan(p_max_usd)) {
             printf("*** p_max_usd = %f\n", p_max_usd);
 #ifndef NDEBUG
