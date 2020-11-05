@@ -118,7 +118,7 @@ inline double fdep_bind_vol_integral(double sbound, double M, double e_fact,
  * from sbound0 to sbound1  with respect to the variable s.
  *
  * \param lm Physically, this is the perpendicular distance above rod
- * \param sbound lowerr limit of integral
+ * \param sbound lower limit of integral
  * \param sbound Upper limit of integral
  * \param M1 exponential constant factor when spring is compressed.
  *    Physically, this is the product of spring_const_1/(k_B * Temperature)

@@ -70,6 +70,19 @@ class LUTFillerFdep : public LUTFiller {
         LUTFiller::Init();
     }
 
+    // Getter functions for Boltzmann variables
+    double getExpFact1() const { return exp_fact_; }
+    double getExpFact2() const { return exp_fact_; }
+    double getEFact() const { return e_fact_; }
+    double getFDepLength() const { return fdep_length_; }
+    double getRestLength() const { return rest_length_; }
+
+    // Calculates the Boltzmann factor for point-like object
+    inline double calcBoltzmann(double dist_cent) const {
+        return exp(-exp_fact_ * ((1 - e_fact_) * SQR(dist_cent - rest_length_)
+                   -fdep_length_ * (dist_cent - rest_length_)));
+    }
+
     double getUpperBound() const {
         return rest_length_ +
                ((sqrt(SQR(fdep_length_) -
@@ -77,6 +90,7 @@ class LUTFillerFdep : public LUTFiller {
                  fdep_length_) /
                 (1. - e_fact_));
     }
+
     // double getIntegralResult(double dist_perp, double dist_para_l,
     //                         double dist_para_u) const;
     double getIntegralResult(double dist_perp, double dist_para_l,
@@ -84,6 +98,7 @@ class LUTFillerFdep : public LUTFiller {
         return fdep_integral(dist_perp, dist_para_l, dist_para_u, exp_fact_,
                              e_fact_, fdep_length_, rest_length_);
     }
+
     // double getBindingVolume() const;
     double getBindingVolume() const {
         return fdep_bind_vol_integral(upper_bound_, exp_fact_, e_fact_,

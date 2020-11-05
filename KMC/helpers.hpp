@@ -38,6 +38,48 @@ inline void copy3(const double *a, double *b) {
 }
 
 /**
+ * @brief: Compute the magnitude of a length-3 array.
+ *
+ * @param: const double *arr3
+ *
+ * @return: double
+ */
+inline double magnitude(const double *arr3) {
+    double magSqr = SQR(arr3[0]) + SQR(arr3[1]) + SQR(arr3[2]);
+    if (magSqr < 0) {
+#ifndef NDEBUG
+        printf("Warning: magnitude squared (%f) is less than zero. "
+               "Setting magnitude to zero.\n", magSqr);
+#endif
+        return 0;
+    }
+    return sqrt(magSqr);
+}
+
+/**
+ * @brief: Find the surface area of the cap of a circle/sphere of radius r1
+ * that intersects with a sphere of radius r2 at a center-to-center distance
+ * d.
+ *
+ * @param: const double r1
+ * @param: const double r2
+ * @param: const double d
+ * @param: const int nDim
+ *
+ * @return: double
+ */
+/*inline double areaIntersect(double r1, double r2, double d, int nDim) {
+    double A = 0;
+    if (nDim == 3) {
+        2*M_PI*SQR(r1) * (1 + (SQR(r2) - SQR(r1) - SQR(d))/(2*r1*d));
+        if (A > 4*M_PI*SQR(r1)) {
+#ifndef NDEBUG
+        printf("Warning: intersect area %f greater than possible", A);
+#endif
+*/
+
+
+/**
  * @brief: Find the minimum distance between a point and a line segment
  *
  * @param: const double *point
