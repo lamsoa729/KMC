@@ -7,6 +7,8 @@
 #include <string>
 #include <vector>
 
+#include "macros.hpp"
+
 /**
  * @brief: Dot product of 3D vectors
  *

@@ -3,6 +3,7 @@
  **********************************************************************/
 
 #include "KMC/ExampleRod.hpp"
+#include "KMC/ExampleSphere.hpp"
 #include "KMC/helpers.hpp"
 #include "KMC/integrals.hpp"
 #include "KMC/kmc.hpp"
@@ -1313,8 +1314,72 @@ TEST_CASE("Test calculation of U<->S binding radius based on diffusion.",
         // Diff radius is 1 but original rc = 0
         double diffRad = 1.;
         double diffConst = 1. / (dt * 6.);
-        KMC<ExampleRod> kmc1(pos, 1, 0, diffConst, dt);
+        KMC<ExampleRod> kmc1(pos, 1, 0.0, diffConst, dt);
         CHECK(diffRad == kmc1.getRcutoff());
+    }
+}
+
+TEST_CASE("Works with pointlike objects.") {
+    double rc = .4;
+    double dt = .001;
+    double pos[3] = {0.1, 0.0, 0.1};
+    double bind_vol = M_PI * rc*rc*rc / 0.75;
+    double bind_fac = 0.1;
+    double lambda = 0.334;
+    double kappa = 0.823;
+    double beta = 0.610;
+    double l0 = 0.08;
+    ExampleSphere sphere = MockSphere<ExampleSphere>(0);
+    ExampleSphere sphere2 = MockSphere<ExampleSphere>(1);
+    std::vector<ExampleSphere*> spheres = {&sphere, &sphere2};
+    std::vector<ExampleRod*> rods; // empty vector
+    std::vector<double> bind_factors = {0.1, 0.1};
+    std::vector<int> unique_j = {1, 1};
+    SECTION("KMC constructed with spheres") {
+        KMC<ExampleRod, ExampleSphere> kmc(pos, 0, 1, rc, dt);
+
+        // Check to see that it initialized by checking rcutoff
+        CHECK(rc==kmc.getRcutoff());
+    }
+    SECTION("Unbound to Single Probability") {
+        KMC<ExampleRod, ExampleSphere> kmc(pos, 0, 1, rc, 1, dt);
+        double prob = kmc.CalcProbUS(0, sphere, bind_fac);
+        double exp_prob = bind_fac * 4.0 * M_PI * SQR(sphere.radius) * dt / bind_vol;
+        
+        // Should be rc because diffusion radius < rcutoff
+        CHECK(rc==kmc.getRcutoff());
+        CHECK(prob==Approx(exp_prob).epsilon(1e-8));
+    }
+    SECTION("Single to Double Probabilities (direct)") {
+        KMC<ExampleRod, ExampleSphere> kmc(pos, 0, 2, rc, 1, dt);
+        double expon = exp(-0.5 * (1-lambda) * kappa * beta * SQR(sqrt(SQR(pos[0])+SQR(pos[1])+SQR(pos[2])) - l0));
+        double exp_prob = bind_fac * 4.0 * M_PI * SQR(sphere.radius) * expon * dt;
+        double prob = kmc.CalcProbSD(0, sphere, lambda, kappa, beta, l0, bind_fac);
+        kmc.CalcTotProbsSD(rods, spheres, unique_j, 552, lambda, kappa, beta, l0, bind_factors);
+        
+        // Direct calculations
+        CHECK(prob==Approx(exp_prob).epsilon(1e-8));
+        // just test that total prob works if we have two identical spheres in our vector.
+        // could make this a little more comprehensive if needed.
+        CHECK(kmc.getTotProb()==Approx(2*exp_prob).epsilon(1e-8));
+
+        // Lookup table calculations
+        LUTFillerAsym lut(256, 256);
+        double k_compress = 1.3;
+        double f_dep_l = 0.05;
+
+        lut.Init(k_compress, beta * kappa * 0.5, lambda, f_dep_l, l0, 1.0);
+        LookupTable LUT(&lut);
+        expon = exp(-0.5 * kappa * beta * ((1-lambda) * SQR(sqrt(SQR(pos[0])+SQR(pos[1])+SQR(pos[2])) - l0)
+                           -f_dep_l*(sqrt(SQR(pos[0])+SQR(pos[1])+SQR(pos[2])) - l0)));
+        exp_prob = bind_fac * 4.0 * M_PI * SQR(sphere.radius) * expon * dt;
+        KMC<ExampleRod, ExampleSphere> kmc_lut(pos, 0, 2, dt, &LUT);
+        prob = kmc_lut.LUCalcProbSD(0, sphere, bind_fac);
+        CHECK(prob==Approx(exp_prob).epsilon(1e-8));
+
+        // Again, test total prob for 2 identical spheres
+        kmc_lut.LUCalcTotProbsSD(rods, spheres, 300, bind_factors);
+        CHECK(kmc_lut.getTotProb()==Approx(2*exp_prob).epsilon(1e-8));
     }
 }
 
