@@ -298,6 +298,14 @@ class KMC {
     void UpdateSphereDistArr(const int j_sphere, const TSphere &sphere);
 
     double getTotProb() { return prob_tot_; }
+
+    double getProb(int i) {
+      if (i < rod_probs_.size()) {
+        return rod_probs_[i];
+      } else {
+        return sphere_probs_[i-rod_probs_.size()];
+      }
+    }
     
     int whichRodBindUS(const std::vector<TRod*> &rods, double &bindPos, double roll);
 
