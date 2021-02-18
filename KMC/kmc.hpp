@@ -48,6 +48,38 @@ class KMC {
     void printIfLarge(const double input, const double small);
     ///< Helper function to print if input is too large
 
+    // Helper functions to individually calculate rod/sphere probabilities
+    void calcTotRodProbsUS(const TRod* const* rods,
+                        const std::vector<int> &uniqueFlagJ,
+                        const std::vector<double> &bindFactors);
+
+    void calcTotSphereProbsUS(const TSphere* const* spheres,
+                        const std::vector<int> &uniqueFlagJ,
+                        const std::vector<double> &bindFactors);
+
+    void calcTotRodProbsSD(const TRod* const* rods,
+                           const std::vector<int> &uniqueFlagJ, 
+                           const int boundID,
+                           const double lambda, const double kappa,
+                           const double beta, const double restLen,
+                           const std::vector<double> &bindFactors);
+
+    void calcTotSphereProbsSD(const TSphere* const* spheres,
+                              const std::vector<int> &uniqueFlagJ, 
+                              const int boundID,
+                              const double lambda, const double kappa,
+                              const double beta, const double restLen,
+                              const std::vector<double> &bindFactors);
+
+    void luCalcTotRodProbsSD(const TRod* const* rods,
+                             const std::vector<int> &uniqueFlagJ,
+                             const int boundID,
+                             const std::vector<double> &bindFactors);
+                            
+    void luCalcTotSphereProbsSD(const TSphere* const* spheres,
+                                const std::vector<int> &uniqueFlagJ,
+                                const int boundID,
+                                const std::vector<double> &bindFactors);
   public:
     static constexpr double ksmall = 1e-4;
 
@@ -99,7 +131,6 @@ class KMC {
         distCentArr_.resize(NpjSphere, 0);
 
         assert(r_cutoff_ > 0);
-
     }
 
     // Overload with NpjSphere=0 (backwards compatibility)
@@ -140,6 +171,8 @@ class KMC {
         sphere_probs_.resize(NpjSphere, 0);
         distMinArrSphere_.resize(NpjSphere, 0);
         distCentArr_.resize(NpjSphere, 0);
+
+        assert(r_cutoff_ > 0);
     }
 
     // Overload with NpjSphere=0 (backwards compatibility)
@@ -154,6 +187,8 @@ class KMC {
         distPerpArr_.resize(NpjRod, 0);
         muArr_.resize(NpjRod, 0);
         lims_.resize(NpjRod);
+
+        assert(r_cutoff_ > 0);
     }
 
     // Constructor for S->D end binding with lookup tables
@@ -209,7 +244,12 @@ class KMC {
     /*************************************
      *  Calculate probability functions  *
      *************************************/
+    void CalcTotProbsUS(const TRod* const* rods,
+                        const TSphere* const* spheres,
+                        const std::vector<int> &uniqueFlagJ,
+                        const std::vector<double> &bindFactors);
 
+    // Overload with vectors + check sizes
     void CalcTotProbsUS(const std::vector<TRod*> &rods,
                         const std::vector<TSphere*> &spheres,
                         const std::vector<int> &uniqueFlagJ,
@@ -228,6 +268,15 @@ class KMC {
     
     void CalcProbSU(const double unbindFactor);
 
+    void CalcTotProbsSD(const TRod* const* rods,
+                        const TSphere* const* spheres,
+                        const std::vector<int> &uniqueFlagJ, 
+                        const int boundID,
+                        const double lambda, const double kappa,
+                        const double beta, const double restLen,
+                        const std::vector<double> &bindFactors);
+
+    // Overload with vectors + check sizes
     void CalcTotProbsSD(const std::vector<TRod*> &rods,
                         const std::vector<TSphere*> &spheres,
                         const std::vector<int> &uniqueFlagJ, 
@@ -237,13 +286,20 @@ class KMC {
                         const std::vector<double> &bindFactors);
     
     // Overload for backwards compatibility
-    void CalcTotProbsSD(const TRod * const* rods,
+    void CalcTotProbsSD(const TRod* const* rods,
                         const std::vector<int> &uniqueFlagJ, 
                         const int boundID,
                         const double lambda, const double kappa,
                         const double beta, const double restLen,
                         const std::vector<double> &bindFactors);
 
+    void LUCalcTotProbsSD(const TRod* const* rods,
+                          const TSphere* const* spheres,
+                          const std::vector<int> &uniqueFlagJ,
+                          const int boundID,
+                          const std::vector<double> &bindFactors);
+
+    // Overload with vectors + check sizes
     void LUCalcTotProbsSD(const std::vector<TRod*> &rods,
                           const std::vector<TSphere*> &spheres,
                           const std::vector<int> &uniqueFlagJ,
@@ -251,31 +307,15 @@ class KMC {
                           const std::vector<double> &bindFactors);
     
     // Overload with empty spheres vector (backwards compatibility)
-    void LUCalcTotProbsSD(TRod **rods,
+    void LUCalcTotProbsSD(const TRod* const* rods,
                           const std::vector<int> &uniqueFlagJ,
                           const int boundID,
-                          const std::vector<double> &bindFactors) {
-        std::vector<TSphere*> spheres;
-        // Convert rods to vector
-        std::vector<TRod*> rodsVec(rods, rods+rod_probs_.size());
-        LUCalcTotProbsSD(rodsVec, spheres, uniqueFlagJ, boundID,
-                         bindFactors);
-    }
+                          const std::vector<double> &bindFactors);
 
     void LUCalcTotProbsSD(const std::vector<TRod*> &rods,
                           const std::vector<TSphere*> &spheres,
                           const int boundID,
                           const std::vector<double> &bindFactors);
-
-    // Overload with empty spheres vector (backwards compatibility)
-    void LUCalcTotProbsSD(TRod **rods,
-                          const int boundID,
-                          const std::vector<double> &bindFactors) {
-        std::vector<TSphere*> spheres;
-        // Convert rods to vector
-        std::vector<TRod*> rodsVec(rods, rods+rod_probs_.size());
-        LUCalcTotProbsSD(rodsVec, spheres, boundID, bindFactors);
-    }
 
     double LUCalcProbSD(const int j_rod, const TRod &rod,
                         const double bindFactor);
@@ -576,11 +616,37 @@ void KMC<TRod, TSphere>::UpdateSphereDistArr(const int j_sphere,
     distMinArrSphere_[j_sphere] = distCentArr_[j_sphere] - sphere.radius;
 }
 
-
 /*! \brief Calculate the probability of a head to bind to surrounding rods
  * and spheres.
  *
- * \param rods Vector of rod pointers
+ * \param rods Array of rod pointers
+ * \param spheres Array of sphere pointers
+ * \param &uniqueFlagJ Reference to filter list making sure you do not over
+ * count objects. Holds probabilities for rods, then for spheres.
+ * \param bindFactor Binding factor of head to objects. Holds values for rods,
+ * then spheres.
+ * \return void, Changes prob_tot variable of KMC this object
+ */
+template <typename TRod, typename TSphere>
+void KMC<TRod, TSphere>::CalcTotProbsUS(const TRod* const* rods,
+                                        const TSphere* const* spheres,
+                                        const std::vector<int> &uniqueFlagJ,
+                                        const std::vector<double> &bindFactors) {
+    // Make sure that KMC was properly initialized.
+    assert(r_cutoff_ > 0);
+    
+    // Check input vectors
+    assert(uniqueFlagJ.size() == rod_probs_.size() + sphere_probs_.size());
+    assert(bindFactors.size() == rod_probs_.size() + sphere_probs_.size());
+    
+    // Calculate US probs for each rod in rods, then each sphere in spheres
+    prob_tot_ = 0;
+    calcTotRodProbsUS(rods, uniqueFlagJ, bindFactors);
+    calcTotSphereProbsUS(rods, uniqueFlagJ, bindFactors);
+}
+
+/*! \brief Calculate the probability of a head to bind to surrounding spheres
+ *
  * \param spheres Vector of sphere pointers
  * \param &uniqueFlagJ Reference to filter list making sure you do not over
  * count objects. Holds probabilities for rods, then for spheres.
@@ -589,21 +655,13 @@ void KMC<TRod, TSphere>::UpdateSphereDistArr(const int j_sphere,
  * \return void, Changes prob_tot variable of KMC this object
  */
 template <typename TRod, typename TSphere>
-void KMC<TRod, TSphere>::CalcTotProbsUS(const std::vector<TRod*> &rods,
-                                        const std::vector<TSphere*> &spheres,
-                                        const std::vector<int> &uniqueFlagJ,
-                                        const std::vector<double> &bindFactors) {
-    // Make sure that KMC was properly initialized.
-    // bindFactorsArr_ = bindFactors;
-    assert(r_cutoff_ > 0);
-    prob_tot_ = 0;
-    for (int j_rod = 0; j_rod < rod_probs_.size(); ++j_rod) {
-        if (uniqueFlagJ[j_rod] > 0) {
-            prob_tot_ +=
-                CalcProbUS(j_rod, *(rods[j_rod]), bindFactors[j_rod]);
-        }
-    }
+void KMC<TRod, TSphere>::calcTotSphereProbsUS(const TSphere* const* spheres,
+                        const std::vector<int> &uniqueFlagJ,
+                        const std::vector<double> &bindFactors) {
     for (int j_sphere = 0; j_sphere < sphere_probs_.size(); ++j_sphere) {
+
+        // uniqueFlagJ and bindFactors are stacked by rods then spheres, so 
+        // access spheres by adding rod_probs_.size() at each sphere index
         if (uniqueFlagJ[j_sphere + rod_probs_.size()] > 0) {
             prob_tot_ +=
                 CalcProbUS(j_sphere, *(spheres[j_sphere]), 
@@ -612,19 +670,47 @@ void KMC<TRod, TSphere>::CalcTotProbsUS(const std::vector<TRod*> &rods,
     }
 }
 
+/*! \brief Calculate the probability of a head to bind to surrounding rods
+ *
+ * \param rods Vector of rod pointers
+ * \param &uniqueFlagJ Reference to filter list making sure you do not over
+ * count objects. Holds probabilities for rods, then for spheres.
+ * \param bindFactor Binding factor of head to objects. Holds values for rods,
+ * then spheres.
+ * \return void, Changes prob_tot variable of KMC this object
+ */
+template <typename TRod, typename TSphere>
+void KMC<TRod, TSphere>::calcTotRodProbsUS(const TRod* const* rods,
+                       const std::vector<int> &uniqueFlagJ,
+                       const std::vector<double> &bindFactors) {
+    for (int j_rod = 0; j_rod < rod_probs_.size(); ++j_rod) {
+        if (uniqueFlagJ[j_rod] > 0) {
+            prob_tot_ +=
+            CalcProbUS(j_rod, *(rods[j_rod]), bindFactors[j_rod]);
+        }
+    }
+}
+
+// Overload with vectors (plus size-checking)
+template <typename TRod, typename TSphere>
+void KMC<TRod, TSphere>::CalcTotProbsUS(const std::vector<TRod*> &rods,
+                                        const std::vector<TSphere*> &spheres,
+                                        const std::vector<int> &uniqueFlagJ,
+                                        const std::vector<double> &bindFactors) {
+    // Make sure vectors are acceptable
+    assert(rods.size() == rod_probs_.size());
+    assert(spheres.size() == sphere_probs_.size());
+
+    CalcTotProbsUS(&rods[0], &spheres[0], uniqueFlagJ, bindFactors);
+}
+
 // Overload for backwards compatibility
 template <typename TRod, typename TSphere>
 void KMC<TRod, TSphere>::CalcTotProbsUS(const TRod* const* rods,
                     const std::vector<int> &uniqueFlagJ,
-                    const std::vector<double> &bindFactors){
-    assert(r_cutoff_ > 0);
+                    const std::vector<double> &bindFactors) {  
     prob_tot_ = 0;
-    for (int j_rod = 0; j_rod < rod_probs_.size(); ++j_rod) {
-        if (uniqueFlagJ[j_rod] > 0) {
-            prob_tot_ +=
-                CalcProbUS(j_rod, *(rods[j_rod]), bindFactors[j_rod]);
-        }
-    }
+    calcTotRodProbsUS(rods, uniqueFlagJ, bindFactors);
 }
 
 /*! \brief Calculate the probability of a head to bind to one rod.
@@ -726,7 +812,7 @@ void KMC<TRod, TSphere>::CalcProbSU(const double unbindFactor) {
  * variable.
  *
  * \param rods Array of surrounding rod pointers
- * \param rods Array of surrounding sphere pointers
+ * \param spheres Array of surrounding sphere pointers
  * \param &uniqueFlagJ Reference to filter list making sure you do not over
  * count objs; holds rod values then sphere values.
  * \param k_spring Spring constant between connected ends
@@ -736,8 +822,8 @@ void KMC<TRod, TSphere>::CalcProbSU(const double unbindFactor) {
  * \return void, Changes prob_tot_ variable of this object
  */
 template <typename TRod, typename TSphere>
-void KMC<TRod, TSphere>::CalcTotProbsSD(const std::vector<TRod*> &rods,
-                               const std::vector<TSphere*> &spheres,
+void KMC<TRod, TSphere>::CalcTotProbsSD(const TRod* const* rods,
+                               const TSphere* const* spheres,
                                const std::vector<int> &uniqueFlagJ,
                                const int boundID, const double lambda,
                                const double kappa, const double beta,
@@ -747,46 +833,36 @@ void KMC<TRod, TSphere>::CalcTotProbsSD(const std::vector<TRod*> &rods,
     // Make sure that KMC was properly initialized.
     assert(r_cutoff_ > 0);
 
-    // Sum total probability of binding to surrounding rods
+    // Make sure inputs are acceptable
+    assert(uniqueFlagJ.size() == rod_probs_.size() + sphere_probs_.size());
+    assert(bindFactors.size() == rod_probs_.size() + sphere_probs_.size());
+
+    // Sum total probability of binding to surrounding rods and spheres
     prob_tot_ = 0;
-    for (int j_rod = 0; j_rod < rod_probs_.size(); ++j_rod) {
-        if (uniqueFlagJ[j_rod] > 0 && rods[j_rod]->gid != boundID) {
-            if (LUTablePtr_) {
-                rod_probs_[j_rod] =
-                    LUCalcProbSD(j_rod, *(rods[j_rod]), bindFactors[j_rod]);
-            } else {
-                rod_probs_[j_rod] =
-                    CalcProbSD(j_rod, *(rods[j_rod]), lambda, kappa, beta,
-                               restLen, bindFactors[j_rod]);
-            }
-            prob_tot_ += rod_probs_[j_rod];
-        }
-    }
-    for (int j_sphere = 0; j_sphere < sphere_probs_.size(); ++j_sphere) {
-        if (uniqueFlagJ[j_sphere + rod_probs_.size()] > 0 
-            && spheres[j_sphere]->gid != boundID) {
-            sphere_probs_[j_sphere] =
-                CalcProbSD(j_sphere, *(spheres[j_sphere]), lambda, kappa, beta,
-                    restLen, bindFactors[j_sphere + rod_probs_.size()]);
-            prob_tot_ += sphere_probs_[j_sphere];
-        }
-    }
+    calcTotRodProbsSD(rods, uniqueFlagJ, boundID, lambda, kappa, beta, restLen, bindFactors);
+    calcTotSphereProbsSD(spheres, uniqueFlagJ, boundID, lambda, kappa, beta, restLen, bindFactors);
     return;
 }
 
-// Overload for backwards compatibility
+/*! \brief Calculate the total probability of an unbound head to bind to
+ * surrounding rods when other head is attached to another object.
+ *
+ * \param rods Array of surrounding rod pointers
+ * \param &uniqueFlagJ Reference to filter list making sure you do not over
+ * count objs; holds rod values then sphere values.
+ * \param k_spring Spring constant between connected ends
+ * \param eqLen Equilibrium length of spring connecting ends
+ * \param bindFactor Binding factor of head to objs; holds rod values then
+ * sphere values.
+ * \return void, Changes prob_tot_ variable of this object
+ */
 template <typename TRod, typename TSphere>
-void KMC<TRod, TSphere>::CalcTotProbsSD(const TRod * const* rods,
-                        const std::vector<int> &uniqueFlagJ, 
-                        const int boundID,
-                        const double lambda, const double kappa,
-                        const double beta, const double restLen,
-                        const std::vector<double> &bindFactors) {
-    // Make sure that KMC was properly initialized.
-    assert(r_cutoff_ > 0);
-
-    // Sum total probability of binding to surrounding rods
-    prob_tot_ = 0;
+void KMC<TRod, TSphere>::calcTotRodProbsSD(const TRod* const* rods,
+                               const std::vector<int> &uniqueFlagJ,
+                               const int boundID, const double lambda,
+                               const double kappa, const double beta,
+                               const double restLen,
+                               const std::vector<double> &bindFactors) {
     for (int j_rod = 0; j_rod < rod_probs_.size(); ++j_rod) {
         if (uniqueFlagJ[j_rod] > 0 && rods[j_rod]->gid != boundID) {
             if (LUTablePtr_) {
@@ -804,13 +880,75 @@ void KMC<TRod, TSphere>::CalcTotProbsSD(const TRod * const* rods,
 }
 
 /*! \brief Calculate the total probability of an unbound head to bind to
+ * spheres when other head is attached to another object.
+ *
+ * \param spheres Array of surrounding sphere pointers
+ * \param &uniqueFlagJ Reference to filter list making sure you do not over
+ * count objs; holds rod values then sphere values.
+ * \param k_spring Spring constant between connected ends
+ * \param eqLen Equilibrium length of spring connecting ends
+ * \param bindFactor Binding factor of head to objs; holds rod values then
+ * sphere values.
+ * \return void, Changes prob_tot_ variable of this object
+ */
+template <typename TRod, typename TSphere>
+void KMC<TRod, TSphere>::calcTotSphereProbsSD(const TSphere* const* spheres,
+                               const std::vector<int> &uniqueFlagJ,
+                               const int boundID, const double lambda,
+                               const double kappa, const double beta,
+                               const double restLen,
+                               const std::vector<double> &bindFactors) {
+    for (int j_sphere = 0; j_sphere < sphere_probs_.size(); ++j_sphere) {
+        if (uniqueFlagJ[j_sphere + rod_probs_.size()] > 0 
+            && spheres[j_sphere]->gid != boundID) {
+            sphere_probs_[j_sphere] =
+                CalcProbSD(j_sphere, *(spheres[j_sphere]), lambda, kappa, beta,
+                    restLen, bindFactors[j_sphere + rod_probs_.size()]);
+            prob_tot_ += sphere_probs_[j_sphere];
+        }
+    }
+    return;
+}
+
+// Overload with vectors + size checking
+template <typename TRod, typename TSphere>
+void KMC<TRod, TSphere>::CalcTotProbsSD(const std::vector<TRod*> &rods,
+                               const std::vector<TSphere*> &spheres,
+                               const std::vector<int> &uniqueFlagJ,
+                               const int boundID, const double lambda,
+                               const double kappa, const double beta,
+                               const double restLen,
+                               const std::vector<double> &bindFactors) {
+    // Check vector sizes
+    assert(rods.size() == rod_probs_.size());
+    assert(spheres.size() == sphere_probs_.size());
+
+    CalcTotProbsSD(&rods[0], &spheres[0], uniqueFlagJ, boundID, lambda,
+                   kappa, beta, restLen, bindFactors);
+}
+
+// Overload for backwards compatibility
+template <typename TRod, typename TSphere>
+void KMC<TRod, TSphere>::CalcTotProbsSD(const TRod * const* rods,
+                        const std::vector<int> &uniqueFlagJ, 
+                        const int boundID,
+                        const double lambda, const double kappa,
+                        const double beta, const double restLen,
+                        const std::vector<double> &bindFactors) {
+    prob_tot_ = 0;
+    calcTotRodProbsSD(rods, uniqueFlagJ, boundID, lambda, kappa, beta, 
+                      restLen, bindFactors);
+    return;
+}
+
+/*! \brief Calculate the total probability of an unbound head to bind to
  * surrounding rods/spheres when other head is bound using lookup tables.
  *
  *  One head must be bound and its position must be stored in this pos_
  *  variable. Lookup table must be initialized in KMC to use this function.
  *
- * \param rods Vector of surrounding rod pointers
- * \param spheres Vector of surrounding sphere pointers
+ * \param rods Array of surrounding rod pointers
+ * \param spheres Array of surrounding sphere pointers
  * \param &uniqueFlagJ Reference to filter list making sure you do not over
  * count objects; includes rod values then sphere values
  * \param boundID ID of rod/sphere that bound head is attached to
@@ -818,23 +956,41 @@ void KMC<TRod, TSphere>::CalcTotProbsSD(const TRod * const* rods,
  * \return void, Changes prob_tot_ variable of this object
  */
 template <typename TRod, typename TSphere>
-void KMC<TRod, TSphere>::LUCalcTotProbsSD(const std::vector<TRod*> &rods,
-                                 const std::vector<TSphere*> &spheres,
-                                 const std::vector<int> &uniqueFlagJ,
-                                 const int boundID,
-                                 const std::vector<double> &bindFactors) {
+void KMC<TRod, TSphere>::LUCalcTotProbsSD(const TRod * const* rods,
+                                          const TSphere * const* spheres,
+                                          const std::vector<int> &uniqueFlagJ,
+                                          const int boundID,
+                                          const std::vector<double> &bindFactors) {
     // Make sure that KMC was properly initialized.
     assert(r_cutoff_ > 0);
     assert(LUTablePtr_);
 
     // Make sure inputs are acceptable
-    assert(rods.size() == rod_probs_.size());
-    assert(spheres.size() == sphere_probs_.size());
     assert(uniqueFlagJ.size() == rod_probs_.size() + sphere_probs_.size());
     assert(bindFactors.size() == rod_probs_.size() + sphere_probs_.size());
 
     // Sum total probability of binding to surrounding rods/spheres
     prob_tot_ = 0;
+    luCalcTotRodProbsSD(rods, uniqueFlagJ, boundID, bindFactors);
+    luCalcTotSphereProbsSD(spheres, uniqueFlagJ, boundID, bindFactors);
+    return;
+}
+
+/*! \brief Calculate the total probability of an unbound head to bind to
+ * surrounding rods when other head is bound using lookup tables.
+ *
+ * \param rods Array of surrounding rod pointers
+ * \param &uniqueFlagJ Reference to filter list making sure you do not over
+ * count objects; includes rod values then sphere values
+ * \param boundID ID of rod/sphere that bound head is attached to
+ * \param bindFactors Binding factor of head to rods/spheres
+ * \return void, Changes prob_tot_ variable of this object
+ */
+template <typename TRod, typename TSphere>
+void KMC<TRod, TSphere>::luCalcTotRodProbsSD(const TRod * const* rods,
+                                             const std::vector<int> &uniqueFlagJ,
+                                             const int boundID,
+                                             const std::vector<double> &bindFactors) {
     for (int j_rod = 0; j_rod < rod_probs_.size(); ++j_rod) {
         if (uniqueFlagJ[j_rod] > 0 && rods[j_rod]->gid != boundID) {
             rod_probs_[j_rod] =
@@ -842,6 +998,24 @@ void KMC<TRod, TSphere>::LUCalcTotProbsSD(const std::vector<TRod*> &rods,
         }
         prob_tot_ += rod_probs_[j_rod];
     }
+    return;
+}
+
+/*! \brief Calculate the total probability of an unbound head to bind to
+ * surrounding spheres when other head is bound using lookup tables.
+ *
+ * \param spheres Array of surrounding sphere pointers
+ * \param &uniqueFlagJ Reference to filter list making sure you do not over
+ * count objects; includes rod values then sphere values
+ * \param boundID ID of rod/sphere that bound head is attached to
+ * \param bindFactors Binding factor of head to rods/spheres
+ * \return void, Changes prob_tot_ variable of this object
+ */
+template <typename TRod, typename TSphere>
+void KMC<TRod, TSphere>::luCalcTotSphereProbsSD(const TSphere * const* spheres,
+                                          const std::vector<int> &uniqueFlagJ,
+                                          const int boundID,
+                                          const std::vector<double> &bindFactors) {
     for (int j_sphere = 0; j_sphere < sphere_probs_.size(); ++j_sphere) {
         if (uniqueFlagJ[j_sphere + rod_probs_.size()] > 0 
             && spheres[j_sphere]->gid != boundID) {
@@ -854,14 +1028,21 @@ void KMC<TRod, TSphere>::LUCalcTotProbsSD(const std::vector<TRod*> &rods,
     return;
 }
 
-/*! \brief Calculate the total probability without unique flags
- *
- * \param rods Vector of surrounding rod pointers
- * \param spheres Vector of surrounding sphere pointers
- * \param boundID ID of rod/sphere that bound head is attached to
- * \param bindFactors Binding factor of head to rods/spheres
- * \return void, Changes prob_tot_ variable of this object
- */
+// Overload with vectors + size checking
+template <typename TRod, typename TSphere>
+void KMC<TRod, TSphere>::LUCalcTotProbsSD(const std::vector<TRod*> &rods,
+                                          const std::vector<TSphere*> &spheres,
+                                          const std::vector<int> &uniqueFlagJ,
+                                          const int boundID,
+                                          const std::vector<double> &bindFactors) {
+    // Check vector sizes
+    assert(rods.size() == rod_probs_.size());
+    assert(spheres.size() == sphere_probs_.size());
+
+    LUCalcTotProbsSD(&rods[0], &spheres[0], uniqueFlagJ, boundID, bindFactors);
+}
+
+// Overload setting unique flags all to 1
 template <typename TRod, typename TSphere>
 void KMC<TRod, TSphere>::LUCalcTotProbsSD(const std::vector<TRod*> &rods,
                                  const std::vector<TSphere*> &spheres,
@@ -871,6 +1052,26 @@ void KMC<TRod, TSphere>::LUCalcTotProbsSD(const std::vector<TRod*> &rods,
     // same size (if not correctly used, it will be caught by flags anyway).
     const std::vector<int> uniqueFlagJ(bindFactors.size(), 1);
     LUCalcTotProbsSD(rods, spheres, uniqueFlagJ, boundID, bindFactors);
+}
+
+// Overload with rods
+template <typename TRod, typename TSphere>
+void KMC<TRod, TSphere>::LUCalcTotProbsSD(const TRod * const* rods,
+                                          const std::vector<int> &uniqueFlagJ,
+                                          const int boundID,
+                                          const std::vector<double> &bindFactors) {
+    // Make sure that KMC was properly initialized.
+    assert(r_cutoff_ > 0);
+    assert(LUTablePtr_);
+
+    // Make sure inputs are acceptable
+    assert(uniqueFlagJ.size() == rod_probs_.size() + sphere_probs_.size());
+    assert(bindFactors.size() == rod_probs_.size() + sphere_probs_.size());
+
+    // Sum total probability of binding to surrounding rods/spheres
+    prob_tot_ = 0;
+    luCalcTotRodProbsSD(rods, uniqueFlagJ, boundID, bindFactors);
+    return;
 }
 
 /*! \brief Calculate the probability of a head to bind to one rod when one
