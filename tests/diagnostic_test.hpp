@@ -27,7 +27,7 @@ TEST_CASE("Throw error from non-energy(force) dependent unbinding diagnostic",
     LookupTable LUT(&lut_filler);
 
     // Apply (int as place holder)
-    KMC<int> kmc_diag(r_cutoff, diffConst, dt, &LUT);
+    KMC<int, char> kmc_diag(r_cutoff, diffConst, dt, &LUT);
 
     // Assert
     REQUIRE_NOTHROW(kmc_diag.Diagnostic(.0001, .0001, .0001, .0001));
@@ -68,7 +68,7 @@ TEST_CASE("Throw error from energy(force) dependent unbinding diagnostic",
     LookupTable LUT(&lut_filler);
 
     // Apply
-    KMC<int> kmc_diag(r_cutoff, diffConst, dt, &LUT);
+    KMC<int, char> kmc_diag(r_cutoff, diffConst, dt, &LUT);
 
     // Assert
     REQUIRE_NOTHROW(kmc_diag.DiagnosticUnBindDep(.0001, .0001, .0001));

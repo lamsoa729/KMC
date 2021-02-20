@@ -36,6 +36,13 @@ class LUTFiller {
         FillDistPerpGrid(dist_perp_grid_);
     }
 
+    virtual double getExpFact1() const = 0;
+    virtual double getExpFact2() const = 0;
+    virtual double getEFact() const = 0;
+    virtual double getFDepLength() const = 0;
+    virtual double getRestLength() const = 0;
+    
+    virtual double calcBoltzmann(double distCent) const = 0;
     virtual double getUpperBound() const = 0;
     virtual double getBindingVolume() const = 0;
     virtual double getIntegralResult(double dist_perp, double dist_para_l,

@@ -76,6 +76,23 @@ class LUTFillerAsym : public LUTFiller {
         LUTFiller::Init();
     }
 
+    // Getter functions for Boltzmann variables
+    double getExpFact1() const { return exp_fact1_; }
+    double getExpFact2() const { return exp_fact2_; }
+    double getEFact() const { return e_fact_; }
+    double getFDepLength() const { return fdep_length_; }
+    double getRestLength() const { return rest_length_; }
+
+
+    // Calculates the Boltzmann factor for point-like object
+    inline double calcBoltzmann(double dist_cent) const {
+       
+        // exp_fact1_ used for compressed spring, exp_fact2_ for stretched
+        double exp_fact = dist_cent < rest_length_ ? exp_fact1_ : exp_fact2_;
+        return exp(-exp_fact * ((1 - e_fact_) * SQR(dist_cent - rest_length_)
+                   -fdep_length_ * (dist_cent - rest_length_)));
+    }
+
     double getUpperBound() const {
         return rest_length_ +
                ((sqrt(SQR(fdep_length_) -

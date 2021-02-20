@@ -27,9 +27,6 @@
 #include <type_traits>
 #include <vector>
 
-#include <mpi.h>
-#include <omp.h>
-
 template <class TRod>
 TRod MockRod(int id) {
     TRod rod;

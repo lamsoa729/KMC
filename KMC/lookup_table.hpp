@@ -33,6 +33,14 @@
  * Both interface functions and internal caculations are dimensionless
  */
 class LookupTable {
+  private:
+    // All of the variables from lut_filler
+    double exp_fact1_;
+    double exp_fact2_;
+    double e_fact_;
+    double fdep_length_;
+    double rest_length_;
+
   protected:
     double UB_; ///< Upper bound distance of lookup table, dimensionless
     double bind_vol_ = 1.; ///< Volume that head can bind within,
@@ -51,12 +59,14 @@ class LookupTable {
     double para_spacing_;           ///< dimensionless
     double para_spacing_inv_;       ///< dimensionless
     std::vector<double> para_grid_; ///< dimensionless horizontal direction
-
+    
     std::vector<double> table_; ///< the 2D matrix of dimensionless values
 
   public:
     LookupTable() = default;
     ~LookupTable() = default;
+
+    double CalcBoltzmann(double distCent);
 
     /*! \brief Initialize lookup table
      *
@@ -71,6 +81,12 @@ class LookupTable {
 
         // truncate the integration when integrand < SMALL
         // interation table in dimensionless lengths
+        exp_fact1_ = lut_filler->getExpFact1();
+        exp_fact2_ = lut_filler->getExpFact2();
+        e_fact_ = lut_filler->getEFact();
+        fdep_length_ = lut_filler->getFDepLength();
+        rest_length_ = lut_filler->getRestLength();
+       
         UB_ = lut_filler->getUpperBound();
         D_ = lut_filler->getLengthScale();
 
@@ -86,6 +102,18 @@ class LookupTable {
         lut_filler->FillDistPerpGrid(perp_grid_);
 
         lut_filler->FillMatrix(table_);
+    }
+
+    /**
+     * @brief Calculate Boltzmann factor for point-like object
+     *
+     * @return double Boltzmann factor
+     */
+    inline double calcBoltzmann(double distCent) const { 
+        // exp_fact1_ used for compressed spring, exp_fact2_ for stretched
+        double exp_fact = distCent < rest_length_ ? exp_fact1_ : exp_fact2_;
+        return exp(-exp_fact * ((1 - e_fact_) * SQR(distCent - rest_length_)
+                   -fdep_length_ * (distCent - rest_length_)));
     }
 
     /**

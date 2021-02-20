@@ -48,6 +48,18 @@ class LUTFillerEdep : public LUTFiller {
         LUTFiller::Init();
     }
 
+    // Getter functions for Boltzmann variables
+    double getExpFact1() const { return exp_fact_; }
+    double getExpFact2() const { return exp_fact_; }
+    double getEFact() const { return 0; } // in exp_fact
+    double getFDepLength() const { return 0; }
+    double getRestLength() const { return rest_length_ ; }
+
+    // Calculates the Boltzmann factor for point-like object
+    inline double calcBoltzmann(double dist_cent) const {
+        return exp(-exp_fact_ * SQR(dist_cent - rest_length_));
+    }
+
     // double getUpperBound() const;
     double getUpperBound() const {
         return sqrt(-log(small_) / exp_fact_) + rest_length_;
