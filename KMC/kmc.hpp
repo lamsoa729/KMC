@@ -216,7 +216,7 @@ class KMC {
      *************************************/
 
     void CalcTotProbsUS(const std::vector<const TRod *> &rods,
-                        const std::vector<TSphere *> &spheres,
+                        const std::vector<const TSphere *> &spheres,
                         const std::vector<int> &uniqueFlagJ,
                         const std::vector<double> &bindFactors);
 
@@ -224,7 +224,7 @@ class KMC {
     void CalcTotProbsUS(const std::vector<const TRod *> &rods,
                         const std::vector<int> &uniqueFlagJ,
                         const std::vector<double> &bindFactors) {
-        std::vector<TSphere *> spheres;
+        std::vector<const TSphere *> spheres;
         CalcTotProbsUS(rods, spheres, uniqueFlagJ, bindFactors);
     }
     // Overload for backwards compatibility
@@ -241,8 +241,8 @@ class KMC {
 
     void CalcProbSU(const double unbindFactor);
 
-    void CalcTotProbsSD(const std::vector<TRod *> &rods,
-                        const std::vector<TSphere *> &spheres,
+    void CalcTotProbsSD(const std::vector<const TRod *> &rods,
+                        const std::vector<const TSphere *> &spheres,
                         const std::vector<int> &uniqueFlagJ, const int boundID,
                         const double lambda, const double kappa,
                         const double beta, const double restLen,
@@ -257,13 +257,13 @@ class KMC {
                         const std::vector<double> &bindFactors);
 
     void LUCalcTotProbsSD(const std::vector<const TRod *> &rods,
-                          const std::vector<TSphere *> &spheres,
+                          const std::vector<const TSphere *> &spheres,
                           const std::vector<int> &uniqueFlagJ,
                           const int boundID,
                           const std::vector<double> &bindFactors);
 
     void LUCalcTotProbsSD(const std::vector<const TRod *> &rods,
-                          const std::vector<TSphere *> &spheres,
+                          const std::vector<const TSphere *> &spheres,
                           const int boundID,
                           const std::vector<double> &bindFactors);
 
@@ -273,7 +273,7 @@ class KMC {
                           const std::vector<int> &uniqueFlagJ,
                           const int boundID,
                           const std::vector<double> &bindFactors) {
-        std::vector<TSphere *> spheres;
+        std::vector<const TSphere *> spheres;
         // Convert rods to vector
         const std::vector<const TRod *> rodsVec(rods, rods + rod_probs_.size());
         LUCalcTotProbsSD(rodsVec, spheres, uniqueFlagJ, boundID, bindFactors);
@@ -292,7 +292,7 @@ class KMC {
     // TODO remove in future
     void LUCalcTotProbsSD(const TRod *const *rods, const int boundID,
                           const std::vector<double> &bindFactors) {
-        std::vector<TSphere *> spheres;
+        std::vector<const TSphere *> spheres;
         // Convert rods to vector
         const std::vector<const TRod *> rodsVec(rods, rods + rod_probs_.size());
         LUCalcTotProbsSD(rodsVec, spheres, boundID, bindFactors);
@@ -628,7 +628,7 @@ void KMC<TRod, TSphere>::UpdateSphereDistArr(const int j_sphere,
 template <typename TRod, typename TSphere>
 void KMC<TRod, TSphere>::CalcTotProbsUS(
     const std::vector<const TRod *> &rods,
-    const std::vector<TSphere *> &spheres, const std::vector<int> &uniqueFlagJ,
+    const std::vector<const TSphere *> &spheres, const std::vector<int> &uniqueFlagJ,
     const std::vector<double> &bindFactors) {
     // Make sure that KMC was properly initialized.
     // bindFactorsArr_ = bindFactors;
@@ -772,7 +772,7 @@ void KMC<TRod, TSphere>::CalcProbSU(const double unbindFactor) {
  */
 template <typename TRod, typename TSphere>
 void KMC<TRod, TSphere>::CalcTotProbsSD(
-    const std::vector<TRod *> &rods, const std::vector<TSphere *> &spheres,
+    const std::vector<const TRod *> &rods, const std::vector<const TSphere *> &spheres,
     const std::vector<int> &uniqueFlagJ, const int boundID, const double lambda,
     const double kappa, const double beta, const double restLen,
     const std::vector<double> &bindFactors) {
@@ -852,7 +852,7 @@ void KMC<TRod, TSphere>::CalcTotProbsSD(
 template <typename TRod, typename TSphere>
 void KMC<TRod, TSphere>::LUCalcTotProbsSD(
     const std::vector<const TRod *> &rods,
-    const std::vector<TSphere *> &spheres, const std::vector<int> &uniqueFlagJ,
+    const std::vector<const TSphere *> &spheres, const std::vector<int> &uniqueFlagJ,
     const int boundID, const std::vector<double> &bindFactors) {
     // Make sure that KMC was properly initialized.
     assert(r_cutoff_ > 0);
@@ -896,7 +896,7 @@ void KMC<TRod, TSphere>::LUCalcTotProbsSD(
 template <typename TRod, typename TSphere>
 void KMC<TRod, TSphere>::LUCalcTotProbsSD(
     const std::vector<const TRod *> &rods,
-    const std::vector<TSphere *> &spheres, const int boundID,
+    const std::vector<const TSphere *> &spheres, const int boundID,
     const std::vector<double> &bindFactors) {
     // If function is correctly used, bindFactors and uniqueFlagJ must have
     // same size (if not correctly used, it will be caught by flags anyway).
