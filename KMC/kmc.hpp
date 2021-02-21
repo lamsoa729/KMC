@@ -215,12 +215,20 @@ class KMC {
      *  Calculate probability functions  *
      *************************************/
 
-    void CalcTotProbsUS(const std::vector<TRod *> &rods,
+    void CalcTotProbsUS(const std::vector<const TRod *> &rods,
                         const std::vector<TSphere *> &spheres,
                         const std::vector<int> &uniqueFlagJ,
                         const std::vector<double> &bindFactors);
 
+    // Overload for empty sphere vector
+    void CalcTotProbsUS(const std::vector<const TRod *> &rods,
+                        const std::vector<int> &uniqueFlagJ,
+                        const std::vector<double> &bindFactors) {
+        std::vector<TSphere *> spheres;
+        CalcTotProbsUS(rods, spheres, uniqueFlagJ, bindFactors);
+    }
     // Overload for backwards compatibility
+    // TODO remove in future
     void CalcTotProbsUS(const TRod *const *rods,
                         const std::vector<int> &uniqueFlagJ,
                         const std::vector<double> &bindFactors);
@@ -241,6 +249,7 @@ class KMC {
                         const std::vector<double> &bindFactors);
 
     // Overload for backwards compatibility
+    // TODO remove in future
     void CalcTotProbsSD(const TRod *const *rods,
                         const std::vector<int> &uniqueFlagJ, const int boundID,
                         const double lambda, const double kappa,
@@ -253,7 +262,13 @@ class KMC {
                           const int boundID,
                           const std::vector<double> &bindFactors);
 
+    void LUCalcTotProbsSD(const std::vector<const TRod *> &rods,
+                          const std::vector<TSphere *> &spheres,
+                          const int boundID,
+                          const std::vector<double> &bindFactors);
+
     // Overload with empty spheres vector (backwards compatibility)
+    // TODO remove in future
     void LUCalcTotProbsSD(const TRod *const *rods,
                           const std::vector<int> &uniqueFlagJ,
                           const int boundID,
@@ -264,12 +279,17 @@ class KMC {
         LUCalcTotProbsSD(rodsVec, spheres, uniqueFlagJ, boundID, bindFactors);
     }
 
+    // Overload with empty spheres vector
     void LUCalcTotProbsSD(const std::vector<const TRod *> &rods,
-                          const std::vector<TSphere *> &spheres,
+                          const std::vector<int> &uniqueFlagJ,
                           const int boundID,
-                          const std::vector<double> &bindFactors);
+                          const std::vector<double> &bindFactors) {
+        std::vector<TSphere *> spheres;
+        LUCalcTotProbsSD(rods, spheres, uniqueFlagJ, boundID, bindFactors);
+    }
 
     // Overload with empty spheres vector (backwards compatibility)
+    // TODO remove in future
     void LUCalcTotProbsSD(const TRod *const *rods, const int boundID,
                           const std::vector<double> &bindFactors) {
         std::vector<TSphere *> spheres;
@@ -607,8 +627,8 @@ void KMC<TRod, TSphere>::UpdateSphereDistArr(const int j_sphere,
  */
 template <typename TRod, typename TSphere>
 void KMC<TRod, TSphere>::CalcTotProbsUS(
-    const std::vector<TRod *> &rods, const std::vector<TSphere *> &spheres,
-    const std::vector<int> &uniqueFlagJ,
+    const std::vector<const TRod *> &rods,
+    const std::vector<TSphere *> &spheres, const std::vector<int> &uniqueFlagJ,
     const std::vector<double> &bindFactors) {
     // Make sure that KMC was properly initialized.
     // bindFactorsArr_ = bindFactors;
