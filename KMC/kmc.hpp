@@ -316,8 +316,7 @@ class KMC {
     // int whichRodBindUS(TRod** rods, double &bindPos, double roll) {
     int whichRodBindUS(const TRod *const *rods, double &bindPos, double roll) {
         // Convert rods to vector
-        std::vector<const TRod *> rodsVec;
-        (rods, rods + rod_probs_.size());
+        std::vector<const TRod *> rodsVec(rods, rods + rod_probs_.size());
         return whichRodBindUS(rodsVec, bindPos, roll);
     }
 
