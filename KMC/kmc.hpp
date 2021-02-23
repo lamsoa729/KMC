@@ -449,6 +449,10 @@ class KMC {
                 " !!!WARNING: Probability of double event (U->S->U) is too "
                 "high. Try decreasing dt, diffUnbound, or single "
                 "(un)binding parameters.");
+#else
+            printf(" !!!WARNING: Probability of double event (U->S->U) is "
+                   "high. Try decreasing dt, diffUnbound, or single "
+                   "(un)binding parameters.");
 #endif
         }
         if (p_max_usd > ksmall || std::isnan(p_max_usd)) {
@@ -458,6 +462,10 @@ class KMC {
                 " !!!WARNING: Probability of double event (U->S->D) is too "
                 "high. Try decreasing dt, diffUnbound, or binding "
                 "parameters.");
+#else
+            printf(" !!!WARNING: Probability of double event (U->S->D) is "
+                   "high. Try decreasing dt, diffUnbound, or binding "
+                   "parameters.");
 #endif
         }
         if (p_max_sds > ksmall || std::isnan(p_max_sds)) {
@@ -466,6 +474,9 @@ class KMC {
             throw std::runtime_error(
                 " !!!WARNING: Probability of double event (S->D->S) is too "
                 "high. Try decreasing dt or double (un)binding parameters.");
+#else
+            printf(" !!!WARNING: Probability of double event (S->D->S) is "
+                   "high. Try decreasing dt or double (un)binding parameters.");
 #endif
         }
         if (p_max_dsu > ksmall || std::isnan(p_max_dsu)) {
@@ -474,6 +485,9 @@ class KMC {
             throw std::runtime_error(
                 " !!!WARNING: Probability of double event (D->S->U) is too "
                 "high. Try decreasing dt or unbinding parameters.");
+#else
+            printf(" !!!WARNING: Probability of double event (D->S->U) is "
+                   "high. Try decreasing dt or unbinding parameters.");
 #endif
         }
     }
@@ -628,7 +642,8 @@ void KMC<TRod, TSphere>::UpdateSphereDistArr(const int j_sphere,
 template <typename TRod, typename TSphere>
 void KMC<TRod, TSphere>::CalcTotProbsUS(
     const std::vector<const TRod *> &rods,
-    const std::vector<const TSphere *> &spheres, const std::vector<int> &uniqueFlagJ,
+    const std::vector<const TSphere *> &spheres,
+    const std::vector<int> &uniqueFlagJ,
     const std::vector<double> &bindFactors) {
     // Make sure that KMC was properly initialized.
     // bindFactorsArr_ = bindFactors;
@@ -772,7 +787,8 @@ void KMC<TRod, TSphere>::CalcProbSU(const double unbindFactor) {
  */
 template <typename TRod, typename TSphere>
 void KMC<TRod, TSphere>::CalcTotProbsSD(
-    const std::vector<const TRod *> &rods, const std::vector<const TSphere *> &spheres,
+    const std::vector<const TRod *> &rods,
+    const std::vector<const TSphere *> &spheres,
     const std::vector<int> &uniqueFlagJ, const int boundID, const double lambda,
     const double kappa, const double beta, const double restLen,
     const std::vector<double> &bindFactors) {
@@ -852,8 +868,9 @@ void KMC<TRod, TSphere>::CalcTotProbsSD(
 template <typename TRod, typename TSphere>
 void KMC<TRod, TSphere>::LUCalcTotProbsSD(
     const std::vector<const TRod *> &rods,
-    const std::vector<const TSphere *> &spheres, const std::vector<int> &uniqueFlagJ,
-    const int boundID, const std::vector<double> &bindFactors) {
+    const std::vector<const TSphere *> &spheres,
+    const std::vector<int> &uniqueFlagJ, const int boundID,
+    const std::vector<double> &bindFactors) {
     // Make sure that KMC was properly initialized.
     assert(r_cutoff_ > 0);
     assert(LUTablePtr_);

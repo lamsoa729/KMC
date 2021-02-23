@@ -37,6 +37,9 @@ endif()
 
 ## Allow testing for main and subprojects if -DTESTS=TRUE
 if(TESTS)
-    enable_testing()
+  if(NOT DEBUG)
+    message("!! Diagnostic testing is not run when compiled in release mode.")
+  endif()
     add_subdirectory(tests)
+    enable_testing()
 endif()
