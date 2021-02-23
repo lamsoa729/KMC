@@ -7,6 +7,7 @@
 #ifndef LUT_FILLER_HPP
 
 #define LUT_FILLER_HPP
+#include "macros.hpp"
 #include <cassert>
 #include <vector>
 
@@ -41,7 +42,7 @@ class LUTFiller {
     virtual double getEFact() const = 0;
     virtual double getFDepLength() const = 0;
     virtual double getRestLength() const = 0;
-    
+
     virtual double calcBoltzmann(double distCent) const = 0;
     virtual double getUpperBound() const = 0;
     virtual double getBindingVolume() const = 0;

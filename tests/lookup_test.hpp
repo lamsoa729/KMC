@@ -417,12 +417,31 @@ TEST_CASE("Test the calculation of binding volume.", "[bind volume]") {
     double M = alpha * D * D;
 
     LUTFillerEdep lut_filler(256, 256);
+    SECTION("Check LUTfiller for proper binding volume") {
+        for (double i = 0.1; i < 1.0; i += .1) {
+            lut_filler.Init(alpha * i, freelength, D);
+            double bind_vol =
+                bind_vol_integral(lut_filler.getUpperBound(), i * M, ell0);
+            REQUIRE(lut_filler.getBindingVolume() ==
+                    Approx(bind_vol).epsilon(1e-8));
+        }
+    }
+    SECTION("Check LUT for proper binding volume") {
+        for (double i = 0.1; i < 1.0; i += .1) {
+            lut_filler.Init(alpha * i, freelength, D);
+            LookupTable LUT(&lut_filler, true);
+            double bind_vol =
+                CUBE(D) *
+                bind_vol_integral(lut_filler.getUpperBound(), i * M, ell0);
+            REQUIRE(LUT.getBindVolume() == Approx(bind_vol).epsilon(1e-8));
+        }
+    }
 
-    for (double i = 0.1; i < 1.0; i += .1) {
-        lut_filler.Init(alpha * i, freelength, D);
-        double bind_vol =
-            bind_vol_integral(lut_filler.getUpperBound(), i * M, ell0);
-        REQUIRE(lut_filler.getBindingVolume() ==
-                Approx(bind_vol).epsilon(1e-8));
+    SECTION("Not using binding volume") {
+        lut_filler.Init(.5, freelength, D);
+        LookupTable LUT(&lut_filler);
+
+        REQUIRE(LUT.getBindVolume() == Approx(1.).epsilon(1e-12));
     }
 }
+

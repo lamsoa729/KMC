@@ -53,7 +53,7 @@ class LUTFillerEdep : public LUTFiller {
     double getExpFact2() const { return exp_fact_; }
     double getEFact() const { return 0; } // in exp_fact
     double getFDepLength() const { return 0; }
-    double getRestLength() const { return rest_length_ ; }
+    double getRestLength() const { return rest_length_; }
 
     // Calculates the Boltzmann factor for point-like object
     inline double calcBoltzmann(double dist_cent) const {
