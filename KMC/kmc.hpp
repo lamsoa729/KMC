@@ -391,8 +391,9 @@ class KMC {
         // Explicit vs implicit reservoir. Concentration already factored into
         // implicit on rate.
         k_u_s *= r_cutoff_ > 0 ? 2. * r_cutoff_ : 1.;
-        double k_s_d =
-            s_d_fact * 2. * LUTablePtr_->Lookup(0, LUTablePtr_->getDsbound());
+        double k_s_d = s_d_fact * 2. *
+                       LUTablePtr_->Lookup(0, LUTablePtr_->getDsbound()) /
+                       bind_vol_;
         double k_s_u = s_u_fact;
         double k_d_s = d_s_fact;
 
@@ -415,8 +416,9 @@ class KMC {
         // Get full binding rates
         double k_u_s = u_s_fact;
         k_u_s *= r_cutoff_ > 0 ? 2. * r_cutoff_ : 1.; // Explicit vs implicit
-        double k_s_d =
-            s_d_fact * 2. * LUTablePtr_->Lookup(0, LUTablePtr_->getDsbound());
+        double k_s_d = s_d_fact * 2. *
+                       LUTablePtr_->Lookup(0, LUTablePtr_->getDsbound()) /
+                       bind_vol_;
         // Keeps notation consistent. Might change in the future.
         double k_s_u = s_u_fact;
         double p_max_usu = two_step_max_prob(k_u_s, k_s_u, dt_);
@@ -933,6 +935,8 @@ void KMC<TRod, TSphere>::LUCalcTotProbsSD(
  * \param restLen Length of protein when neither compressed or stretched
  * \param bindFactor Binding factor of head to rod
  * \return Probability of head binding to rod rod
+ */
+/* TODO: Depricate this because binding volume can not be set  <23-02-21, ARL>
  */
 template <typename TRod, typename TSphere>
 double KMC<TRod, TSphere>::CalcProbSD(const int j_rod, const TRod &rod,
