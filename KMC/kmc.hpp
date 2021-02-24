@@ -72,6 +72,7 @@ class KMC {
         : dt_(dt), LUTablePtr_(LUTablePtr) {
         double avg_dist = getDiffRadius(diffConst);
         r_cutoff_ = (avg_dist > r_cutoff) ? avg_dist : r_cutoff;
+        bind_vol_ = LUTablePtr_->getBindVolume();
     }
 
     // Implicit unbound diagnostic constructor
