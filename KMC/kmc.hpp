@@ -284,7 +284,7 @@ class KMC {
                           const std::vector<int> &uniqueFlagJ,
                           const int boundID,
                           const std::vector<double> &bindFactors) {
-        std::vector<TSphere *> spheres;
+        std::vector<const TSphere *> spheres;
         LUCalcTotProbsSD(rods, spheres, uniqueFlagJ, boundID, bindFactors);
     }
 
