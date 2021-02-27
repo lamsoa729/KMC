@@ -78,6 +78,7 @@ class KMC {
     // Implicit unbound diagnostic constructor
     KMC(const double dt, const LookupTable *LUTablePtr)
         : r_cutoff_(-1), dt_(dt), LUTablePtr_(LUTablePtr) {
+        bind_vol_ = LUTablePtr_->getBindVolume();
         // double avg_dist = getDiffRadius(diffConst);
         // r_cutoff_ = (avg_dist > r_cutoff) ? avg_dist : r_cutoff;
     }
@@ -414,6 +415,7 @@ class KMC {
 
     void DiagnosticUnBindDep(const double u_s_fact, const double s_u_fact,
                              const double s_d_fact, double *probs = nullptr) {
+        assert(bind_vol_ > 0);
         // Get full binding rates
         double k_u_s = u_s_fact;
         k_u_s *= r_cutoff_ > 0 ? 2. * r_cutoff_ : 1.; // Explicit vs implicit
