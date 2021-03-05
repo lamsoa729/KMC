@@ -216,6 +216,12 @@ class KMC {
     /*************************************
      *  Calculate probability functions  *
      *************************************/
+    void CalcTotProbsUS(const std::vector<const TRod *> &rods,
+                        const std::vector<const TSphere *> &spheres,
+                        const std::vector<double> &bindFactors) {
+        std::vector<int> uniqueFlagJ(bindFactors.size(), 1);
+        CalcTotProbsUS(rods, spheres, uniqueFlagJ, bindFactors);
+    };
 
     void CalcTotProbsUS(const std::vector<const TRod *> &rods,
                         const std::vector<const TSphere *> &spheres,
@@ -235,11 +241,11 @@ class KMC {
                         const std::vector<int> &uniqueFlagJ,
                         const std::vector<double> &bindFactors);
 
-    double CalcProbUS(const int j_bond, const TRod &rod,
-                      const double bindFactor);
+    double CalcProbRodUS(const int j_bond, const TRod &rod,
+                         const double bindFactor);
 
-    double CalcProbUS(const int j_sphere, const TSphere &sphere,
-                      const double bindFactor);
+    double CalcProbSphereUS(const int j_sphere, const TSphere &sphere,
+                            const double bindFactor);
 
     void CalcProbSU(const double unbindFactor);
 
@@ -300,20 +306,20 @@ class KMC {
         LUCalcTotProbsSD(rodsVec, spheres, boundID, bindFactors);
     }
 
-    double LUCalcProbSD(const int j_rod, const TRod &rod,
-                        const double bindFactor);
+    double LUCalcProbRodSD(const int j_rod, const TRod &rod,
+                           const double bindFactor);
 
-    double LUCalcProbSD(const int j_sphere, const TSphere &sphere,
-                        const double bindFactor);
+    double LUCalcProbSphereSD(const int j_sphere, const TSphere &sphere,
+                              const double bindFactor);
 
-    double CalcProbSD(const int j_rod, const TRod &rod, const double lambda,
-                      const double kappa, const double beta,
-                      const double restLen, const double bindFactor);
+    double CalcProbRodSD(const int j_rod, const TRod &rod, const double lambda,
+                         const double kappa, const double beta,
+                         const double restLen, const double bindFactor);
 
-    double CalcProbSD(const int j_sphere, const TSphere &sphere,
-                      const double lambda, const double kappa,
-                      const double beta, const double restLen,
-                      const double bindFactor);
+    double CalcProbSphereSD(const int j_sphere, const TSphere &sphere,
+                            const double lambda, const double kappa,
+                            const double beta, const double restLen,
+                            const double bindFactor);
 
     void CalcProbDS(const double unbindFactor);
 
@@ -656,13 +662,15 @@ void KMC<TRod, TSphere>::CalcTotProbsUS(
     prob_tot_ = 0;
     for (int j_rod = 0; j_rod < rod_probs_.size(); ++j_rod) {
         if (uniqueFlagJ[j_rod] > 0) {
-            prob_tot_ += CalcProbUS(j_rod, *(rods[j_rod]), bindFactors[j_rod]);
+            prob_tot_ +=
+                CalcProbRodUS(j_rod, *(rods[j_rod]), bindFactors[j_rod]);
         }
     }
     for (int j_sphere = 0; j_sphere < sphere_probs_.size(); ++j_sphere) {
         if (uniqueFlagJ[j_sphere + rod_probs_.size()] > 0) {
-            prob_tot_ += CalcProbUS(j_sphere, *(spheres[j_sphere]),
-                                    bindFactors[j_sphere + rod_probs_.size()]);
+            prob_tot_ +=
+                CalcProbSphereUS(j_sphere, *(spheres[j_sphere]),
+                                 bindFactors[j_sphere + rod_probs_.size()]);
         }
     }
 }
@@ -676,7 +684,8 @@ void KMC<TRod, TSphere>::CalcTotProbsUS(
     prob_tot_ = 0;
     for (int j_rod = 0; j_rod < rod_probs_.size(); ++j_rod) {
         if (uniqueFlagJ[j_rod] > 0) {
-            prob_tot_ += CalcProbUS(j_rod, *(rods[j_rod]), bindFactors[j_rod]);
+            prob_tot_ +=
+                CalcProbRodUS(j_rod, *(rods[j_rod]), bindFactors[j_rod]);
         }
     }
 }
@@ -689,8 +698,8 @@ void KMC<TRod, TSphere>::CalcTotProbsUS(
  * \return Probability of head binding to rod, updates rod_probs_
  */
 template <typename TRod, typename TSphere>
-double KMC<TRod, TSphere>::CalcProbUS(const int j_rod, const TRod &rod,
-                                      const double bindFactor) {
+double KMC<TRod, TSphere>::CalcProbRodUS(const int j_rod, const TRod &rod,
+                                         const double bindFactor) {
     // Find and add shortest distance to DistPerp array and the associated
     // locations along rod.
     double prefact = bindFactor * dt_ / bind_vol_;
@@ -735,8 +744,9 @@ double KMC<TRod, TSphere>::CalcProbUS(const int j_rod, const TRod &rod,
  * \return Probability of head binding to sphere
  */
 template <typename TRod, typename TSphere>
-double KMC<TRod, TSphere>::CalcProbUS(const int j_sphere, const TSphere &sphere,
-                                      const double bindFactor) {
+double KMC<TRod, TSphere>::CalcProbSphereUS(const int j_sphere,
+                                            const TSphere &sphere,
+                                            const double bindFactor) {
     // Probability density per unit length or surface area
     double prefact = bindFactor * dt_ / bind_vol_;
 
@@ -807,11 +817,11 @@ void KMC<TRod, TSphere>::CalcTotProbsSD(
         if (uniqueFlagJ[j_rod] > 0 && rods[j_rod]->gid != boundID) {
             if (LUTablePtr_) {
                 rod_probs_[j_rod] =
-                    LUCalcProbSD(j_rod, *(rods[j_rod]), bindFactors[j_rod]);
+                    LUCalcProbRodSD(j_rod, *(rods[j_rod]), bindFactors[j_rod]);
             } else {
                 rod_probs_[j_rod] =
-                    CalcProbSD(j_rod, *(rods[j_rod]), lambda, kappa, beta,
-                               restLen, bindFactors[j_rod]);
+                    CalcProbRodSD(j_rod, *(rods[j_rod]), lambda, kappa, beta,
+                                  restLen, bindFactors[j_rod]);
             }
             prob_tot_ += rod_probs_[j_rod];
         }
@@ -819,9 +829,9 @@ void KMC<TRod, TSphere>::CalcTotProbsSD(
     for (int j_sphere = 0; j_sphere < sphere_probs_.size(); ++j_sphere) {
         if (uniqueFlagJ[j_sphere + rod_probs_.size()] > 0 &&
             spheres[j_sphere]->gid != boundID) {
-            sphere_probs_[j_sphere] =
-                CalcProbSD(j_sphere, *(spheres[j_sphere]), lambda, kappa, beta,
-                           restLen, bindFactors[j_sphere + rod_probs_.size()]);
+            sphere_probs_[j_sphere] = CalcProbSphereSD(
+                j_sphere, *(spheres[j_sphere]), lambda, kappa, beta, restLen,
+                bindFactors[j_sphere + rod_probs_.size()]);
             prob_tot_ += sphere_probs_[j_sphere];
         }
     }
@@ -844,11 +854,11 @@ void KMC<TRod, TSphere>::CalcTotProbsSD(
         if (uniqueFlagJ[j_rod] > 0 && rods[j_rod]->gid != boundID) {
             if (LUTablePtr_) {
                 rod_probs_[j_rod] =
-                    LUCalcProbSD(j_rod, *(rods[j_rod]), bindFactors[j_rod]);
+                    LUCalcProbRodSD(j_rod, *(rods[j_rod]), bindFactors[j_rod]);
             } else {
                 rod_probs_[j_rod] =
-                    CalcProbSD(j_rod, *(rods[j_rod]), lambda, kappa, beta,
-                               restLen, bindFactors[j_rod]);
+                    CalcProbRodSD(j_rod, *(rods[j_rod]), lambda, kappa, beta,
+                                  restLen, bindFactors[j_rod]);
             }
             prob_tot_ += rod_probs_[j_rod];
         }
@@ -889,18 +899,22 @@ void KMC<TRod, TSphere>::LUCalcTotProbsSD(
     // Sum total probability of binding to surrounding rods/spheres
     prob_tot_ = 0;
     for (int j_rod = 0; j_rod < rod_probs_.size(); ++j_rod) {
+        if (bindFactors[j_rod] == 0)
+            continue;
         if (uniqueFlagJ[j_rod] > 0 && rods[j_rod]->gid != boundID) {
             rod_probs_[j_rod] =
-                LUCalcProbSD(j_rod, *(rods[j_rod]), bindFactors[j_rod]);
+                LUCalcProbRodSD(j_rod, *(rods[j_rod]), bindFactors[j_rod]);
         }
         prob_tot_ += rod_probs_[j_rod];
     }
     for (int j_sphere = 0; j_sphere < sphere_probs_.size(); ++j_sphere) {
+        if (bindFactors[j_sphere + rod_probs_.size()] == 0)
+            continue;
         if (uniqueFlagJ[j_sphere + rod_probs_.size()] > 0 &&
             spheres[j_sphere]->gid != boundID) {
             sphere_probs_[j_sphere] =
-                LUCalcProbSD(j_sphere, *(spheres[j_sphere]),
-                             bindFactors[j_sphere + rod_probs_.size()]);
+                LUCalcProbSphereSD(j_sphere, *(spheres[j_sphere]),
+                                   bindFactors[j_sphere + rod_probs_.size()]);
         }
         prob_tot_ += sphere_probs_[j_sphere];
     }
@@ -942,10 +956,11 @@ void KMC<TRod, TSphere>::LUCalcTotProbsSD(
 /* TODO: Depricate this because binding volume can not be set  <23-02-21, ARL>
  */
 template <typename TRod, typename TSphere>
-double KMC<TRod, TSphere>::CalcProbSD(const int j_rod, const TRod &rod,
-                                      const double lambda, const double kappa,
-                                      const double beta, const double restLen,
-                                      const double bindFactor) {
+double KMC<TRod, TSphere>::CalcProbRodSD(const int j_rod, const TRod &rod,
+                                         const double lambda,
+                                         const double kappa, const double beta,
+                                         const double restLen,
+                                         const double bindFactor) {
     // // Find and add shortest distance to DistPerp array and the
     // associated
     // // locations along rod.
@@ -993,10 +1008,11 @@ double KMC<TRod, TSphere>::CalcProbSD(const int j_rod, const TRod &rod,
  * \return Probability of head binding to rod rod
  */
 template <typename TRod, typename TSphere>
-double KMC<TRod, TSphere>::CalcProbSD(const int j_sphere, const TSphere &sphere,
-                                      const double lambda, const double kappa,
-                                      const double beta, const double restLen,
-                                      const double bindFactor) {
+double
+KMC<TRod, TSphere>::CalcProbSphereSD(const int j_sphere, const TSphere &sphere,
+                                     const double lambda, const double kappa,
+                                     const double beta, const double restLen,
+                                     const double bindFactor) {
     // // Find and add shortest distance to DistPerp array and the
     // associated
     // // locations along rod.
@@ -1040,8 +1056,8 @@ void KMC<TRod, TSphere>::printIfLarge(const double input, const double small) {
  * \return Probability of head binding to rod rod
  */
 template <typename TRod, typename TSphere>
-double KMC<TRod, TSphere>::LUCalcProbSD(const int j_rod, const TRod &rod,
-                                        const double bindFactor) {
+double KMC<TRod, TSphere>::LUCalcProbRodSD(const int j_rod, const TRod &rod,
+                                           const double bindFactor) {
     if (LUTablePtr_ == nullptr) {
         std::cerr << " *** RuntimeError: Lookup table not initialized ***"
                   << std::endl;
@@ -1093,14 +1109,17 @@ double KMC<TRod, TSphere>::LUCalcProbSD(const int j_rod, const TRod &rod,
  * \return Probability of head binding to rod rod
  */
 template <typename TRod, typename TSphere>
-double KMC<TRod, TSphere>::LUCalcProbSD(const int j_sphere,
-                                        const TSphere &sphere,
-                                        const double bindFactor) {
+double KMC<TRod, TSphere>::LUCalcProbSphereSD(const int j_sphere,
+                                              const TSphere &sphere,
+                                              const double bindFactor) {
     if (LUTablePtr_ == nullptr) {
         std::cerr << " *** RuntimeError: Lookup table not initialized ***"
                   << std::endl;
         throw "RuntimeError: Lookup table not initialized";
     }
+    // No reason to do calculation if bindFactor = 0
+    if (bindFactor == 0)
+        return 0;
     // Find and add shortest distance to DistPerp array and the associated
     // locations along rod.
     UpdateSphereDistArr(j_sphere, sphere);
@@ -1168,6 +1187,13 @@ int KMC<TRod, TSphere>::whichRodBindUS(const std::vector<const TRod *> &rods,
         return -1;
     }
     const double half_length = .5 * rods[i]->length; // half length of rod
+    assert(half_length >= 0);
+
+    // Binding to sphere
+    if (half_length == 0) {
+        bindPos = 0;
+        return i;
+    }
     const double mu = muArr_[i]; // Closest position of particle along rod
                                  // from rod center
     const double distPerp = distPerpArr_[i]; // Distance from rod
