@@ -107,6 +107,42 @@ class KMC {
         assert(r_cutoff_ > 0);
     }
 
+    KMC(const double *pos, const int NpjRod, const double r_cutoff,
+        const double diffConst, const double dt)
+        : dt_(dt), LUTablePtr_(nullptr) {
+        setPos(pos);
+
+        // Find average diffusion distance and compare to given r_cutoff
+        double avg_dist = getDiffRadius(diffConst);
+        r_cutoff_ = (avg_dist > r_cutoff) ? avg_dist : r_cutoff;
+        bind_vol_ = M_PI * CUBE(r_cutoff_) / .75;
+
+        // Set size of rod-sized vectors
+        rod_probs_.resize(NpjRod, 0);
+        distMinArrRod_.resize(NpjRod, 0);
+        distPerpArr_.resize(NpjRod, 0);
+        muArr_.resize(NpjRod, 0);
+        lims_.resize(NpjRod);
+
+        assert(r_cutoff_ > 0);
+    }
+
+    // Overload U<->S with NpjSphere=0 (backwards compatibility)
+    KMC(const double *pos, const int NpjRod, const double dt,
+        const LookupTable *LUTablePtr)
+        : dt_(dt), LUTablePtr_(LUTablePtr) {
+        setPos(pos);
+        r_cutoff_ = LUTablePtr_->getLUCutoff();
+        bind_vol_ = LUTablePtr_->getBindVolume();
+
+        // Set size of rod-sized vectors
+        rod_probs_.resize(NpjRod, 0);
+        distMinArrRod_.resize(NpjRod, 0);
+        distPerpArr_.resize(NpjRod, 0);
+        muArr_.resize(NpjRod, 0);
+        lims_.resize(NpjRod);
+    }
+
     // Constructor for S->D end binding without lookup tables
     KMC(const double *pos, const int NpjRod, const int NpjSphere,
         const double r_cutoff, const double dt)
@@ -147,6 +183,19 @@ class KMC {
         distCentArr_.resize(NpjSphere, 0);
     }
 
+    KMC(const double *pos, const int NpjRod, const double r_cutoff,
+        const double dt)
+        : r_cutoff_(r_cutoff), dt_(dt), LUTablePtr_(nullptr) {
+        setPos(pos);
+
+        // Set size of rod-sized vectors
+        rod_probs_.resize(NpjRod, 0);
+        distMinArrRod_.resize(NpjRod, 0);
+        distPerpArr_.resize(NpjRod, 0);
+        muArr_.resize(NpjRod, 0);
+        lims_.resize(NpjRod);
+    }
+
     /*************************************
      * Set periodic boundary conditions  *
      *************************************/
@@ -168,6 +217,12 @@ class KMC {
                         const std::vector<const TSphere *> &spheres,
                         const std::vector<double> &bindFactors);
 
+    void CalcTotProbsUS(const std::vector<const TRod *> &rods,
+                        const std::vector<double> &bindFactors) {
+        std::vector<const TSphere *> spheres;
+        CalcTotProbsUS(rods, spheres, bindFactors);
+    }
+
     double CalcProbRodUS(const int j_bond, const TRod &rod,
                          const double bindFactor);
 
@@ -183,10 +238,27 @@ class KMC {
                         const double restLen,
                         const std::vector<double> &bindFactors);
 
+    void CalcTotProbsSD(const std::vector<const TRod *> &rods,
+                        const int boundID, const double lambda,
+                        const double kappa, const double beta,
+                        const double restLen,
+                        const std::vector<double> &bindFactors) {
+        std::vector<const TSphere *> spheres;
+        CalcTotProbsSD(rods, spheres, boundID, lambda, kappa, beta, restLen,
+                       bindFactors);
+    }
+
     void LUCalcTotProbsSD(const std::vector<const TRod *> &rods,
                           const std::vector<const TSphere *> &spheres,
                           const int boundID,
                           const std::vector<double> &bindFactors);
+
+    void LUCalcTotProbsSD(const std::vector<const TRod *> &rods,
+                          const int boundID,
+                          const std::vector<double> &bindFactors) {
+        std::vector<const TSphere *> spheres;
+        LUCalcTotProbsSD(rods, spheres, boundID, bindFactors);
+    }
 
     double LUCalcProbRodSD(const int j_rod, const TRod &rod,
                            const double bindFactor);
@@ -377,8 +449,6 @@ class KMC {
         }
     }
 
-#include "kmc_overload.hpp"
-
     virtual ~KMC() {}
 };
 
@@ -520,8 +590,6 @@ void KMC<TRod, TSphere>::UpdateSphereDistArr(const int j_sphere,
  *
  * \param rods Vector of rod pointers
  * \param spheres Vector of sphere pointers
- * \param &uniqueFlagJ Reference to filter list making sure you do not over
- * count objects. Holds probabilities for rods, then for spheres.
  * \param bindFactor Binding factor of head to objects. Holds values for rods,
  * then spheres.
  * \return void, Changes prob_tot variable of KMC this object
@@ -659,8 +727,6 @@ void KMC<TRod, TSphere>::CalcProbSU(const double unbindFactor) {
  *
  * \param rods Array of surrounding rod pointers
  * \param rods Array of surrounding sphere pointers
- * \param &uniqueFlagJ Reference to filter list making sure you do not over
- * count objs; holds rod values then sphere values.
  * \param k_spring Spring constant between connected ends
  * \param eqLen Equilibrium length of spring connecting ends
  * \param bindFactor Binding factor of head to objs; holds rod values then
@@ -712,8 +778,6 @@ void KMC<TRod, TSphere>::CalcTotProbsSD(
  *
  * \param rods Vector of surrounding rod pointers
  * \param spheres Vector of surrounding sphere pointers
- * \param &uniqueFlagJ Reference to filter list making sure you do not over
- * count objects; includes rod values then sphere values
  * \param boundID ID of rod/sphere that bound head is attached to
  * \param bindFactors Binding factor of head to rods/spheres
  * \return void, Changes prob_tot_ variable of this object
