@@ -118,7 +118,7 @@ class LookupTable {
     inline double calcBoltzmann(double distCent) const {
         // exp_fact1_ used for compressed spring, exp_fact2_ for stretched
         double exp_fact = distCent < rest_length_ ? exp_fact1_ : exp_fact2_;
-        return exp(-exp_fact * ((1 - e_fact_) * SQR(distCent - rest_length_) -
+        return exp(-exp_fact * ((1. - e_fact_) * SQR(distCent - rest_length_) -
                                 fdep_length_ * (distCent - rest_length_)));
     }
 
@@ -430,13 +430,13 @@ class LookupTable {
             assert(sbound <= (sboundp) && sbound >= (sboundm));
             break;
         }
-            //} else { // Quadratic interpolation. TODO Needs testing
-            //    printf("In quadratic \n");
-            //    sbound = .5 * rowFrac *
-            //                 ((rowFrac - 1.) * sbound0 + (rowFrac + 1.) *
-            //                 sboundp) +
-            //             (1 - rowFrac) * (1 + rowFrac) * sboundm;
-            //}
+        //} else { // Quadratic interpolation. TODO Needs testing
+        //    printf("In quadratic \n");
+        //    sbound = .5 * rowFrac *
+        //                 ((rowFrac - 1.) * sbound0 + (rowFrac + 1.) *
+        //                 sboundp) +
+        //             (1 - rowFrac) * (1 + rowFrac) * sboundm;
+        //}
 
 #ifndef NDEBUG
         double UB_val1 = *(table_.begin() + index1UB);

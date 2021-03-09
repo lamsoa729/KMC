@@ -107,6 +107,7 @@ class KMC {
         assert(r_cutoff_ > 0);
     }
 
+    // Overload explicit U<->S with NpjSphere=0 (backwards compatibility)
     KMC(const double *pos, const int NpjRod, const double r_cutoff,
         const double diffConst, const double dt)
         : dt_(dt), LUTablePtr_(nullptr) {
@@ -127,7 +128,7 @@ class KMC {
         assert(r_cutoff_ > 0);
     }
 
-    // Overload U<->S with NpjSphere=0 (backwards compatibility)
+    // Overload implicit U<->S with NpjSphere=0 (backwards compatibility)
     KMC(const double *pos, const int NpjRod, const double dt,
         const LookupTable *LUTablePtr)
         : dt_(dt), LUTablePtr_(LUTablePtr) {
@@ -291,7 +292,7 @@ class KMC {
         }
     }
 
-    int whichRodBindUS(const std::vector<const TRod *> &rods, double &bindPos,
+    int whichObjBindUS(const std::vector<const TRod *> &rods, double &bindPos,
                        double roll);
 
     void whereUnbindSU(double R, double diffConst, double rollVec[3],
@@ -582,7 +583,21 @@ void KMC<TRod, TSphere>::UpdateSphereDistArr(const int j_sphere,
     /* Update distance from protein to sphere center and min distance from
        protein to sphere */
     distCentArr_[j_sphere] = magnitude(dsScaled);
-    distMinArrSphere_[j_sphere] = distCentArr_[j_sphere] - sphere.radius;
+    assert(!isnan(distCentArr_[j_sphere]));
+    // if (distCentArr_[j_sphere] < 0 || isnan(distCentArr_[j_sphere])) {
+    //    for (int i = n_periodic_; i < 3; ++i) {
+    //        std::cout << dsScaled[i] << " ";
+    //    }
+    //    for (int i = n_periodic_; i < 3; ++i) {
+    //        std::cout << dsScaled[i] << " ";
+    //    }
+    //    std::cout << distCentArr_[j_sphere] << std::endl;
+    //    throw "distCentArr less then 0.";
+    //}
+    // XXX Subtracting radius can lead to negative distances which is not
+    // physical.
+    // distMinArrSphere_[j_sphere] = distCentArr_[j_sphere] - sphere.radius;
+    distMinArrSphere_[j_sphere] = distCentArr_[j_sphere];
 }
 
 /*! \brief Calculate the probability of a head to bind to surrounding rods
@@ -897,6 +912,7 @@ KMC<TRod, TSphere>::CalcProbSphereSD(const int j_sphere, const TSphere &sphere,
     if (bindFactor == 0.)
         return 0.;
     assert(bindFactor > 0.);
+    assert(lambda >= 0 && lambda < 1.);
 
     // // Find and add shortest distance to DistPerp array and the
     // associated
@@ -1015,6 +1031,8 @@ double KMC<TRod, TSphere>::LUCalcProbSphereSD(const int j_sphere,
     // locations along rod.
     UpdateSphereDistArr(j_sphere, sphere);
     double distCent = distCentArr_[j_sphere];
+    printf("distCent = %f\n", distCent);
+    assert(distCent >= 0);
 
     double result;
     // Bypass probability calculation if protein is too far away
@@ -1023,6 +1041,7 @@ double KMC<TRod, TSphere>::LUCalcProbSphereSD(const int j_sphere,
     else {
         result = LUTablePtr_->calcBoltzmann(distCentArr_[j_sphere]);
     }
+    assert(result >= 0);
     double prefact =
         bindFactor * dt_ * 4.0 * M_PI * SQR(sphere.radius) / bind_vol_;
     assert(prefact > 0.);
@@ -1054,7 +1073,7 @@ void KMC<TRod, TSphere>::CalcProbDS(const double unbindFactor) {
  * \return ID of bound MT, changes bindPos to reflect location of bound MT
  */
 template <typename TRod, typename TSphere>
-int KMC<TRod, TSphere>::whichRodBindUS(const std::vector<const TRod *> &rods,
+int KMC<TRod, TSphere>::whichObjBindUS(const std::vector<const TRod *> &rods,
                                        double &bindPos, double roll) {
     assert(roll <= 1.0 && roll >= 0.);
 
@@ -1075,18 +1094,21 @@ int KMC<TRod, TSphere>::whichRodBindUS(const std::vector<const TRod *> &rods,
             i++;
         }
     }
-    if (i == rod_probs_.size()) {
+    for (auto prob : sphere_probs_) {
+        if ((pos_roll + prob) > roll) { // Found sphere to bind to
+            bindPos = 0;                // Treat sphere as point
+            return i;
+        } // Keep searching for binding sphere
+        pos_roll += prob;
+        i++;
+    }
+    if (i == (rod_probs_.size() + sphere_probs_.size())) {
         // Roll given was too large, CHECK KMC step functions
         return -1;
     }
     const double half_length = .5 * rods[i]->length; // half length of rod
-    assert(half_length >= 0);
+    assert(half_length > 0);
 
-    // Binding to sphere
-    if (half_length == 0) {
-        bindPos = 0;
-        return i;
-    }
     const double mu = muArr_[i]; // Closest position of particle along rod
                                  // from rod center
     const double distPerp = distPerpArr_[i]; // Distance from rod
