@@ -1031,7 +1031,6 @@ double KMC<TRod, TSphere>::LUCalcProbSphereSD(const int j_sphere,
     // locations along rod.
     UpdateSphereDistArr(j_sphere, sphere);
     double distCent = distCentArr_[j_sphere];
-    printf("distCent = %f\n", distCent);
     assert(distCent >= 0);
 
     double result;
