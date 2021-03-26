@@ -786,7 +786,7 @@ TEST_CASE("3 crossing perpendicular rods with protein in center",
                 double roll = ((j * RodProb) + prevRodProb) / totProb;
                 double calcBindPos = 2. * xlink.rc * (j - .5);
                 double bindpos;
-                int rod_i = kmc.whichRodBindUS(cep_j, bindpos, roll);
+                int rod_i = kmc.whichObjBindUS(cep_j, bindpos, roll);
                 CHECK(rod_i == i);
                 CHECK(bindpos == Approx(calcBindPos).epsilon(SMALL));
             }
@@ -944,7 +944,7 @@ TEST_CASE("4 parallel rods separated by a rod diameter on the sides with "
                 double roll = ((j * RodProb) + prevRodProb) / totProb;
                 double calcBindPos = 2. * modRC * (j - .5);
                 double bindpos;
-                int rod_i = kmc.whichRodBindUS(cep_j, bindpos, roll);
+                int rod_i = kmc.whichObjBindUS(cep_j, bindpos, roll);
                 CHECK(rod_i == i);
                 CHECK(bindpos == Approx(calcBindPos).epsilon(SMALL));
             }
@@ -1164,7 +1164,7 @@ TEST_CASE("6 perpendicular rods surrounding a sphere of a rod radius with "
                         kmc.getMu(i) + kmc.getDistMin(i) + (modRC * j);
                 }
                 double bindpos;
-                int rod_i = kmc.whichRodBindUS(cep_j, bindpos, roll);
+                int rod_i = kmc.whichObjBindUS(cep_j, bindpos, roll);
                 CHECK(rod_i == i);
                 CHECK(bindpos == Approx(calcBindPos).epsilon(SMALL));
             }
