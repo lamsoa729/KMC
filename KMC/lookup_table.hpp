@@ -115,11 +115,13 @@ class LookupTable {
      *
      * @return double Boltzmann factor
      */
-    inline double calcBoltzmann(double distCent) const {
+    inline double calcBoltzmann(double dist_cent) const {
+        /* TODO: Make dimensionful unit test for this <30-03-21, ARL> */
+        double r = dist_cent / D_;
         // exp_fact1_ used for compressed spring, exp_fact2_ for stretched
-        double exp_fact = distCent < rest_length_ ? exp_fact1_ : exp_fact2_;
-        return exp(-exp_fact * ((1. - e_fact_) * SQR(distCent - rest_length_) -
-                                fdep_length_ * (distCent - rest_length_)));
+        double exp_fact = r < rest_length_ ? exp_fact1_ : exp_fact2_;
+        return exp(-exp_fact * ((1. - e_fact_) * SQR(r - rest_length_) -
+                                fdep_length_ * (r - rest_length_)));
     }
 
     /**

@@ -57,7 +57,9 @@ class LUTFillerEdep : public LUTFiller {
 
     // Calculates the Boltzmann factor for point-like object
     inline double calcBoltzmann(double dist_cent) const {
-        return exp(-exp_fact_ * SQR(dist_cent - rest_length_));
+        /* TODO: Make dimensionful unit test for this <30-03-21, ARL> */
+        double r = dist_cent / length_scale_;
+        return exp(-exp_fact_ * SQR(r - rest_length_));
     }
 
     // double getUpperBound() const;
