@@ -49,23 +49,23 @@ class LUTFiller {
     virtual double getIntegralResult(double dist_perp, double dist_para_l,
                                      double dist_para_u) const = 0;
 
-    inline const double getDistParaGridNum() const {
+    inline double getDistParaGridNum() const {
         return dist_para_grid_num_;
     }
 
-    inline const double getDistPerpGridNum() const {
+    inline double getDistPerpGridNum() const {
         return dist_perp_grid_num_;
     }
 
-    inline const double getDistParaGridSpacing() const {
+    inline double getDistParaGridSpacing() const {
         assert(dist_para_grid_num_ > 1);
         return (upper_bound_) / (dist_para_grid_num_ - 1);
     }
-    inline const double getDistPerpGridSpacing() const {
+    inline double getDistPerpGridSpacing() const {
         assert(dist_perp_grid_num_ > 1);
         return (upper_bound_) / (dist_perp_grid_num_ - 1);
     }
-    inline const double getLengthScale() const { return length_scale_; }
+    inline double getLengthScale() const { return length_scale_; }
 
     void FillDistParaGrid(std::vector<double> &dist_para_grid) {
         double spacing = getDistParaGridSpacing();
