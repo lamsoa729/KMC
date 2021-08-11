@@ -79,16 +79,4 @@ class LUTFillerEdep : public LUTFiller {
     }
 };
 
-// double LUTFillerEdep::getUpperBound() const {
-//    return sqrt(-log(small_) / exp_fact_) + rest_length_;
-//}
-// double LUTFillerEdep::getIntegralResult(double dist_perp, double dist_para_l,
-//                                        double dist_para_u) const {
-//    return integral(dist_perp, dist_para_l, dist_para_u, exp_fact_,
-//                    rest_length_);
-//}
-// double LUTFillerEdep::getBindingVolume() const {
-//    return bind_vol_integral(upper_bound_, exp_fact_, rest_length_);
-//}
-
 #endif /* end of include guard LUT_FILLER_EDEP_HPP */
