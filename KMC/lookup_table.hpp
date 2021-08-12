@@ -22,6 +22,7 @@
 #include "lut_filler_asym.hpp"
 #include "lut_filler_edep.hpp"
 #include "lut_filler_fdep.hpp"
+#include "lut_filler_2nd_order.hpp"
 #include "macros.hpp"
 
 /**

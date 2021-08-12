@@ -188,7 +188,7 @@ inline double edep_second_order_integral(double lm, double sbound0, double sboun
     }
     //TODO add exception for when lm < 1 ?
     auto integrand = [&](double s) {
-        const double exponent = (lm-1) * sqrt(1. + (s*s/(lm*lm)) ) - ell0;
+        const double exponent = ((lm - 1.) * sqrt(1. + (s*s/(lm*lm)) )) - ell0;
         return exp(-M * exponent * exponent);
     };
     double error = 0;
