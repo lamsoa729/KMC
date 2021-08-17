@@ -63,6 +63,9 @@ class LUTFiller2ndOrder : public LUTFillerEdep {
         return edep_second_order_integral(dist_perp, dist_para_l, dist_para_u, exp_fact_,
                         rest_length_);
     }
+    double getUpperBound() const {
+        return sqrt(-log(small_) / exp_fact_) + rest_length_ + 1.;
+    }
 };
 
 #endif
