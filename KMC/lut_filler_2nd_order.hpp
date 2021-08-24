@@ -64,7 +64,7 @@ class LUTFiller2ndOrder : public LUTFillerEdep {
                         rest_length_);
     }
     double getUpperBound() const {
-        return sqrt(-log(small_) / exp_fact_) + rest_length_ + 1.;
+        return sqrt(-log(small_) / exp_fact_) + rest_length_ + 5.;
     }
 };
 
