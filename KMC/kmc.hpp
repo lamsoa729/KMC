@@ -261,8 +261,10 @@ class KMC {
         LUCalcTotProbsSD(rods, spheres, boundID, bindFactors);
     }
 
+
     double LUCalcProbRodSD(const int j_rod, const TRod &rod,
                            const double bindFactor);
+
 
     double LUCalcProbSphereSD(const int j_sphere, const TSphere &sphere,
                               const double bindFactor);
