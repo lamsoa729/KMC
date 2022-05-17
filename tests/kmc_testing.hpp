@@ -42,7 +42,7 @@ TEST_CASE("Test CalcProbUS for KMC<ExampleRod> class", "[calc01prob]") {
         KMC<ExampleRod> kmc(xlink.getPosPtr(), 1, xlink.getRcutUS(),
                             xlink.getDiffU(), dt);
 
-        double prob = kmc.CalcProbUS(0, rod, xlink.getBindingFactorUS(0));
+        double prob = kmc.CalcProbRodUS(0, rod, xlink.getBindingFactorUS(0));
         CHECK(kmc.getMu(0) == 0);
         CHECK(kmc.getDistMin(0) == 0);
         REQUIRE(prob == Approx(0.0001909859317102744).epsilon(1e-8));
@@ -53,7 +53,7 @@ TEST_CASE("Test CalcProbUS for KMC<ExampleRod> class", "[calc01prob]") {
         KMC<ExampleRod> kmc(xlink.getPosPtr(), 1, xlink.getRcutUS(),
                             xlink.getDiffU(), dt);
 
-        double prob = kmc.CalcProbUS(0, rod, xlink.getBindingFactorUS(0));
+        double prob = kmc.CalcProbRodUS(0, rod, xlink.getBindingFactorUS(0));
         CHECK(kmc.getMu(0) == 0);
         CHECK(kmc.getDistMin(0) == 2.0);
         CHECK(prob == 0);
@@ -67,7 +67,7 @@ TEST_CASE("Test CalcProbUS for KMC<ExampleRod> class", "[calc01prob]") {
         xlink.setUnBindPos(pos);
         KMC<ExampleRod> kmc(xlink.getPosPtr(), 1, xlink.getRcutUS(),
                             xlink.getDiffU(), dt);
-        double prob = kmc.CalcProbUS(0, rod, xlink.getBindingFactorUS(0));
+        double prob = kmc.CalcProbRodUS(0, rod, xlink.getBindingFactorUS(0));
         CHECK(kmc.getMu(0) == rod.length * .5);
         CHECK(kmc.getDistMin(0) == 0);
         CHECK(prob == Approx(0.0000954929658551372).epsilon(1e-8));
@@ -81,7 +81,7 @@ TEST_CASE("Test CalcProbUS for KMC<ExampleRod> class", "[calc01prob]") {
         xlink.setUnBindPos(pos);
         KMC<ExampleRod> kmc(xlink.getPosPtr(), 1, xlink.getRcutUS(),
                             xlink.getDiffU(), dt);
-        double prob = kmc.CalcProbUS(0, rod, xlink.getBindingFactorUS(0));
+        double prob = kmc.CalcProbRodUS(0, rod, xlink.getBindingFactorUS(0));
         CHECK(kmc.getMu(0) == rod.length * -.5);
         CHECK(kmc.getDistMin(0) == 0);
         REQUIRE(prob == Approx(0.0000954929658551372).epsilon(1e-8));
@@ -92,7 +92,7 @@ TEST_CASE("Test CalcProbUS for KMC<ExampleRod> class", "[calc01prob]") {
         xlink.setUnBindPos(pos);
         KMC<ExampleRod> kmc(xlink.getPosPtr(), 1, xlink.getRcutUS(),
                             xlink.getDiffU(), dt);
-        double prob = kmc.CalcProbUS(0, rod, xlink.getBindingFactorUS(0));
+        double prob = kmc.CalcProbRodUS(0, rod, xlink.getBindingFactorUS(0));
         CHECK(kmc.getMu(0) == 0);
         CHECK(kmc.getDistMin(0) == 0.5);
         REQUIRE(prob == 0);
@@ -103,7 +103,7 @@ TEST_CASE("Test CalcProbUS for KMC<ExampleRod> class", "[calc01prob]") {
         xlink.setUnBindPos(pos);
         KMC<ExampleRod> kmc(xlink.getPosPtr(), 1, xlink.getRcutUS(),
                             xlink.getDiffU(), dt);
-        double prob = kmc.CalcProbUS(0, rod, xlink.getBindingFactorUS(0));
+        double prob = kmc.CalcProbRodUS(0, rod, xlink.getBindingFactorUS(0));
         CHECK(kmc.getMu(0) == rod.length * .5);
         CHECK(kmc.getDistMin(0) == 0.5);
         REQUIRE(prob == 0);
@@ -114,7 +114,7 @@ TEST_CASE("Test CalcProbUS for KMC<ExampleRod> class", "[calc01prob]") {
         xlink.setUnBindPos(pos);
         KMC<ExampleRod> kmc(xlink.getPosPtr(), 1, xlink.getRcutUS(),
                             xlink.getDiffU(), dt);
-        double prob = kmc.CalcProbUS(0, rod, xlink.getBindingFactorUS(0));
+        double prob = kmc.CalcProbRodUS(0, rod, xlink.getBindingFactorUS(0));
         CHECK(kmc.getMu(0) == 0);
         CHECK(kmc.getDistMin(0) == 0.25);
         REQUIRE(prob == Approx(0.0001653986686265376).epsilon(1e-8));
@@ -125,7 +125,7 @@ TEST_CASE("Test CalcProbUS for KMC<ExampleRod> class", "[calc01prob]") {
         rod.length = .5;
         KMC<ExampleRod> kmc(xlink.getPosPtr(), 1, xlink.getRcutUS(),
                             xlink.getDiffU(), dt);
-        double prob = kmc.CalcProbUS(0, rod, xlink.getBindingFactorUS(0));
+        double prob = kmc.CalcProbRodUS(0, rod, xlink.getBindingFactorUS(0));
         CHECK(kmc.getMu(0) == 0);
         CHECK(kmc.getDistMin(0) == 0.0);
         REQUIRE(prob == Approx(0.0000954929658551372).epsilon(SMALL));
@@ -206,8 +206,8 @@ TEST_CASE("Test CalcProbSD for KMC<ExampleRod> class", "[calc_prob_sd]") {
         KMC<ExampleRod> kmc(xlink.posEndBind[0], 2, xlink.getRcutSD(), dt);
         // Calculate binding of protein head 1 to rod 1
         double prob =
-            kmc.CalcProbSD(0, rod1, xlink.lambda, xlink.kappa, 1. / KBT,
-                           xlink.freeLength, xlink.getBindingFactorSD(1));
+            kmc.CalcProbRodSD(0, rod1, xlink.lambda, xlink.kappa, 1. / KBT,
+                              xlink.freeLength, xlink.getBindingFactorSD(1));
         // Check to make sure that probability matches up
         double test_prob = test_bind_prob(
             0, -.5 * rod0.length, .5 * rod0.length, xlink.lambda, xlink.kappa,
@@ -230,8 +230,8 @@ TEST_CASE("Test CalcProbSD for KMC<ExampleRod> class", "[calc_prob_sd]") {
         KMC<ExampleRod> kmc(xlink.posEndBind[0], 2, xlink.getRcutSD(), dt);
         // Calculate binding of protein head 1 to rod 1
         double prob =
-            kmc.CalcProbSD(0, rod1, xlink.lambda, xlink.kappa, 1. / KBT,
-                           xlink.freeLength, xlink.getBindingFactorSD(1));
+            kmc.CalcProbRodSD(0, rod1, xlink.lambda, xlink.kappa, 1. / KBT,
+                              xlink.freeLength, xlink.getBindingFactorSD(1));
         // Check to make sure that probability matches up
         double test_prob = test_bind_prob(
             sep, -.5 * rod0.length, .5 * rod0.length, xlink.lambda, xlink.kappa,
@@ -254,8 +254,8 @@ TEST_CASE("Test CalcProbSD for KMC<ExampleRod> class", "[calc_prob_sd]") {
         KMC<ExampleRod> kmc(xlink.posEndBind[0], 1, xlink.getRcutSD(), dt);
         // Calculate binding of protein head 1 to rod 1
         double prob =
-            kmc.CalcProbSD(0, rod1, xlink.lambda, xlink.kappa, 1. / KBT,
-                           xlink.freeLength, xlink.getBindingFactorSD(1));
+            kmc.CalcProbRodSD(0, rod1, xlink.lambda, xlink.kappa, 1. / KBT,
+                              xlink.freeLength, xlink.getBindingFactorSD(1));
         double test_prob = test_bind_prob(
             sep, 0, .5 * rod0.length, xlink.lambda, xlink.kappa, 1. / KBT,
             xlink.freeLength, xlink.getBindingFactorSD(1), dt);
@@ -279,8 +279,8 @@ TEST_CASE("Test CalcProbSD for KMC<ExampleRod> class", "[calc_prob_sd]") {
         std::cout << xlink.getRcutSD() << std::endl;
         // Calculate binding of protein head 1 to rod 1
         double prob =
-            kmc.CalcProbSD(0, rod1, xlink.lambda, xlink.kappa, 1. / KBT,
-                           xlink.freeLength, xlink.getBindingFactorSD(1));
+            kmc.CalcProbRodSD(0, rod1, xlink.lambda, xlink.kappa, 1. / KBT,
+                              xlink.freeLength, xlink.getBindingFactorSD(1));
         double test_prob = test_bind_prob(
             sep, 0, .5 * rod0.length, xlink.lambda, xlink.kappa, 1. / KBT,
             xlink.freeLength, xlink.getBindingFactorSD(1), dt);
@@ -303,8 +303,8 @@ TEST_CASE("Test CalcProbSD for KMC<ExampleRod> class", "[calc_prob_sd]") {
         KMC<ExampleRod> kmc(xlink.posEndBind[0], 2, xlink.getRcutSD(), dt);
         // Calculate binding of protein head 1 to rod 1
         double prob =
-            kmc.CalcProbSD(0, rod1, xlink.lambda, xlink.kappa, 1. / KBT,
-                           xlink.freeLength, xlink.getBindingFactorSD(1));
+            kmc.CalcProbRodSD(0, rod1, xlink.lambda, xlink.kappa, 1. / KBT,
+                              xlink.freeLength, xlink.getBindingFactorSD(1));
         double test_prob = test_bind_prob(
             0, sep, .5 * rod0.length, xlink.lambda, xlink.kappa, 1. / KBT,
             xlink.freeLength, xlink.getBindingFactorSD(1), dt);
@@ -328,8 +328,8 @@ TEST_CASE("Test CalcProbSD for KMC<ExampleRod> class", "[calc_prob_sd]") {
         KMC<ExampleRod> kmc(xlink.posEndBind[0], 2, xlink.getRcutSD(), dt);
         // Calculate binding of protein head 1 to rod 1
         double prob =
-            kmc.CalcProbSD(0, rod1, xlink.lambda, xlink.kappa, 1. / KBT,
-                           xlink.freeLength, xlink.getBindingFactorSD(1));
+            kmc.CalcProbRodSD(0, rod1, xlink.lambda, xlink.kappa, 1. / KBT,
+                              xlink.freeLength, xlink.getBindingFactorSD(1));
         double test_prob = test_bind_prob(
             sep, sep, .5 * rod0.length, xlink.lambda, xlink.kappa, 1. / KBT,
             xlink.freeLength, xlink.getBindingFactorSD(1), dt);
@@ -355,8 +355,8 @@ TEST_CASE("Test CalcProbSD for KMC<ExampleRod> class", "[calc_prob_sd]") {
         KMC<ExampleRod> kmc(xlink.posEndBind[0], 2, xlink.getRcutSD(), dt);
         // Calculate binding of protein head 1 to rod 1
         double prob =
-            kmc.CalcProbSD(0, rod1, xlink.lambda, xlink.kappa, 1. / KBT,
-                           xlink.freeLength, xlink.getBindingFactorSD(1));
+            kmc.CalcProbRodSD(0, rod1, xlink.lambda, xlink.kappa, 1. / KBT,
+                              xlink.freeLength, xlink.getBindingFactorSD(1));
         double test_prob = test_bind_prob(
             sep, -.5 * rod0.length, .5 * rod0.length, xlink.lambda, xlink.kappa,
             1. / KBT, xlink.freeLength, xlink.getBindingFactorSD(1), dt);
@@ -366,7 +366,8 @@ TEST_CASE("Test CalcProbSD for KMC<ExampleRod> class", "[calc_prob_sd]") {
     SECTION(
         "Exception handling when no lookup table is given for SD binding.") {
         KMC<ExampleRod> kmc(xlink.posEndBind[0], 0, xlink.getRcutSD(), dt);
-        REQUIRE_THROWS(kmc.LUCalcProbSD(0, rod0, xlink.getBindingFactorUS(0)));
+        REQUIRE_THROWS(
+            kmc.LUCalcProbRodSD(0, rod0, xlink.getBindingFactorUS(0)));
         REQUIRE_THROWS(kmc.RandomBindPosSD(0, .1));
     }
 }
@@ -421,7 +422,7 @@ TEST_CASE("Test binding probabilities of one head when near multiple rods.",
           "[calc01tot_probs]") {
     double dt = .0001;
     double KBT = 1.;
-    ExampleRod *ep_j[4];
+    std::vector<ExampleRod *> ep_j(4);
     for (int i = 0; i < 4; ++i) {
         ep_j[i] = new ExampleRod;
         *ep_j[i] = MockRod<ExampleRod>(i);
@@ -437,7 +438,6 @@ TEST_CASE("Test binding probabilities of one head when near multiple rods.",
     xlink.LUTablePtr = &LUT;
     // Initialize other vectors for calculations
     std::vector<double> bindFactors(4, xlink.getBindingFactorUS(0));
-    std::vector<int> Uniquefilter(4, 1);
     // Testing
     SECTION("Two semi-overlapping parallel rods with protein in between.") {
         double sep = .25;
@@ -445,24 +445,15 @@ TEST_CASE("Test binding probabilities of one head when near multiple rods.",
         ep_j[0]->pos[1] = 2. * sep;
         ep_j[0]->pos[2] = 0.0;
         double pos[3] = {0, sep, 0};
+
+        // Copy ep_j ptr to const ptr vector so it can run with KMC
+        std::vector<const ExampleRod *> cep_j;
+        cep_j.assign(ep_j.begin(), ep_j.end());
+
         xlink.setUnBindPos(pos);
         KMC<ExampleRod> kmc(xlink.getPosPtr(), 2, xlink.getRcutUS(),
                             xlink.getDiffU(), dt);
-        kmc.CalcTotProbsUS(ep_j, Uniquefilter, bindFactors);
-        REQUIRE(kmc.getTotProb() ==
-                Approx(0.000330797337253075).epsilon(SMALL));
-    }
-    SECTION("Test to make sure filter is working.") {
-        // Set filters for rods 2 and 3 to 0
-        Uniquefilter[2] = Uniquefilter[3] = 0;
-        ep_j[0]->pos[0] = 0.0;
-        ep_j[0]->pos[1] = 0.5;
-        ep_j[0]->pos[2] = 0.0;
-        double pos[3] = {0, 0.25, 0};
-        xlink.setUnBindPos(pos);
-        KMC<ExampleRod> kmc(xlink.getPosPtr(), 4, xlink.getRcutUS(),
-                            xlink.getDiffU(), dt);
-        kmc.CalcTotProbsUS(ep_j, Uniquefilter, bindFactors);
+        kmc.CalcTotProbsUS(cep_j, bindFactors);
         REQUIRE(kmc.getTotProb() ==
                 Approx(0.000330797337253075).epsilon(SMALL));
     }
@@ -479,11 +470,15 @@ TEST_CASE("Test binding probabilities of one head when near multiple rods.",
         ep_j[3]->pos[1] = 0.25;
         ep_j[3]->pos[2] = -0.25;
 
+        // Copy ep_j ptr to const ptr vector so it can run with KMC
+        std::vector<const ExampleRod *> cep_j;
+        cep_j.assign(ep_j.begin(), ep_j.end());
+
         double pos[3] = {0, 0.25, 0};
         xlink.setUnBindPos(pos);
         KMC<ExampleRod> kmc(xlink.getPosPtr(), 4, xlink.getRcutUS(),
                             xlink.getDiffU(), dt);
-        kmc.CalcTotProbsUS(ep_j, Uniquefilter, bindFactors);
+        kmc.CalcTotProbsUS(cep_j, bindFactors);
         CHECK(kmc.getTotProb() == Approx(0.0006615946745061504).epsilon(SMALL));
     }
     // Clean up testing
@@ -498,7 +493,8 @@ TEST_CASE("Test binding probabilities of one head when near multiple rods and "
     double dt = .0001;
     double KBT = 1.;
     // Initialize rods
-    ExampleRod *ep_j[4];
+    std::vector<ExampleRod *> ep_j(4);
+    // ExampleRod *ep_j[4];
     for (int i = 0; i < 4; ++i) {
         ep_j[i] = new ExampleRod;
         *ep_j[i] = MockRod<ExampleRod>(i);
@@ -514,29 +510,35 @@ TEST_CASE("Test binding probabilities of one head when near multiple rods and "
     xlink.LUTablePtr = &LUT;
 
     std::vector<double> bindFactors(4, xlink.getBindingFactorUS(1));
-    std::vector<int> Uniquefilter(4, 1);
 
     SECTION("No rods nearby") {
+        // Copy ep_j ptr to const ptr vector so it can run with KMC
+        std::vector<const ExampleRod *> cep_j;
+        cep_j.assign(ep_j.begin(), ep_j.end());
+
         xlink.setBind(0, ep_j[0]->gid, ep_j[0]->direction, ep_j[0]->pos, 0,
                       ep_j[0]->length, ep_j[0]->rank);
         KMC<ExampleRod> kmc(xlink.posEndBind[0], 1, xlink.getRcutSD(), dt);
 
-        kmc.CalcTotProbsSD(ep_j, Uniquefilter, ep_j[0]->gid, xlink.lambda,
-                           xlink.kappa, 1. / KBT, xlink.freeLength,
-                           bindFactors);
+        kmc.CalcTotProbsSD(cep_j, cep_j[0]->gid, xlink.lambda, xlink.kappa,
+                           1. / KBT, xlink.freeLength, bindFactors);
         CHECK(kmc.getTotProb() == Approx(0).margin(SMALL));
     }
     SECTION("One rod nearby and above bound crosslinker") {
         ep_j[1]->pos[0] = 0;
         ep_j[1]->pos[1] = 1.0;
         ep_j[1]->pos[2] = 0;
+
+        // Copy ep_j ptr to const ptr vector so it can run with KMC
+        std::vector<const ExampleRod *> cep_j;
+        cep_j.assign(ep_j.begin(), ep_j.end());
+
         xlink.setBind(0, ep_j[0]->gid, ep_j[0]->direction, ep_j[0]->pos, 0,
                       ep_j[0]->length, ep_j[0]->rank);
         KMC<ExampleRod> kmc(xlink.posEndBind[0], 2, xlink.getRcutSD(), dt);
 
-        kmc.CalcTotProbsSD(ep_j, Uniquefilter, ep_j[0]->gid, xlink.lambda,
-                           xlink.kappa, 1. / KBT, xlink.freeLength,
-                           bindFactors);
+        kmc.CalcTotProbsSD(cep_j, cep_j[0]->gid, xlink.lambda, xlink.kappa,
+                           1. / KBT, xlink.freeLength, bindFactors);
         CHECK(kmc.getTotProb() == Approx(0.0005481166497130916).epsilon(SMALL));
     }
     SECTION("Two rods nearby, above and below bound crosslinker") {
@@ -548,13 +550,16 @@ TEST_CASE("Test binding probabilities of one head when near multiple rods and "
         ep_j[2]->pos[1] = -1.0;
         ep_j[2]->pos[2] = 0;
 
+        // Copy ep_j ptr to const ptr vector so it can run with KMC
+        std::vector<const ExampleRod *> cep_j;
+        cep_j.assign(ep_j.begin(), ep_j.end());
+
         xlink.setBind(0, ep_j[0]->gid, ep_j[0]->direction, ep_j[0]->pos, 0,
                       ep_j[0]->length, ep_j[0]->rank);
         KMC<ExampleRod> kmc(xlink.posEndBind[0], 3, xlink.getRcutSD(), dt);
 
-        kmc.CalcTotProbsSD(ep_j, Uniquefilter, ep_j[0]->gid, xlink.lambda,
-                           xlink.kappa, 1. / KBT, xlink.freeLength,
-                           bindFactors);
+        kmc.CalcTotProbsSD(cep_j, ep_j[0]->gid, xlink.lambda, xlink.kappa,
+                           1. / KBT, xlink.freeLength, bindFactors);
         CHECK(kmc.getTotProb() == Approx(0.001096233299426183).epsilon(SMALL));
     }
     SECTION("Two rods nearby, above and perpendicular but same distance from "
@@ -570,14 +575,17 @@ TEST_CASE("Test binding probabilities of one head when near multiple rods and "
         ep_j[2]->direction[1] = 1;
         ep_j[2]->direction[2] = 0;
 
+        // Copy ep_j ptr to const ptr vector so it can run with KMC
+        std::vector<const ExampleRod *> cep_j;
+        cep_j.assign(ep_j.begin(), ep_j.end());
+
         // Bind crosslinker to rod
         xlink.setBind(0, ep_j[0]->gid, ep_j[0]->direction, ep_j[0]->pos, 0,
                       ep_j[0]->length, ep_j[0]->rank);
         KMC<ExampleRod> kmc(xlink.posEndBind[0], 3, xlink.getRcutSD(), dt);
 
-        kmc.CalcTotProbsSD(ep_j, Uniquefilter, ep_j[0]->gid, xlink.lambda,
-                           xlink.kappa, 1. / KBT, xlink.freeLength,
-                           bindFactors);
+        kmc.CalcTotProbsSD(cep_j, cep_j[0]->gid, xlink.lambda, xlink.kappa,
+                           1. / KBT, xlink.freeLength, bindFactors);
         CHECK(kmc.getTotProb() == Approx(0.001096233299426183).epsilon(SMALL));
     }
     SECTION("Two rods nearby, above and forward touching cutoff.") {
@@ -591,11 +599,14 @@ TEST_CASE("Test binding probabilities of one head when near multiple rods and "
         ep_j[2]->pos[1] = 0;
         ep_j[2]->pos[2] = 0;
         // ep_j[2]->setpos(pos);
+        // Copy ep_j ptr to const ptr vector so it can run with KMC
+        std::vector<const ExampleRod *> cep_j;
+        cep_j.assign(ep_j.begin(), ep_j.end());
+
         KMC<ExampleRod> kmc(xlink.posEndBind[0], 3, xlink.getRcutSD(), dt);
 
-        kmc.CalcTotProbsSD(ep_j, Uniquefilter, ep_j[0]->gid, xlink.lambda,
-                           xlink.kappa, 1. / KBT, xlink.freeLength,
-                           bindFactors);
+        kmc.CalcTotProbsSD(cep_j, cep_j[0]->gid, xlink.lambda, xlink.kappa,
+                           1. / KBT, xlink.freeLength, bindFactors);
         CHECK(ABS(kmc.getTotProb()) <
               dt * .001); // 3 decimal accuracy more than dt
     }
@@ -611,11 +622,14 @@ TEST_CASE("Test binding probabilities of one head when near multiple rods and "
         ep_j[2]->pos[1] = xlink.posEndBind[0][1] - xlink.getRcutSD() - 1.0;
         ep_j[2]->pos[2] = 0;
 
+        // Copy ep_j ptr to const ptr vector so it can run with KMC
+        std::vector<const ExampleRod *> cep_j;
+        cep_j.assign(ep_j.begin(), ep_j.end());
+
         KMC<ExampleRod> kmc(xlink.posEndBind[0], 3, xlink.getRcutSD(), dt);
 
-        kmc.CalcTotProbsSD(ep_j, Uniquefilter, ep_j[0]->gid, xlink.lambda,
-                           xlink.kappa, 1. / KBT, xlink.freeLength,
-                           bindFactors);
+        kmc.CalcTotProbsSD(cep_j, ep_j[0]->gid, xlink.lambda, xlink.kappa,
+                           1. / KBT, xlink.freeLength, bindFactors);
 
         CHECK(kmc.getTotProb() == Approx(0).margin(SMALL));
     }
@@ -632,37 +646,19 @@ TEST_CASE("Test binding probabilities of one head when near multiple rods and "
         ep_j[3]->pos[0] = 0;
         ep_j[3]->pos[1] = -1.0;
         ep_j[3]->pos[2] = 0;
+
+        // Copy ep_j ptr to const ptr vector so it can run with KMC
+        std::vector<const ExampleRod *> cep_j;
+        cep_j.assign(ep_j.begin(), ep_j.end());
+
         xlink.setBind(0, ep_j[0]->gid, ep_j[0]->direction, ep_j[0]->pos, 0,
                       ep_j[0]->length, ep_j[0]->rank);
+
         KMC<ExampleRod> kmc(xlink.posEndBind[0], 4, xlink.getRcutSD(), dt);
 
-        kmc.CalcTotProbsSD(ep_j, Uniquefilter, ep_j[0]->gid, xlink.lambda,
-                           xlink.kappa, 1. / KBT, xlink.freeLength,
-                           bindFactors);
+        kmc.CalcTotProbsSD(cep_j, ep_j[0]->gid, xlink.lambda, xlink.kappa,
+                           1. / KBT, xlink.freeLength, bindFactors);
         CHECK(kmc.getTotProb() == Approx(0.001644349949139275).epsilon(SMALL));
-    }
-    SECTION("Three rods nearby, above and below bound crosslinker. Two "
-            "overlapping but one filtered.") {
-        ep_j[1]->pos[0] = 0;
-        ep_j[1]->pos[1] = 1.0;
-        ep_j[1]->pos[2] = 0;
-
-        ep_j[2]->pos[0] = 0;
-        ep_j[2]->pos[1] = -1.0;
-        ep_j[2]->pos[2] = 0;
-
-        ep_j[3]->pos[0] = 0;
-        ep_j[3]->pos[1] = -1.0;
-        ep_j[3]->pos[2] = 0;
-        Uniquefilter[3] = 0;
-        xlink.setBind(0, ep_j[0]->gid, ep_j[0]->direction, ep_j[0]->pos, 0,
-                      ep_j[0]->length, ep_j[0]->rank);
-        KMC<ExampleRod> kmc(xlink.posEndBind[0], 4, xlink.getRcutSD(), dt);
-
-        kmc.CalcTotProbsSD(ep_j, Uniquefilter, ep_j[0]->gid, xlink.lambda,
-                           xlink.kappa, 1. / KBT, xlink.freeLength,
-                           bindFactors);
-        CHECK(kmc.getTotProb() == Approx(0.001096233299426183).epsilon(SMALL));
     }
     SECTION("Three rods nearby above, below, and on, all inside rcut.") {
         ep_j[1]->length = ep_j[2]->length = ep_j[3]->length = 2.0;
@@ -674,13 +670,17 @@ TEST_CASE("Test binding probabilities of one head when near multiple rods and "
         ep_j[2]->pos[0] = 0;
         ep_j[2]->pos[1] = -1.0;
         ep_j[2]->pos[2] = 0;
+
+        // Copy ep_j ptr to const ptr vector so it can run with KMC
+        std::vector<const ExampleRod *> cep_j;
+        cep_j.assign(ep_j.begin(), ep_j.end());
+
         xlink.setBind(0, ep_j[0]->gid, ep_j[0]->direction, ep_j[0]->pos, 0,
                       ep_j[0]->length, ep_j[0]->rank);
         KMC<ExampleRod> kmc(xlink.posEndBind[0], 4, xlink.getRcutSD(), dt);
 
-        kmc.CalcTotProbsSD(ep_j, Uniquefilter, ep_j[0]->gid, xlink.lambda,
-                           xlink.kappa, 1. / KBT, xlink.freeLength,
-                           bindFactors);
+        kmc.CalcTotProbsSD(cep_j, ep_j[0]->gid, xlink.lambda, xlink.kappa,
+                           1. / KBT, xlink.freeLength, bindFactors);
         CHECK(kmc.getTotProb() == Approx(0.0003456279751132963).epsilon(SMALL));
     }
     SECTION("Three rods partially inside rcut with different orientations.") {
@@ -702,13 +702,18 @@ TEST_CASE("Test binding probabilities of one head when near multiple rods and "
         ep_j[3]->pos[0] = 0;
         ep_j[3]->pos[1] = 0.5 * ep_j[3]->length + 1.0;
         ep_j[3]->pos[2] = 0.0;
+
+        // Copy ep_j ptr to const ptr vector so it can run with KMC
+        std::vector<const ExampleRod *> cep_j;
+        cep_j.assign(ep_j.begin(), ep_j.end());
+
         KMC<ExampleRod> kmc(xlink.posEndBind[0], 4, xlink.getRcutSD(), dt);
 
-        kmc.CalcTotProbsSD(ep_j, Uniquefilter, ep_j[0]->gid, xlink.lambda,
-                           xlink.kappa, 1. / KBT, xlink.freeLength,
-                           bindFactors);
+        kmc.CalcTotProbsSD(cep_j, ep_j[0]->gid, xlink.lambda, xlink.kappa,
+                           1. / KBT, xlink.freeLength, bindFactors);
         CHECK(kmc.getTotProb() == Approx(0.0007299123928392682).epsilon(SMALL));
     }
+    // Cleanup
     for (int i = 0; i < 4; ++i) {
         delete ep_j[i];
     }
@@ -723,7 +728,7 @@ TEST_CASE("3 crossing perpendicular rods with protein in center",
     // Arrange
     double dt = .0001;
     double KBT = 1.;
-    ExampleRod *ep_j[3];
+    std::vector<ExampleRod *> ep_j(3);
     for (int i = 0; i < 3; ++i) {
         ep_j[i] = new ExampleRod;
         *(ep_j[i]) = MockRod<ExampleRod>(i);
@@ -741,6 +746,10 @@ TEST_CASE("3 crossing perpendicular rods with protein in center",
     ep_j[2]->direction[1] = 0;
     ep_j[2]->direction[2] = 1;
 
+    // Copy ep_j ptr to const ptr vector so it can run with KMC
+    std::vector<const ExampleRod *> cep_j;
+    cep_j.assign(ep_j.begin(), ep_j.end());
+
     ExampleXlink xlink;
     xlink.setMockXlink();
 
@@ -750,14 +759,12 @@ TEST_CASE("3 crossing perpendicular rods with protein in center",
     LookupTable LUT(&lut_filler);
     xlink.LUTablePtr = &LUT;
 
-    std::vector<int> Uniquefilter(3, 1);
-
     // Act
     SECTION("Unbound") {
         KMC<ExampleRod> kmc(xlink.getPosPtr(), 3, xlink.getRcutUS(),
                             xlink.getDiffU(), dt);
         std::vector<double> bindFactorsUS(3, xlink.getBindingFactorUS(0));
-        kmc.CalcTotProbsUS(ep_j, Uniquefilter, bindFactorsUS);
+        kmc.CalcTotProbsUS(cep_j, bindFactorsUS);
         for (int i = 0; i < 3; ++i) {
             // Check individual probabilities
             CHECK(kmc.getProbs(i) ==
@@ -779,7 +786,7 @@ TEST_CASE("3 crossing perpendicular rods with protein in center",
                 double roll = ((j * RodProb) + prevRodProb) / totProb;
                 double calcBindPos = 2. * xlink.rc * (j - .5);
                 double bindpos;
-                int rod_i = kmc.whichRodBindUS(ep_j, bindpos, roll);
+                int rod_i = kmc.whichObjBindUS(cep_j, bindpos, roll);
                 CHECK(rod_i == i);
                 CHECK(bindpos == Approx(calcBindPos).epsilon(SMALL));
             }
@@ -825,9 +832,9 @@ TEST_CASE("3 crossing perpendicular rods with protein in center",
                                 xlink.getRcutSD(), dt);
             std::vector<double> bindFactorsSD(
                 3, xlink.getBindingFactorSD(1 - end_bound));
-            kmc.CalcTotProbsSD(ep_j, Uniquefilter, xlink.idBind[end_bound],
-                               xlink.lambda, xlink.kappa, 1. / KBT,
-                               xlink.freeLength, bindFactorsSD);
+            kmc.CalcTotProbsSD(cep_j, xlink.idBind[end_bound], xlink.lambda,
+                               xlink.kappa, 1. / KBT, xlink.freeLength,
+                               bindFactorsSD);
             // Check individual probabilities
             CHECK(kmc.getProbs(0) == 0.0); // No binding, already attached
             CHECK(kmc.getProbs(1) ==
@@ -880,7 +887,7 @@ TEST_CASE("4 parallel rods separated by a rod diameter on the sides with "
     // Arrange
     double dt = .0001;
     double KBT = 1.;
-    ExampleRod *ep_j[4];
+    std::vector<ExampleRod *> ep_j(4);
     for (int i = 0; i < 4; ++i) {
         ep_j[i] = new ExampleRod;
         *ep_j[i] = MockRod<ExampleRod>(i);
@@ -896,6 +903,11 @@ TEST_CASE("4 parallel rods separated by a rod diameter on the sides with "
     ep_j[1]->direction[0] = -1; // One anti-parallel
     ep_j[2]->direction[0] = 1;
     ep_j[3]->direction[0] = 1;
+
+    // Copy ep_j ptr to const ptr vector so it can run with KMC
+    std::vector<const ExampleRod *> cep_j;
+    cep_j.assign(ep_j.begin(), ep_j.end());
+
     ExampleXlink xlink;
     xlink.setMockXlink();
     // Initialize lookup table
@@ -905,13 +917,12 @@ TEST_CASE("4 parallel rods separated by a rod diameter on the sides with "
     LookupTable LUT(&lut_filler);
     xlink.LUTablePtr = &LUT;
 
-    std::vector<int> Uniquefilter(4, 1);
     // Act
     SECTION("Unbound") {
         KMC<ExampleRod> kmc(xlink.getPosPtr(), 4, xlink.getRcutUS(),
                             xlink.getDiffU(), dt);
         std::vector<double> bindFactorsUS(4, xlink.getBindingFactorUS(0));
-        kmc.CalcTotProbsUS(ep_j, Uniquefilter, bindFactorsUS);
+        kmc.CalcTotProbsUS(cep_j, bindFactorsUS);
         for (int i = 0; i < 4; ++i) {
             // Check individual probabilities
             REQUIRE(kmc.getProbs(i) ==
@@ -933,7 +944,7 @@ TEST_CASE("4 parallel rods separated by a rod diameter on the sides with "
                 double roll = ((j * RodProb) + prevRodProb) / totProb;
                 double calcBindPos = 2. * modRC * (j - .5);
                 double bindpos;
-                int rod_i = kmc.whichRodBindUS(ep_j, bindpos, roll);
+                int rod_i = kmc.whichObjBindUS(cep_j, bindpos, roll);
                 CHECK(rod_i == i);
                 CHECK(bindpos == Approx(calcBindPos).epsilon(SMALL));
             }
@@ -987,9 +998,9 @@ TEST_CASE("4 parallel rods separated by a rod diameter on the sides with "
                                 xlink.getRcutSD(), dt);
             std::vector<double> bindFactorsSD(
                 4, xlink.getBindingFactorSD(1 - end_bound));
-            kmc.CalcTotProbsSD(ep_j, Uniquefilter, xlink.idBind[end_bound],
-                               xlink.lambda, xlink.kappa, 1. / KBT,
-                               xlink.freeLength, bindFactorsSD);
+            kmc.CalcTotProbsSD(cep_j, xlink.idBind[end_bound], xlink.lambda,
+                               xlink.kappa, 1. / KBT, xlink.freeLength,
+                               bindFactorsSD);
             // Check minimum distances
             CHECK(kmc.getDistMin(1) == Approx(.5).epsilon(SMALL));
             CHECK(kmc.getDistMin(2) ==
@@ -1047,7 +1058,8 @@ TEST_CASE("6 perpendicular rods surrounding a sphere of a rod radius with "
     // Arrange
     double dt = .0001;
     double KBT = 1.;
-    ExampleRod *ep_j[6];
+    // ExampleRod *ep_j[6];
+    std::vector<ExampleRod *> ep_j(6);
     for (int i = 0; i < 6; ++i) {
         ep_j[i] = new ExampleRod;
         *ep_j[i] = MockRod<ExampleRod>(i);
@@ -1101,7 +1113,11 @@ TEST_CASE("6 perpendicular rods surrounding a sphere of a rod radius with "
     ep_j[5]->direction[0] = 0.0;
     ep_j[5]->direction[1] = 0.0;
     ep_j[5]->direction[2] = 1.0;
-    std::vector<int> Uniquefilter(6, 1);
+
+    // Copy ep_j ptr to const ptr vector so it can run with KMC
+    std::vector<const ExampleRod *> cep_j;
+    cep_j.assign(ep_j.begin(), ep_j.end());
+
     // Set protein data
     ExampleXlink xlink;
     xlink.setMockXlink();
@@ -1115,7 +1131,7 @@ TEST_CASE("6 perpendicular rods surrounding a sphere of a rod radius with "
         KMC<ExampleRod> kmc(xlink.getPosPtr(), 6, xlink.getRcutUS(),
                             xlink.getDiffU(), dt);
         std::vector<double> bindFactorsUS(6, xlink.getBindingFactorUS(0));
-        kmc.CalcTotProbsUS(ep_j, Uniquefilter, bindFactorsUS);
+        kmc.CalcTotProbsUS(cep_j, bindFactorsUS);
         for (int i = 0; i < 6; ++i) {
             // Check minimum distance
             REQUIRE(kmc.getDistMin(i) == Approx(0.25).epsilon(SMALL));
@@ -1148,7 +1164,7 @@ TEST_CASE("6 perpendicular rods surrounding a sphere of a rod radius with "
                         kmc.getMu(i) + kmc.getDistMin(i) + (modRC * j);
                 }
                 double bindpos;
-                int rod_i = kmc.whichRodBindUS(ep_j, bindpos, roll);
+                int rod_i = kmc.whichObjBindUS(cep_j, bindpos, roll);
                 CHECK(rod_i == i);
                 CHECK(bindpos == Approx(calcBindPos).epsilon(SMALL));
             }
@@ -1202,9 +1218,9 @@ TEST_CASE("6 perpendicular rods surrounding a sphere of a rod radius with "
             std::vector<double> bindFactorsSD(
                 6, xlink.getBindingFactorSD(1 - end_bound));
             // Calculate probabilities
-            kmc.CalcTotProbsSD(ep_j, Uniquefilter, xlink.idBind[end_bound],
-                               xlink.lambda, xlink.kappa, 1. / KBT,
-                               xlink.freeLength, bindFactorsSD);
+            kmc.CalcTotProbsSD(cep_j, xlink.idBind[end_bound], xlink.lambda,
+                               xlink.kappa, 1. / KBT, xlink.freeLength,
+                               bindFactorsSD);
             // Check minimum distances
             CHECK(kmc.getDistMin(1) == Approx(.5).epsilon(SMALL));
             CHECK(kmc.getDistMin(2) ==
@@ -1334,7 +1350,6 @@ TEST_CASE("Works with pointlike objects.") {
     std::vector<const ExampleSphere *> spheres = {&sphere, &sphere2};
     std::vector<const ExampleRod *> rods; // empty vector
     std::vector<double> bind_factors = {0.1, 0.1};
-    std::vector<int> unique_j = {1, 1};
     SECTION("KMC constructed with spheres") {
         KMC<ExampleRod, ExampleSphere> kmc(pos, 0, 1, rc, dt);
 
@@ -1343,7 +1358,7 @@ TEST_CASE("Works with pointlike objects.") {
     }
     SECTION("Unbound to Single Probability") {
         KMC<ExampleRod, ExampleSphere> kmc(pos, 0, 1, rc, 1, dt);
-        double prob = kmc.CalcProbUS(0, sphere, bind_fac);
+        double prob = kmc.CalcProbSphereUS(0, sphere, bind_fac);
         double exp_prob =
             bind_fac * 4.0 * M_PI * SQR(sphere.radius) * dt / bind_vol;
 
@@ -1359,9 +1374,9 @@ TEST_CASE("Works with pointlike objects.") {
         double exp_prob =
             bind_fac * 4.0 * M_PI * SQR(sphere.radius) * expon * dt;
         double prob =
-            kmc.CalcProbSD(0, sphere, lambda, kappa, beta, l0, bind_fac);
-        kmc.CalcTotProbsSD(rods, spheres, unique_j, 552, lambda, kappa, beta,
-                           l0, bind_factors);
+            kmc.CalcProbSphereSD(0, sphere, lambda, kappa, beta, l0, bind_fac);
+        kmc.CalcTotProbsSD(rods, spheres, 552, lambda, kappa, beta, l0,
+                           bind_factors);
 
         // Direct calculations
         CHECK(prob == Approx(exp_prob).epsilon(1e-8));
@@ -1383,7 +1398,7 @@ TEST_CASE("Works with pointlike objects.") {
              f_dep_l * (sqrt(SQR(pos[0]) + SQR(pos[1]) + SQR(pos[2])) - l0)));
         exp_prob = bind_fac * 4.0 * M_PI * SQR(sphere.radius) * expon * dt;
         KMC<ExampleRod, ExampleSphere> kmc_lut(pos, 0, 2, dt, &LUT);
-        prob = kmc_lut.LUCalcProbSD(0, sphere, bind_fac);
+        prob = kmc_lut.LUCalcProbSphereSD(0, sphere, bind_fac);
         CHECK(prob == Approx(exp_prob).epsilon(1e-8));
 
         // Again, test total prob for 2 identical spheres
