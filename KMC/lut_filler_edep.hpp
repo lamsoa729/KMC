@@ -53,11 +53,13 @@ class LUTFillerEdep : public LUTFiller {
     double getExpFact2() const { return exp_fact_; }
     double getEFact() const { return 0; } // in exp_fact
     double getFDepLength() const { return 0; }
-    double getRestLength() const { return rest_length_ ; }
+    double getRestLength() const { return rest_length_; }
 
     // Calculates the Boltzmann factor for point-like object
     inline double calcBoltzmann(double dist_cent) const {
-        return exp(-exp_fact_ * SQR(dist_cent - rest_length_));
+        /* TODO: Make dimensionful unit test for this <30-03-21, ARL> */
+        double r = dist_cent / length_scale_;
+        return exp(-exp_fact_ * SQR(r - rest_length_));
     }
 
     // double getUpperBound() const;
@@ -76,17 +78,5 @@ class LUTFillerEdep : public LUTFiller {
         return bind_vol_integral(upper_bound_, exp_fact_, rest_length_);
     }
 };
-
-// double LUTFillerEdep::getUpperBound() const {
-//    return sqrt(-log(small_) / exp_fact_) + rest_length_;
-//}
-// double LUTFillerEdep::getIntegralResult(double dist_perp, double dist_para_l,
-//                                        double dist_para_u) const {
-//    return integral(dist_perp, dist_para_l, dist_para_u, exp_fact_,
-//                    rest_length_);
-//}
-// double LUTFillerEdep::getBindingVolume() const {
-//    return bind_vol_integral(upper_bound_, exp_fact_, rest_length_);
-//}
 
 #endif /* end of include guard LUT_FILLER_EDEP_HPP */

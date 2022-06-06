@@ -39,10 +39,9 @@ class LUTFillerAsym : public LUTFiller {
     LUTFillerAsym(double dist_para_grid_num, double dist_perp_grid_num)
         : LUTFiller(dist_para_grid_num, dist_perp_grid_num) {}
 
-    /*! \brief Initialize lookup table filler
+    /*! \brief Initialize lookup table filler for asymmetric spring
      *
      * Stores precalculated values of the integral
-     * \int_0^y exp{-exp_fact_ (sqrt[x^2 + l_min^2] - l_o - D)^2}dx
      * To do this, grid spacing are calculated based on the value of exp_fact_
      * and freeLength. The upper bound lUB is calculated so that the maximum
      * change at the end of the integral is less than 10^{-4}. Everything is
@@ -83,14 +82,15 @@ class LUTFillerAsym : public LUTFiller {
     double getFDepLength() const { return fdep_length_; }
     double getRestLength() const { return rest_length_; }
 
-
     // Calculates the Boltzmann factor for point-like object
     inline double calcBoltzmann(double dist_cent) const {
-       
+        /* TODO: Make dimensionful unit test for this <30-03-21, ARL> */
+        double r = dist_cent / length_scale_;
+
         // exp_fact1_ used for compressed spring, exp_fact2_ for stretched
         double exp_fact = dist_cent < rest_length_ ? exp_fact1_ : exp_fact2_;
-        return exp(-exp_fact * ((1 - e_fact_) * SQR(dist_cent - rest_length_)
-                   -fdep_length_ * (dist_cent - rest_length_)));
+        return exp(-exp_fact * ((1 - e_fact_) * SQR(r - rest_length_) -
+                                fdep_length_ * (r - rest_length_)));
     }
 
     double getUpperBound() const {

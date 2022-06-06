@@ -72,6 +72,8 @@ T two_step_prob(T const &rate1, T const &rate2, T const &total_time,
 
 template <class T>
 T two_step_max_prob(T const &rate1, T const &rate2, T const &total_time) {
+    if (rate1 == 0. && rate2 == 0.)
+        return 0.;
     T t_max = max_time_of_two_step_prob(rate1, rate2, total_time);
     T prob = two_step_prob(rate1, rate2, total_time, t_max);
     return prob;

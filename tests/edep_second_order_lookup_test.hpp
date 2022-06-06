@@ -1,6 +1,6 @@
 #include "KMC/integrals.hpp"
 #include "KMC/lookup_table.hpp"
-#include "KMC/lut_filler_edep.hpp"
+#include "KMC/lut_filler_2nd_order.hpp"
 #include "KMC/macros.hpp"
 #include "catch.hpp"
 #include "test_helpers.hpp"
@@ -12,7 +12,7 @@
 
 #include <boost/math/quadrature/gauss_kronrod.hpp>
 
-TEST_CASE("Lookup table test SOFT spring ", "[lookup_soft]") {
+TEST_CASE("2nd order lookup table test SOFT spring ", "[lookup_soft_2nd]") {
     constexpr double errTol = 1e-3;
     const double D = 0.024;
     const double alpha = 0.1 / (2 * 0.00411);
@@ -20,7 +20,7 @@ TEST_CASE("Lookup table test SOFT spring ", "[lookup_soft]") {
     const double M = alpha * D * D;
     const double ell0 = freelength / D;
 
-    LUTFillerEdep lut_filler(256, 256);
+    LUTFiller2ndOrder lut_filler(256, 256);
     lut_filler.Init(alpha, freelength, D);
     LookupTable LUT(&lut_filler);
 
@@ -29,26 +29,26 @@ TEST_CASE("Lookup table test SOFT spring ", "[lookup_soft]") {
     // ("distPerp = 0.2 > D+ell0, single peaked")
     for (double sbound = 0; sbound < 20; sbound += 0.5) {
         CHECK(LUT.Lookup(distPerp, sbound * D) ==
-              Approx(D * integral(distPerp / D, 0, sbound, M, ell0))
+              Approx(D * edep_second_order_integral(distPerp / D, 0, sbound, M, ell0))
                   .epsilon(errTol));
     }
     // ("distPerp = 0.1 > D+ell0, single peaked")
     distPerp = 0.1;
     for (double sbound = 0; sbound < 20; sbound += 0.5) {
         CHECK(LUT.Lookup(distPerp, sbound * D) ==
-              Approx(D * integral(distPerp / D, 0, sbound, M, ell0))
+              Approx(D * edep_second_order_integral(distPerp / D, 0, sbound, M, ell0))
                   .epsilon(errTol));
     }
     // ("distPerp = 0.06 < D+ell0, double peaked")
     distPerp = 0.06;
     for (double sbound = 0; sbound < 20; sbound += 0.5) {
         CHECK(LUT.Lookup(distPerp, sbound * D) ==
-              Approx(D * integral(distPerp / D, 0, sbound, M, ell0))
+              Approx(D * edep_second_order_integral(distPerp / D, 0, sbound, M, ell0))
                   .epsilon(errTol));
     }
 }
 
-TEST_CASE("Lookup table test MEDIUM spring ", "[lookup_med]") {
+TEST_CASE("2nd order lookup table test MEDIUM spring ", "[2nd_order_lookup_med]") {
     constexpr double errTol = 1e-3;
     const double D = 0.024;
     const double alpha = 1.0 / (2 * 0.00411);
@@ -56,7 +56,7 @@ TEST_CASE("Lookup table test MEDIUM spring ", "[lookup_med]") {
     const double M = alpha * D * D;
     const double ell0 = freelength / D;
 
-    LUTFillerEdep lut_filler(256, 256);
+    LUTFiller2ndOrder lut_filler(256, 256);
     lut_filler.Init(alpha, freelength, D);
     LookupTable LUT(&lut_filler);
 
@@ -65,34 +65,34 @@ TEST_CASE("Lookup table test MEDIUM spring ", "[lookup_med]") {
     distPerp = 0.2;
     for (double sbound = 0; sbound < 20; sbound += 0.5) {
         CHECK(LUT.Lookup(distPerp, sbound * D) ==
-              Approx(D * integral(distPerp / D, 0, sbound, M, ell0))
+              Approx(D * edep_second_order_integral(distPerp / D, 0, sbound, M, ell0))
                   .epsilon(errTol));
     }
     // ("distPerp = 0.1 > D+ell0, single peaked")
     distPerp = 0.1;
     for (double sbound = 0; sbound < 20; sbound += 0.5) {
         CHECK(LUT.Lookup(distPerp, sbound * D) ==
-              Approx(D * integral(distPerp / D, 0, sbound, M, ell0))
+              Approx(D * edep_second_order_integral(distPerp / D, 0, sbound, M, ell0))
                   .epsilon(errTol));
     }
     // ("distPerp = 0.06 < D+ell0, double peaked")
     distPerp = 0.06;
     for (double sbound = 0; sbound < 20; sbound += 0.5) {
         CHECK(LUT.Lookup(distPerp, sbound * D) ==
-              Approx(D * integral(distPerp / D, 0, sbound, M, ell0))
+              Approx(D * edep_second_order_integral(distPerp / D, 0, sbound, M, ell0))
                   .epsilon(errTol));
     }
 }
 
-TEST_CASE("Lookup table test STIFF spring ", "[lookup_stiff]") {
-    constexpr double absTol = 1e-5;
+TEST_CASE("2nd order lookup table test STIFF spring ", "[lookup_stiff]") {
+    constexpr double absTol = 1e-4;
     const double D = 0.024;
     const double alpha = 10.0 / (2 * 0.00411);
     const double freelength = 0.05 + D;
     const double M = alpha * D * D;
     const double ell0 = freelength / D;
 
-    LUTFillerEdep lut_filler(256, 256);
+    LUTFiller2ndOrder lut_filler(256, 256);
     lut_filler.Init(alpha, freelength, D);
     LookupTable LUT(&lut_filler);
 
@@ -103,7 +103,7 @@ TEST_CASE("Lookup table test STIFF spring ", "[lookup_stiff]") {
         // CHECK(errorPass(LUT.Lookup(distPerp, sbound * D),
         // D * integral(distPerp / D, 0, sbound, M, ell0)));
         CHECK(LUT.Lookup(distPerp, sbound * D) ==
-              Approx(D * integral(distPerp / D, 0, sbound, M, ell0))
+              Approx(D * edep_second_order_integral(distPerp / D, 0, sbound, M, ell0))
                   .margin(absTol));
     }
     // ("distPerp = 0.1 > D+ell0, single peaked")
@@ -112,26 +112,26 @@ TEST_CASE("Lookup table test STIFF spring ", "[lookup_stiff]") {
         // CHECK(errorPass(LUT.Lookup(distPerp, sbound * D),
         // D * integral(distPerp / D, 0, sbound, M, ell0)));
         CHECK(LUT.Lookup(distPerp, sbound * D) ==
-              Approx(D * integral(distPerp / D, 0, sbound, M, ell0))
+              Approx(D * edep_second_order_integral(distPerp / D, 0, sbound, M, ell0))
                   .margin(absTol));
     }
     // ("distPerp = 0.06 < D+ell0, double peaked")
     distPerp = 0.06;
     for (double sbound = 0; sbound < 20; sbound += 0.5) {
         CHECK(errorPass(LUT.Lookup(distPerp, sbound * D),
-                        D * integral(distPerp / D, 0, sbound, M, ell0)));
+                        D * edep_second_order_integral(distPerp / D, 0, sbound, M, ell0)));
         CHECK(LUT.Lookup(distPerp, sbound * D) ==
-              Approx(D * integral(distPerp / D, 0, sbound, M, ell0))
+              Approx(D * edep_second_order_integral(distPerp / D, 0, sbound, M, ell0))
                   .margin(absTol));
     }
 }
 
-TEST_CASE("Lookup table test manual medium spring REL error", "[lookup]") {
+TEST_CASE("2nd order lookup table test manual medium spring REL error", "[2nd order lookup]") {
     // integrated by mathematica
     const double D = 0.024;
     constexpr double tol = 1e-4;
 
-    LUTFillerEdep lut_filler(256, 256);
+    LUTFiller2ndOrder lut_filler(256, 256);
     lut_filler.Init(1.0 / (2 * 0.00411), 0.05 + D, D);
     LookupTable LUT(&lut_filler);
 
@@ -171,13 +171,13 @@ TEST_CASE("Lookup table test manual medium spring REL error", "[lookup]") {
     CHECK(LUT.Lookup(distPerp, 6.0 * D) / D == Approx(5.140580).epsilon(tol));
 }
 
-TEST_CASE("REVERSE Lookup table test manual medium spring REL error",
-          "[REVERSE lookup]") {
+TEST_CASE("REVERSE 2nd order lookup table test manual medium spring REL error",
+          "[REVERSE 2nd order lookup]") {
     // integrated by mathematica
     const double D = 0.024;
 
     double distPerp = 0;
-    LUTFillerEdep lut_filler(256, 256);
+    LUTFiller2ndOrder lut_filler(256, 256);
     lut_filler.Init(1.0 / (2 * 0.00411), 0.05 + D, D);
     LookupTable LUT(&lut_filler);
     // LUT.Init(&lut_filler);
@@ -211,7 +211,7 @@ TEST_CASE("REVERSE Lookup table test manual medium spring REL error",
     // CHECK(relError(LUT.ReverseLookup(distPerp / D, 4.37561), 7.0) < tol);
 }
 
-TEST_CASE("REVERSE Lookup table test soft spring ", "[REVERSE lookup]") {
+TEST_CASE("REVERSE 2nd order lookup table test soft spring ", "[REVERSE 2nd order lookup]") {
     const double tol = 1e-2;
     const double D = 0.024;
     const double alpha = 0.1 / (2 * 0.00411);
@@ -219,7 +219,7 @@ TEST_CASE("REVERSE Lookup table test soft spring ", "[REVERSE lookup]") {
     const double M = alpha * D * D;
     const double ell0 = freelength / D;
 
-    LUTFillerEdep lut_filler(256, 256);
+    LUTFiller2ndOrder lut_filler(256, 256);
     lut_filler.Init(alpha, freelength, D);
     LookupTable LUT(&lut_filler);
 
@@ -227,27 +227,27 @@ TEST_CASE("REVERSE Lookup table test soft spring ", "[REVERSE lookup]") {
     distPerp = 0.2;
     // ("distPerp = 0.2 > D+ell0, single peaked")
     for (double sbound = 0; sbound < LUT.getNonDsbound() / 2; sbound += 0.2) {
-        double val = integral(distPerp / D, 0, sbound, M, ell0);
+        double val = edep_second_order_integral(distPerp / D, 0, sbound, M, ell0);
         CHECK(LUT.ReverseLookup(distPerp, val * D) ==
               Approx(sbound * D).epsilon(tol));
     }
     // ("distPerp = 0.1 > D+ell0, single peaked")
     distPerp = 0.1;
     for (double sbound = 0; sbound < LUT.getNonDsbound() / 2; sbound += 0.2) {
-        double val = integral(distPerp / D, 0, sbound, M, ell0);
+        double val = edep_second_order_integral(distPerp / D, 0, sbound, M, ell0);
         CHECK(LUT.ReverseLookup(distPerp, val * D) ==
               Approx(sbound * D).epsilon(tol));
     }
     // ("distPerp = 0.06 < D+ell0, double peaked")
     distPerp = 0.06;
     for (double sbound = 0; sbound < LUT.getNonDsbound() / 2; sbound += 0.2) {
-        double val = integral(distPerp / D, 0, sbound, M, ell0);
+        double val = edep_second_order_integral(distPerp / D, 0, sbound, M, ell0);
         CHECK(LUT.ReverseLookup(distPerp, val * D) ==
               Approx(sbound * D).epsilon(tol));
     }
 }
 
-TEST_CASE("REVERSE Lookup table test medium spring ", "[REVERSE lookup]") {
+TEST_CASE("REVERSE 2nd order lookup table test medium spring ", "[REVERSE 2nd order lookup]") {
     const double tol = 1e-2;
     const double D = 0.024;
     const double alpha = 1.0 / (2 * 0.00411);
@@ -255,7 +255,7 @@ TEST_CASE("REVERSE Lookup table test medium spring ", "[REVERSE lookup]") {
     const double M = alpha * D * D;
     const double ell0 = freelength / D;
 
-    LUTFillerEdep lut_filler(256, 256);
+    LUTFiller2ndOrder lut_filler(256, 256);
     lut_filler.Init(alpha, freelength, D);
     LookupTable LUT(&lut_filler);
 
@@ -263,7 +263,7 @@ TEST_CASE("REVERSE Lookup table test medium spring ", "[REVERSE lookup]") {
     distPerp = 0.2;
     // ("distPerp = 0.2 > D+ell0, single peaked")
     for (double sbound = 0; sbound < LUT.getNonDsbound() / 3; sbound += 0.2) {
-        double val = integral(distPerp / D, 0, sbound, M, ell0);
+        double val = edep_second_order_integral(distPerp / D, 0, sbound, M, ell0);
         // CHECK(errorPass(LUT.ReverseLookup(distPerp, val * D), sbound * D));
         CHECK(LUT.ReverseLookup(distPerp, val * D) ==
               Approx(sbound * D).epsilon(tol));
@@ -271,7 +271,7 @@ TEST_CASE("REVERSE Lookup table test medium spring ", "[REVERSE lookup]") {
     // ("distPerp = 0.1 > D+ell0, single peaked")
     distPerp = 0.1;
     for (double sbound = 0; sbound < LUT.getNonDsbound() / 2; sbound += 0.2) {
-        double val = integral(distPerp / D, 0, sbound, M, ell0);
+        double val = edep_second_order_integral(distPerp / D, 0, sbound, M, ell0);
         // CHECK(errorPass(LUT.ReverseLookup(distPerp, val * D), sbound * D));
         CHECK(LUT.ReverseLookup(distPerp, val * D) ==
               Approx(sbound * D).epsilon(tol));
@@ -279,14 +279,14 @@ TEST_CASE("REVERSE Lookup table test medium spring ", "[REVERSE lookup]") {
     // ("distPerp = 0.06 < D+ell0, double peaked")
     distPerp = 0.06;
     for (double sbound = 0; sbound < LUT.getNonDsbound() / 2; sbound += 0.2) {
-        double val = integral(distPerp / D, 0, sbound, M, ell0);
+        double val = edep_second_order_integral(distPerp / D, 0, sbound, M, ell0);
         // CHECK(errorPass(LUT.ReverseLookup(distPerp, val * D), sbound * D));
         CHECK(LUT.ReverseLookup(distPerp, val * D) ==
               Approx(sbound * D).epsilon(tol));
     }
 }
 
-TEST_CASE("REVERSE Lookup table test stiff spring ", "[REVERSE lookup]") {
+TEST_CASE("REVERSE 2nd order lookup table test stiff spring ", "[REVERSE 2nd lookup]") {
     const double tol = 1e-2;
 
     const double D = 0.024;
@@ -295,7 +295,7 @@ TEST_CASE("REVERSE Lookup table test stiff spring ", "[REVERSE lookup]") {
     const double M = alpha * D * D;
     const double ell0 = freelength / D;
 
-    LUTFillerEdep lut_filler(256, 256);
+    LUTFiller2ndOrder lut_filler(256, 256);
     lut_filler.Init(alpha, freelength, D);
     LookupTable LUT(&lut_filler);
 
@@ -315,7 +315,7 @@ TEST_CASE("REVERSE Lookup table test stiff spring ", "[REVERSE lookup]") {
     // ("distPerp = 0.1 > D+ell0, single peaked")
     distPerp = 0.1;
     for (double sbound = 0; sbound < LUT.getNonDsbound() / 2; sbound += 0.1) {
-        double val = integral(distPerp / D, 0, sbound, M, ell0);
+        double val = edep_second_order_integral(distPerp / D, 0, sbound, M, ell0);
         CHECK(LUT.ReverseLookup(distPerp, val * D) ==
               Approx(sbound * D).margin(tol));
         // CHECK(errorPass(LUT.ReverseLookup(distPerp, val * D), sbound * D,
@@ -324,7 +324,7 @@ TEST_CASE("REVERSE Lookup table test stiff spring ", "[REVERSE lookup]") {
     // ("distPerp = 0.06 < D+ell0, double peaked")
     distPerp = 0.06;
     for (double sbound = 0; sbound < LUT.getNonDsbound() / 2; sbound += 0.1) {
-        double val = integral(distPerp / D, 0, sbound, M, ell0);
+        double val = edep_second_order_integral(distPerp / D, 0, sbound, M, ell0);
         CHECK(LUT.ReverseLookup(distPerp, val * D) ==
               Approx(sbound * D).epsilon(tol));
         // CHECK(errorPass(LUT.ReverseLookup(distPerp, val * D), sbound * D,
@@ -332,14 +332,14 @@ TEST_CASE("REVERSE Lookup table test stiff spring ", "[REVERSE lookup]") {
     }
 }
 
-TEST_CASE("REVERSE binary Lookup with different springs", "[REVERSE binary]") {
+TEST_CASE("REVERSE binary 2nd order lookup with different springs", "[REVERSE 2nd order  binary]") {
 
     const double D = 0.024;
     const double freelength = 0.05;
     const double ell0 = freelength / D;
     double alpha, M;
 
-    LUTFillerEdep lut_filler(256, 256);
+    LUTFiller2ndOrder lut_filler(256, 256);
 
     double rowIndexMax = lut_filler.getDistPerpGridNum();
     double colIndexMax = lut_filler.getDistParaGridNum();
@@ -361,7 +361,7 @@ TEST_CASE("REVERSE binary Lookup with different springs", "[REVERSE binary]") {
             double distPerpAvg = distPerpSpacing * (i + .5) * D;
             double sbound = LUT.ReverseLookup(distPerpAvg, Cavg);
             double Cintegral =
-                integral(distPerpAvg / D, 0, sbound / D, M, ell0) * D;
+                edep_second_order_integral(distPerpAvg / D, 0, sbound / D, M, ell0) * D;
             CHECK(Cintegral == Approx(Cavg).epsilon(RELTOL));
         }
     }
@@ -382,7 +382,7 @@ TEST_CASE("REVERSE binary Lookup with different springs", "[REVERSE binary]") {
             double distPerpAvg = distPerpSpacing * (i + .5) * D;
             double sbound = LUT.ReverseLookup(distPerpAvg, Cavg);
             double Cintegral =
-                integral(distPerpAvg / D, 0, sbound / D, M, ell0) * D;
+                edep_second_order_integral(distPerpAvg / D, 0, sbound / D, M, ell0) * D;
             CHECK(Cintegral == Approx(Cavg).epsilon(RELTOL));
         }
     }
@@ -403,21 +403,21 @@ TEST_CASE("REVERSE binary Lookup with different springs", "[REVERSE binary]") {
             double distPerpAvg = distPerpSpacing * (i + .5) * D;
             double sbound = LUT.ReverseLookup(distPerpAvg, Cavg);
             double Cintegral =
-                integral(distPerpAvg / D, 0, sbound / D, M, ell0) * D;
+                edep_second_order_integral(distPerpAvg / D, 0, sbound / D, M, ell0) * D;
             CHECK(Cintegral == Approx(Cavg).margin(1e-5));
         }
     }
 }
 
-TEST_CASE("Test the calculation of binding volume.", "[bind volume]") {
+TEST_CASE("Test the calculation of 2nd order binding volume.", "[2nd order bind volume]") {
     const double D = 0.024;
     const double freelength = 0.05;
     double alpha = 1. / (2 * 0.00411);
     const double ell0 = freelength / D;
     double M = alpha * D * D;
 
-    LUTFillerEdep lut_filler(256, 256);
-    SECTION("Check LUTfiller for proper binding volume") {
+    LUTFiller2ndOrder lut_filler(256, 256);
+    SECTION("Check LUTfiller for proper 2nd order binding volume") {
         for (double i = 0.1; i < 1.0; i += .1) {
             lut_filler.Init(alpha * i, freelength, D);
             double bind_vol =
@@ -426,7 +426,7 @@ TEST_CASE("Test the calculation of binding volume.", "[bind volume]") {
                     Approx(bind_vol).epsilon(1e-8));
         }
     }
-    SECTION("Check LUT for proper binding volume") {
+    SECTION("Check LUT for proper 2nd order binding volume") {
         for (double i = 0.1; i < 1.0; i += .1) {
             lut_filler.Init(alpha * i, freelength, D);
             LookupTable LUT(&lut_filler, true);

@@ -22,6 +22,7 @@
 #include "lut_filler_asym.hpp"
 #include "lut_filler_edep.hpp"
 #include "lut_filler_fdep.hpp"
+#include "lut_filler_2nd_order.hpp"
 #include "macros.hpp"
 
 /**
@@ -43,10 +44,9 @@ class LookupTable {
 
   protected:
     double UB_; ///< Upper bound distance of lookup table, dimensionless
-    double bind_vol_ = 1.; ///< Volume that head can bind within,
-    // dimensionless
-    double D_; ///< dimensional rod Diameter, length scale
+    double D_;  ///< dimensional rod Diameter, length scale
 
+    double bind_vol_ = 1.; ///< Volume that head can bind within, dimensionful
   public:
     static constexpr double small_ = 1e-4;
 
@@ -59,7 +59,7 @@ class LookupTable {
     double para_spacing_;           ///< dimensionless
     double para_spacing_inv_;       ///< dimensionless
     std::vector<double> para_grid_; ///< dimensionless horizontal direction
-    
+
     std::vector<double> table_; ///< the 2D matrix of dimensionless values
 
   public:
@@ -76,7 +76,7 @@ class LookupTable {
      *
      * \return void
      */
-    LookupTable(LUTFiller *lut_filler) {
+    LookupTable(LUTFiller *lut_filler, bool use_bind_vol = false) {
         // setup length scale and dimensionless lengths
 
         // truncate the integration when integrand < SMALL
@@ -86,7 +86,7 @@ class LookupTable {
         e_fact_ = lut_filler->getEFact();
         fdep_length_ = lut_filler->getFDepLength();
         rest_length_ = lut_filler->getRestLength();
-       
+
         UB_ = lut_filler->getUpperBound();
         D_ = lut_filler->getLengthScale();
 
@@ -102,6 +102,13 @@ class LookupTable {
         lut_filler->FillDistPerpGrid(perp_grid_);
 
         lut_filler->FillMatrix(table_);
+        // If not using binding volume, binding volume will be set to 1 so
+        // it does not effect KMC calculations
+        if (use_bind_vol) {
+            setBindVol(lut_filler->getBindingVolume());
+        } else {
+            setDBindVol(1.);
+        }
     }
 
     /**
@@ -109,11 +116,13 @@ class LookupTable {
      *
      * @return double Boltzmann factor
      */
-    inline double calcBoltzmann(double distCent) const { 
+    inline double calcBoltzmann(double dist_cent) const {
+        /* TODO: Make dimensionful unit test for this <30-03-21, ARL> */
+        double r = dist_cent / D_;
         // exp_fact1_ used for compressed spring, exp_fact2_ for stretched
-        double exp_fact = distCent < rest_length_ ? exp_fact1_ : exp_fact2_;
-        return exp(-exp_fact * ((1 - e_fact_) * SQR(distCent - rest_length_)
-                   -fdep_length_ * (distCent - rest_length_)));
+        double exp_fact = r < rest_length_ ? exp_fact1_ : exp_fact2_;
+        return exp(-exp_fact * ((1. - e_fact_) * SQR(r - rest_length_) -
+                                fdep_length_ * (r - rest_length_)));
     }
 
     /**
@@ -128,7 +137,7 @@ class LookupTable {
      *
      * @return double
      */
-    double getBindVolume() const { return CUBE(D_) * bind_vol_; }
+    double getBindVolume() const { return bind_vol_; }
 
     /**
      * @brief Get the dimensional cutoff distance of the lookup table.
@@ -151,12 +160,26 @@ class LookupTable {
      */
     double getDsbound() const { return D_ * para_grid_.back(); }
 
-    /*! \brief Set the binding volume of second head of protein.
+    /*! \brief Set the binding volume of second head of protein making it
+     * dimensionful. Will remain 1 otherwise.
+     *
+     * \return void
+     */
+    void setBindVol(double bind_vol) {
+        assert(bind_vol > 0);
+        bind_vol_ = CUBE(D_) * bind_vol;
+    }
+
+    /*! \brief Set dimensionful binding volume of second head of protein.
      * Will remain 1 otherwise.
      *
      * \return void
      */
-    void setBindVol(double bind_vol) { bind_vol_ = bind_vol; }
+
+    void setDBindVol(double bind_vol) {
+        assert(bind_vol > 0);
+        bind_vol_ = bind_vol;
+    }
 
     /*********************
      *  output LookupTable
@@ -223,8 +246,8 @@ class LookupTable {
         }
         if (colIndex > para_grid_num_ - 2) {
             //#ifndef NDEBUG
-            //            printf("Warning: sbound %g very large, clamp to grid
-            //            UB\n", sbound);
+            //            printf("Warning: sbound %g very large, clamp to
+            //            grid UB\n", sbound);
             //#endif
             colIndex = para_grid_num_ - 2;
             colFrac = 1;
@@ -251,9 +274,8 @@ class LookupTable {
      * distance away and value of integral you retrieve the upper limit of
      * integration
      *
-     * \param dist_perp l_min in the above integral. The distance away from the
-     * infinite carrier line.
-     * \param val Resultant value of integral
+     * \param dist_perp l_min in the above integral. The distance away from
+     * the infinite carrier line. \param val Resultant value of integral
      *
      * \return double Dimensional upper bound of integral
      */
@@ -277,9 +299,9 @@ class LookupTable {
         }
         if (rowIndex > perp_grid_num_ - 2) {
 #ifndef NDEBUG
-            printf(
-                "Warning: dist_perp %g very large, clamp to grid upper limit\n",
-                dist_perp);
+            printf("Warning: dist_perp %g very large, clamp to grid upper "
+                   "limit\n",
+                   dist_perp);
 #endif
             rowIndex = perp_grid_num_ - 2;
             rowFrac = 1;
@@ -346,8 +368,8 @@ class LookupTable {
 
         //        if (lower0 == table.begin() + index1UB) {
         //#ifndef NDEBUG
-        //            printf("Warning: val %g too large for row0 lookup with max
-        //            of %g. "
+        //            printf("Warning: val %g too large for row0 lookup with
+        //            max of %g. "
         //                   "Setting to a max sbound of %g \n",
         //                   val, *(lower0), para_grid_[colIndex0]);
         //#endif
@@ -449,11 +471,11 @@ class LookupTable {
             double colVal =
                 table_[getTableIndex(rowMin, colAvg)] * (1 - rowFrac)  //
                 + table_[getTableIndex(rowMin + 1, colAvg)] * rowFrac; //
-            // printf("colAvg = %d, colVal = %f, val = %f\n", colAvg, colVal,
-            // val);
+            // printf("colAvg = %d, colVal = %f, val = %f\n", colAvg,
+            // colVal, val);
 
-            // Accuracy of table is set to 1e-4, use 1e-5 to set colMax value.
-            // Otherwise, you will always reach the end of column
+            // Accuracy of table is set to 1e-4, use 1e-5 to set colMax
+            // value. Otherwise, you will always reach the end of column
             if ((val - colVal) < 1e-5)
                 colMax = colAvg;
             else if (colVal < val)
@@ -472,7 +494,8 @@ class LookupTable {
         // Linear interpolation with known values
         double sbound = (val - valMin) / (valMax - valMin) * para_spacing_ +
                         para_grid_[colMin];
-        // Make sure sbound is not calculated to be outside range [sMin, sMax]
+        // Make sure sbound is not calculated to be outside range [sMin,
+        // sMax]
         if (sbound > sMax)
             return sMax;
         else if (sbound < sMin)
@@ -501,7 +524,8 @@ class LookupTable {
     //    table.resize(perp_grid_num_ * para_grid_num_, 0);
 
     //    //// boost integration parameters
-    //    // const int max_depth = 10; // maximum number of interval splittings
+    //    // const int max_depth = 10; // maximum number of interval
+    //    splittings
     //    // const double tol = 1e-8;  // maximum relative error
 
     //    // row major
@@ -515,8 +539,8 @@ class LookupTable {
     //            assert(!(sbound < 0));
     //            // double result = integral(perp_grid_[i], 0, sbound, M_,
     //            // ell0_);
-    //            double result = getIntegralResult(perp_grid_[i], 0, sbound);
-    //            table_[i * para_grid_num_ + j] = result;
+    //            double result = getIntegralResult(perp_grid_[i], 0,
+    //            sbound); table_[i * para_grid_num_ + j] = result;
     //        }
     //    }
     //}
