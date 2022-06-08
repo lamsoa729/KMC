@@ -585,8 +585,8 @@ void KMC<TRod, TSphere>::UpdateSphereDistArr(const int j_sphere,
     /* Update distance from protein to sphere center and min distance from
        protein to sphere */
     distCentArr_[j_sphere] = magnitude(dsScaled);
-    assert(!isnan(distCentArr_[j_sphere]));
-    // if (distCentArr_[j_sphere] < 0 || isnan(distCentArr_[j_sphere])) {
+    assert(!std::isnan(distCentArr_[j_sphere]));
+    // if (distCentArr_[j_sphere] < 0 || std::isnan(distCentArr_[j_sphere])) {
     //    for (int i = n_periodic_; i < 3; ++i) {
     //        std::cout << dsScaled[i] << " ";
     //    }
