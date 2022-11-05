@@ -42,23 +42,20 @@ T max_time_of_two_step_prob(T const &rate1, T const &rate2,
     const boost::uintmax_t maxit = 20; // Limit to maximum iterations.
     boost::uintmax_t it =
         maxit; // Initally our chosen max iterations, but updated with actual.
-    bool is_rising =
-        false; // So if guess is too low, then try increasing guess.
+    bool is_rising = false; // If guess is too low, try increasing guess.
     int digits = std::numeric_limits<T>::digits; // Maximum possible binary
                                                  // digits accuracy for type T.
-    // Some fraction of digits is used to control how accurate o try to make the
-    // result.
+    // Fraction of digits used to control accuracy of result.
     int get_digits =
         digits - 3; // We have to have a non-zero interval at each step, so
                     // maximum accuracy is digits - 1.  But we also have to
                     // allow for inaccuracy in f(x), otherwise the last few
                     // iterations just thrash around.
-    boost::math::tools::eps_tolerance<T> rel_tol(
-        get_digits); // Set the tolerance.
+    boost::math::tools::eps_tolerance<T> rel_tol( get_digits); // Set tolerance.
     std::pair<T, T> t = boost::math::tools::bracket_and_solve_root(
         MaxTimeOfTwoStepProbFunctor<T>(rate1, rate2, total_time), guess, factor,
         is_rising, rel_tol, it);
-    return t.first + (t.second - t.first) * .5;
+    return t.first + (t.second - t.first) * .5; // Zero occurs between values
 };
 
 template <class T>
@@ -74,9 +71,20 @@ template <class T>
 T two_step_max_prob(T const &rate1, T const &rate2, T const &total_time) {
     if (rate1 == 0. && rate2 == 0.)
         return 0.;
-    T t_max = max_time_of_two_step_prob(rate1, rate2, total_time);
-    T prob = two_step_prob(rate1, rate2, total_time, t_max);
-    return prob;
+    if (rate1 == 0.)
+        return 1. - exp(-1. * rate2 * total_time);
+    if (rate2 == 0.)
+        return 1. - exp(-1. * rate1 * total_time);
+
+    const T t_max = max_time_of_two_step_prob(rate1, rate2, total_time);
+    if (t_max >= total_time || std::isnan(t_max)){
+        printf("WARNING!!!: Time of max probability of two bind steps occuring " 
+               "is [%f] whereas a timestep is [%f]. " 
+               "Setting probability using largest rate.\n", t_max, total_time); 
+        const T rate = rate1 > rate2 ? rate1 : rate2;
+        return 1. - exp(-1. * rate * total_time);
+    }
+    return two_step_prob(rate1, rate2, total_time, t_max);
 };
 
 #endif /* end of include guard TWO_STEP_PROB_HPP */
